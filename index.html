@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource Calculator</title>
+<style>
+  :root{
+    --bg:#12151c; --panel:#1a1f2b; --panel2:#20263380; --border:#2c3444;
+    --text:#e7ebf3; --muted:#8b93a7; --accent:#4f8cff; --accent2:#7c5cff;
+    --good:#3ecf8e; --bad:#ff5c72; --warn:#ffb648;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+  h1{font-size:1.4rem;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 20px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  button{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:8px 12px;font-size:.85rem}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+  button.small{padding:4px 8px;font-size:.78rem}
+  button.confirming{background:var(--bad);border-color:var(--bad);color:#fff;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  input[type=number],input[type=text],select{
+    background:#0f1218;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:.85rem;
+  }
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+  .stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .stock-item label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px}
+  .stock-item input{width:100%;font-size:1.1rem;padding:8px}
+  .res-FC{color:#6fb3ff}.res-AFC{color:#ffb648}.res-Hyperalloy{color:#c48bff}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .res-card{border:1px solid var(--border);border-radius:10px;padding:12px;background:#151a24}
+  .res-card .name{font-size:.8rem;color:var(--muted)}
+  .res-card .need{font-size:1.3rem;font-weight:600;margin:4px 0}
+  .res-card .missing{font-size:.95rem;font-weight:600}
+  .missing.bad{color:var(--bad)}
+  .missing.good{color:var(--good)}
+
+  .cat-title{font-size:1.05rem;margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+  .research-group{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;background:#171c27;overflow:hidden}
+  .group-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+  .group-head:hover{background:#1c2330}
+  .group-icon{font-size:1.15rem}
+  .group-name{font-weight:700;flex:1}
+  .group-badge{font-size:.72rem;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+  .group-badge.active{border-color:var(--accent);color:var(--accent)}
+  .group-chevron{color:var(--muted);transition:transform .15s;font-size:.8rem}
+  .group-chevron.open{transform:rotate(90deg)}
+  .group-body{display:none;padding:0 12px 12px}
+  .group-body.open{display:block}
+  .track{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:#151a24;overflow:hidden}
+  .track-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 14px}
+  .track-name{font-weight:600;flex:1;min-width:160px}
+  .track-badge{font-size:.72rem;padding:2px 7px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+  .track-badge.active{border-color:var(--accent);color:var(--accent)}
+  .track-controls{display:flex;gap:8px;align-items:center;font-size:.8rem;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
+  th,td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:500;font-size:.72rem;text-transform:uppercase}
+  .empty-hint{color:var(--muted);font-size:.78rem;font-style:italic}
+  .breakdown{margin-top:10px}
+  .breakdown table{font-size:.78rem}
+  .auto-tag{color:var(--warn);font-size:.7rem}
+  footer{color:var(--muted);font-size:.75rem;text-align:center;margin-top:30px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏗️ Resource Calculator</h1>
+  <p class="sub">FC · AFC · Hyperalloy — track your progress, set your targets, calculate what you're missing.</p>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger">↺ Reset to default values</button>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1rem">Current stock</h2>
+    <div class="stock-grid" id="stockGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1rem">What you're missing</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div id="categories"></div>
+
+  <footer>Data is stored only in your browser (localStorage).</footer>
+</div>
+
+<script>
+const RESOURCES = ["FC","AFC","Hyperalloy"];
+const STORAGE_KEY = "resource-calc-state-v1";
+
+function stageset(afcTotal, fcTotal){
+  const afc = afcTotal/5, fc = fcTotal/5;
+  return [afc,afc,afc,afc,afc].map((_,i)=>({fc,afc}));
+}
+
+function buildingTrack(id, name, s56, s67, s78, gateByWardenOffice){
+  // s56/s67/s78 = {afc,fc} per-stage for F5->F6, F6->F7, F7->F8
+  const levels = [
+    { id:"F5", label:"F5", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }
+  ];
+  const push = (tier, s, endLabel) => {
+    // To progress beyond a tier, Warden Office must already have reached the next tier.
+    const gate = () => gateByWardenOffice ? [{trackId:"warden_office",levelId:endLabel}] : [];
+    for(let i=1;i<=4;i++){
+      levels.push({ id:`${tier}_s${i}`, label:`${tier} · stage ${i}`, cost:{FC:s.fc,AFC:s.afc,Hyperalloy:0}, requires:gate() });
+    }
+    levels.push({ id:endLabel, label:endLabel, cost:{FC:s.fc,AFC:s.afc,Hyperalloy:0}, requires:gate() });
+  };
+  push("F5", s56, "F6");
+  push("F6", s67, "F7");
+  push("F7", s78, "F8");
+  return { id, name, category:"Building", currentLevelIndex:0, targetLevelIndex:0, levels };
+}
+
+function fclabTrack(id, name, hyperCosts, requiresMap){
+  const levels = [{ id:"0", label:"Level 0", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
+  hyperCosts.forEach((h,i)=>{
+    const idx = i+1;
+    levels.push({
+      id:String(idx),
+      label:`Level ${idx}`,
+      cost:{FC:0,AFC:0,Hyperalloy:h},
+      requires: (requiresMap && requiresMap[idx]) ? requiresMap[idx] : []
+    });
+  });
+  return { id, name, category:"Research", currentLevelIndex:0, targetLevelIndex:0, levels };
+}
+
+function defaultData(){
+  const wardenOffice = buildingTrack("warden_office","Warden Office",{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460});
+  // Warden Office = main building (HQ): moving to a new FC tier requires 2 support buildings
+  // to have already reached the previous tier (requirements table).
+  const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
+  setRequires("F6", [{trackId:"shieldbearer_barrack",levelId:"F5"},{trackId:"communication_center",levelId:"F5"}]);
+  setRequires("F7", [{trackId:"shooter_barrack",levelId:"F6"},{trackId:"communication_center",levelId:"F6"}]);
+  setRequires("F8", [{trackId:"bomber_barrack",levelId:"F7"},{trackId:"communication_center",levelId:"F7"}]);
+
+  const buildings = [
+    wardenOffice,
+    buildingTrack("shieldbearer_barrack","Shieldbearer Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("bomber_barrack","Bomber Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("shooter_barrack","Shooter Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("communication_center","Communication Center",{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110},true),
+    buildingTrack("command_center","Command Center",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
+    buildingTrack("medical_station","Medical Station",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
+  ];
+
+  // FC Lab itself is considered maxed out: no track or requirement for it.
+  // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent research
+  // tree leading to T11: internal requirements only concern that type.
+  function fcLabTree(troopKey, troopLabel){
+    const expedition = fclabTrack(`fclab_${troopKey}_expedition`, `${troopLabel} — Expedition Troops Capacity`,
+      [30,50,80,130,220]
+    );
+    const mkCombat = (id,name) => fclabTrack(id,name,
+      [80,100,140,180,240,300,380,480,600,800],
+      { 5:[{trackId:`fclab_${troopKey}_expedition`,levelId:"4"}] } // 4->5 needs "Stage 1 Lv.4"
+    );
+    const lethality = mkCombat(`fclab_${troopKey}_lethality`, `${troopLabel} — Increases Lethality`);
+    const atk = mkCombat(`fclab_${troopKey}_atk`, `${troopLabel} — Increases ATK`);
+    const def = mkCombat(`fclab_${troopKey}_def`, `${troopLabel} — Increases DEF`);
+    const hp = mkCombat(`fclab_${troopKey}_hp`, `${troopLabel} — Increases HP`);
+    // Max Rally level requires all other stats to also be maxed out.
+    const rally = fclabTrack(`fclab_${troopKey}_rally`, `${troopLabel} — Increase Rally Troop Capacity`,
+      [160,200,240,290,360,430,530,650,810,1010,1260,1580],
+      { 1:[
+        {trackId:`fclab_${troopKey}_expedition`,levelId:"5"},
+        {trackId:`fclab_${troopKey}_lethality`,levelId:"10"},
+        {trackId:`fclab_${troopKey}_atk`,levelId:"10"},
+        {trackId:`fclab_${troopKey}_def`,levelId:"10"},
+        {trackId:`fclab_${troopKey}_hp`,levelId:"10"},
+      ] }
+    );
+    // Unlocking T11 requires Rally Troop Capacity at max level (12).
+    const bastion = fclabTrack(`fclab_${troopKey}_bastion`, `${troopLabel} — Unlocks Troop Lv.11`,
+      [4500],
+      { 1:[{trackId:`fclab_${troopKey}_rally`,levelId:"12"}] }
+    );
+    const set = [expedition, lethality, atk, def, hp, rally, bastion];
+    set.forEach(t=> t.group = troopLabel);
+    return set;
+  }
+
+  const research = [
+    ...fcLabTree("shieldbearer","Shieldbearer"),
+    ...fcLabTree("bomber","Bomber"),
+    ...fcLabTree("shooter","Shooter"),
+  ];
+
+  return {
+    stock: { FC:0, AFC:0, Hyperalloy:0 },
+    tracks: [...buildings, ...research]
+  };
+}
+
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return defaultData();
+}
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function save(){
+  persist();
+  render();
+}
+function refreshSummary(){
+  const { totals, breakdown } = computeCascade();
+  renderSummary(totals);
+  renderBreakdown(breakdown);
+}
+
+function trackById(id){ return state.tracks.find(t=>t.id===id); }
+function levelIndexOf(track, levelId){ return track.levels.findIndex(l=>l.id===levelId); }
+
+function computeCascade(){
+  const required = {};
+  state.tracks.forEach(t=> required[t.id] = Math.max(t.currentLevelIndex, t.targetLevelIndex||0));
+  let changed = true, guard=0;
+  const autoBumped = {};
+  while(changed && guard++ < 200){
+    changed = false;
+    for(const t of state.tracks){
+      const reqIdx = required[t.id];
+      for(let i=t.currentLevelIndex+1; i<=reqIdx; i++){
+        const lvl = t.levels[i];
+        if(!lvl) continue;
+        (lvl.requires||[]).forEach(r=>{
+          const rt = trackById(r.trackId);
+          if(!rt) return;
+          const needIdx = levelIndexOf(rt, r.levelId);
+          if(needIdx > required[rt.id]){
+            required[rt.id] = needIdx;
+            autoBumped[rt.id] = true;
+            changed = true;
+          }
+        });
+      }
+    }
+  }
+  const totals = { FC:0, AFC:0, Hyperalloy:0 };
+  const breakdown = [];
+  state.tracks.forEach(t=>{
+    const reqIdx = required[t.id];
+    if(reqIdx > t.currentLevelIndex){
+      const rowCost = { FC:0, AFC:0, Hyperalloy:0 };
+      for(let i=t.currentLevelIndex+1;i<=reqIdx;i++){
+        const lvl = t.levels[i];
+        if(!lvl) continue;
+        RESOURCES.forEach(r=> rowCost[r]+= (lvl.cost[r]||0));
+      }
+      RESOURCES.forEach(r=> totals[r]+=rowCost[r]);
+      breakdown.push({
+        track:t, from:t.currentLevelIndex, to:reqIdx, cost:rowCost,
+        auto: autoBumped[t.id] && reqIdx > (t.targetLevelIndex||0)
+      });
+    }
+  });
+  return { totals, breakdown };
+}
+
+function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
+
+function render(){
+  renderStock();
+  const { totals, breakdown } = computeCascade();
+  renderSummary(totals);
+  renderBreakdown(breakdown);
+  renderCategories();
+}
+
+function renderStock(){
+  const grid = document.getElementById("stockGrid");
+  grid.innerHTML = RESOURCES.map(r=>`
+    <div class="stock-item">
+      <label class="res-${r}">${r}</label>
+      <input type="number" min="0" data-stock="${r}" value="${state.stock[r]}">
+    </div>`).join("");
+  grid.querySelectorAll("input[data-stock]").forEach(inp=>{
+    inp.addEventListener("input", e=>{
+      state.stock[inp.dataset.stock] = Number(e.target.value)||0;
+      persist();
+      refreshSummary();
+    });
+    inp.addEventListener("focus", e=> e.target.select());
+  });
+}
+
+function renderSummary(totals){
+  const grid = document.getElementById("summaryGrid");
+  grid.innerHTML = RESOURCES.map(r=>{
+    const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
+    return `<div class="res-card">
+      <div class="name res-${r}">${r}</div>
+      <div class="need">${fmt(need)} needed</div>
+      <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? "Missing "+fmt(missing) : "OK (surplus "+fmt(-missing)+")"}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderBreakdown(breakdown){
+  const el = document.getElementById("breakdown");
+  if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">No target set yet — pick a target level on a building or research below.</p>`; return; }
+  el.innerHTML = `<table><thead><tr><th>Target</th><th>From</th><th>To</th><th>FC</th><th>AFC</th><th>Hyperalloy</th></tr></thead><tbody>
+    ${breakdown.map(b=>`<tr>
+      <td>${b.track.name} ${b.auto?'<span class="auto-tag">(auto-added — prerequisite)</span>':''}</td>
+      <td>${b.track.levels[b.from].label}</td>
+      <td>${b.track.levels[b.to].label}</td>
+      <td>${fmt(b.cost.FC)}</td><td>${fmt(b.cost.AFC)}</td><td>${fmt(b.cost.Hyperalloy)}</td>
+    </tr>`).join("")}
+  </tbody></table>`;
+}
+
+const uiOpen = { groups:new Set() };
+
+function stripGroupPrefix(name, group){
+  const prefix = group + " — ";
+  return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+}
+
+function researchGroupsHtml(tracks){
+  const groupIcons = { "Shooter":"🏹", "Bomber":"💣", "Shieldbearer":"🛡️" };
+  const order = [];
+  tracks.forEach(t=>{ const g = t.group || "General"; if(!order.includes(g)) order.push(g); });
+  return order.map(g=>{
+    const gTracks = tracks.filter(t=>(t.group||"General")===g);
+    const activeCount = gTracks.filter(t=>t.targetLevelIndex>t.currentLevelIndex).length;
+    const isOpen = uiOpen.groups.has(g);
+    const icon = groupIcons[g] || "🧬";
+    return `<div class="research-group">
+      <div class="group-head" data-group="${g}">
+        <span class="group-icon">${icon}</span>
+        <span class="group-name">${g}</span>
+        <span class="group-badge ${activeCount?'active':''}">${activeCount ? activeCount+' target'+(activeCount>1?'s':'')+' set' : 'no targets'}</span>
+        <span class="group-chevron ${isOpen?'open':''}">▸</span>
+      </div>
+      <div class="group-body ${isOpen?'open':''}">
+        ${gTracks.map(t=> trackHtml(t, stripGroupPrefix(t.name, g))).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderCategories(){
+  const cats = ["Building","Research","Other"];
+  const catLabels = { "Building":"Buildings", "Research":"Research", "Other":"Other" };
+  const cont = document.getElementById("categories");
+  cont.innerHTML = cats.map(cat=>{
+    const tracks = state.tracks.filter(t=>t.category===cat);
+    if(!tracks.length) return "";
+    const body = cat==="Research" ? researchGroupsHtml(tracks) : tracks.map(t=>trackHtml(t)).join("");
+    return `<div class="cat-title">${catIcon(cat)} ${catLabels[cat]}</div>${body}`;
+  }).join("");
+
+  cont.querySelectorAll(".group-head").forEach(h=>{
+    h.addEventListener("click", ()=>{
+      const g = h.dataset.group;
+      const body = h.nextElementSibling;
+      const chevron = h.querySelector(".group-chevron");
+      const nowOpen = !body.classList.contains("open");
+      body.classList.toggle("open", nowOpen);
+      chevron.classList.toggle("open", nowOpen);
+      if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
+    });
+  });
+  cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
+    trackById(s.dataset.cur).currentLevelIndex = Number(e.target.value); save();
+  }));
+  cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
+    trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
+  }));
+}
+
+function catIcon(cat){
+  return { "Building":"🏠", "Research":"🔬", "Other":"📦" }[cat] || "";
+}
+
+function trackHtml(t, displayName){
+  const active = t.targetLevelIndex > t.currentLevelIndex;
+  return `<div class="track">
+    <div class="track-head">
+      <span class="track-name">${displayName || t.name}</span>
+      <span class="track-badge ${active?'active':''}">${active? 'target set' : 'no target'}</span>
+      <div class="track-controls">
+        Current: <select data-cur="${t.id}">${optionsWithSelected(t.levels,t.currentLevelIndex)}</select>
+        Target: <select data-tgt="${t.id}">${optionsWithSelected(t.levels,t.targetLevelIndex)}</select>
+      </div>
+    </div>
+  </div>`;
+}
+function optionsWithSelected(levels, idx){
+  return levels.map((l,i)=>`<option value="${i}" ${i===idx?"selected":""}>${l.label}</option>`).join("");
+}
+
+// Built-in double-click confirmation (instead of native confirm(), not reliable everywhere).
+function armConfirm(btn, confirmLabel, action){
+  if(btn.dataset.armed === "1"){
+    clearTimeout(Number(btn.dataset.armTimer));
+    btn.dataset.armed = "0";
+    btn.textContent = btn.dataset.originalLabel;
+    btn.classList.remove("confirming");
+    action();
+    return;
+  }
+  btn.dataset.originalLabel = btn.textContent;
+  btn.dataset.armed = "1";
+  btn.textContent = confirmLabel;
+  btn.classList.add("confirming");
+  const timerId = setTimeout(()=>{
+    btn.dataset.armed = "0";
+    btn.textContent = btn.dataset.originalLabel;
+    btn.classList.remove("confirming");
+  }, 4000);
+  btn.dataset.armTimer = String(timerId);
+}
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  armConfirm(document.getElementById("btnReset"), "Click again to confirm ↺", ()=>{
+    state = defaultData();
+    save();
+  });
+});
+render();
+</script>
+</body>
+</html>
