@@ -58,14 +58,23 @@
 <script>
 const RESOURCES = ["SealOfWisdom","SealOfKnowledge","CommonCoin","RareCoin","PreciousCoin","LegendaryCoin"];
 const STORAGE_KEY = "resource-calc-tomes-state-v1";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const RES_ACCENT = {
   SealOfWisdom:"#ffd60a", SealOfKnowledge:"#ffd60a",
   CommonCoin:"#8ec7ff", RareCoin:"#ff8ecf", PreciousCoin:"#ffb648", LegendaryCoin:"#ff5c72",
 };
+// Rarity colors, lightly tinting each collection tier's label wherever it's shown.
+const RARITY_COLORS = {
+  uncommon:"#3ecf8e",
+  rare:"#5bc8ff",
+  epic:"#c48bff", epic_t1:"#c48bff",
+  legendary:"#ffb648", legendary_t1:"#ffb648", legendary_t2:"#ffb648",
+  exotic:"#ff5c72", exotic_t1:"#ff5c72", exotic_t2:"#ff5c72", exotic_t3:"#ff5c72",
+};
+
 const CATEGORIES = [
-  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, dynamic:{countLabelKey:"tomeCountLabel", makeTrack:makeTomeTrack} },
-  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, dynamic:{countLabelKey:"collectionCountLabel", makeTrack:makeCollectionTrack} },
+  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, dynamic:{countLabelKey:"tomeCountLabel", makeTrack:makeTomeTrack, max:18} },
+  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, dynamic:{countLabelKey:"collectionCountLabel", makeTrack:makeCollectionTrack, max:6}, tierColorFn:(baseId)=>RARITY_COLORS[baseId] },
 ];
 
 const I18N = {
@@ -167,7 +176,7 @@ function makeTomeTrack(idx){
   });
   return {
     id:`tome_${idx}`, category:"Tome", qtyIndex:idx,
-    nameParts:[{key:"tomeLabel", vars:{n:idx}}], levelStyle:"numeric",
+    nameParts:[{key:"tomeLabel", vars:{n:idx}}], levelStyle:"numeric", romanLevels:true,
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
 }

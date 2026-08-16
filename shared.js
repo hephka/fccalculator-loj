@@ -8,13 +8,19 @@
 //                   the shared chrome keys listed below)
 //   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic}] in display order.
 //                   grouped:true renders tracks grouped by track.troopKey.
-//                   dynamic:{countLabelKey, makeTrack(index)} renders a quantity
-//                   input instead of a fixed track list: the user types how many
-//                   items to track and makeTrack(i) builds each one on demand.
-//                   Dynamic tracks need a numeric track.qtyIndex for ordering.
+//                   dynamic:{countLabelKey, makeTrack(index), max} renders a
+//                   quantity input (capped at `max` if given) instead of a
+//                   fixed track list: the user types how many items to track
+//                   and makeTrack(i) builds each one on demand. Dynamic tracks
+//                   need a numeric track.qtyIndex for ordering.
 //   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
 //   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
 //                   only needed if the page has any dynamic categories.
+//
+// Per-track optional flags:
+//   romanLevels: true         - numeric levelStyle renders as roman numerals (Level VII)
+//   tierColorFn(baseId)       - returns a hex color to lightly tint that level's
+//                               label wherever it's shown (e.g. rarity tinting)
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -36,19 +42,38 @@ function resourceLabel(r){ return t("res_"+r); }
 function fmt(n){ return Math.round(n).toLocaleString(lang === "fr" ? "fr-FR" : "en-US"); }
 function zeroResources(){ return Object.fromEntries(RESOURCES.map(r=>[r,0])); }
 
+function toRoman(n){
+  n = Number(n);
+  if(!n || n<1) return String(n);
+  const vals = [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
+  let res = "";
+  for(const [v,s] of vals){ while(n>=v){ res+=s; n-=v; } }
+  return res;
+}
+
 // A track's levels display in one of three styles, set via track.levelStyle:
 //   "raw"     (default) - the level id itself, e.g. "FC5"
-//   "numeric" - "<levelWord> <id>", e.g. "Level 7"
+//   "numeric" - "<levelWord> <id>", e.g. "Level 7" (or "Level VII" if track.romanLevels)
 //   "keyed"   - the id looked up via t(track.levelKeyPrefix + id), e.g. tier names
 // Any id ending in "_s<N>" is a sub-level (stage/star/...): its base is styled
 // per the rules above, suffixed with "· <stageWordKey or stageWord> <N>".
+// If the track's category defines tierColorFn(baseId), levelColor() exposes
+// the color it returns so callers can tint that level's label (e.g. by
+// rarity). Lives on the category (not the track) because tracks round-trip
+// through JSON in localStorage, which would silently drop a function.
+function levelColor(track, level){
+  const catDef = CATEGORIES.find(c=>c.key===track.category);
+  if(!catDef || !catDef.tierColorFn) return null;
+  const m = level.id.match(/^(.+)_s(\d)$/);
+  return catDef.tierColorFn(m ? m[1] : level.id) || null;
+}
 function levelLabel(track, level){
   const id = level.id;
   const stageW = t(track.stageWordKey || "stageWord");
   const m = id.match(/^(.+)_s(\d)$/);
   const baseId = m ? m[1] : id;
   const base = track.levelStyle === "keyed" ? t(track.levelKeyPrefix+baseId)
-    : track.levelStyle === "numeric" ? `${t("levelWord")} ${baseId}`
+    : track.levelStyle === "numeric" ? `${t("levelWord")} ${track.romanLevels ? toRoman(baseId) : baseId}`
     : baseId;
   return m ? `${base} · ${stageW} ${m[2]}` : base;
 }
@@ -206,14 +231,22 @@ function renderSummary(totals){
   }).join("");
 }
 
+// HTML-safe level label: wraps in a light color span when the track defines
+// a tierColorFn (e.g. rarity tinting), plain text otherwise.
+function coloredLevelLabel(track, level){
+  const label = levelLabel(track, level);
+  const color = levelColor(track, level);
+  return color ? `<span style="color:${color}">${label}</span>` : label;
+}
+
 function renderBreakdown(breakdown){
   const el = document.getElementById("breakdown");
   if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
   el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th>${RESOURCES.map(r=>`<th>${resourceLabel(r)}</th>`).join("")}</tr></thead><tbody>
     ${breakdown.map(b=>`<tr>
       <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
+      <td>${coloredLevelLabel(b.track, b.track.levels[b.from])}</td>
+      <td>${coloredLevelLabel(b.track, b.track.levels[b.to])}</td>
       ${RESOURCES.map(r=>`<td>${fmt(b.cost[r])}</td>`).join("")}
     </tr>`).join("")}
   </tbody></table>`;
@@ -267,10 +300,11 @@ function renderCategories(){
   const cont = document.getElementById("categories");
   cont.innerHTML = CATEGORIES.map(catDef=>{
     const tracks = state.tracks.filter(tr=>tr.category===catDef.key);
+    const qtyMax = catDef.dynamic && catDef.dynamic.max;
     const qtyControl = catDef.dynamic ? `
       <div class="qty-control">
         <label for="qty_${catDef.key}">${t(catDef.dynamic.countLabelKey)}</label>
-        <input type="number" min="0" data-qty="${catDef.key}" id="qty_${catDef.key}" value="${state.counts[catDef.key]||0}">
+        <input type="number" min="0" ${qtyMax?`max="${qtyMax}"`:""} data-qty="${catDef.key}" id="qty_${catDef.key}" value="${state.counts[catDef.key]||0}">
       </div>` : "";
     if(!tracks.length && !catDef.dynamic) return "";
     const body = catDef.grouped ? groupedTracksHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
@@ -291,8 +325,12 @@ function renderCategories(){
   cont.querySelectorAll("input[data-qty]").forEach(inp=>{
     inp.addEventListener("change", e=>{
       const key = inp.dataset.qty;
-      state.counts[key] = Math.max(0, Number(e.target.value)||0);
-      syncDynamicCategory(CATEGORIES.find(c=>c.key===key));
+      const catDef = CATEGORIES.find(c=>c.key===key);
+      const max = catDef.dynamic.max;
+      let n = Math.max(0, Number(e.target.value)||0);
+      if(max) n = Math.min(n, max);
+      state.counts[key] = n;
+      syncDynamicCategory(catDef);
       save();
     });
   });
@@ -318,7 +356,10 @@ function trackHtml(tr){
   </div>`;
 }
 function optionsWithSelected(track, idx){
-  return track.levels.map((l,i)=>`<option value="${i}" ${i===idx?"selected":""}>${levelLabel(track,l)}</option>`).join("");
+  return track.levels.map((l,i)=>{
+    const color = levelColor(track, l);
+    return `<option value="${i}" ${i===idx?"selected":""} ${color?`style="color:${color}"`:""}>${levelLabel(track,l)}</option>`;
+  }).join("");
 }
 
 // Built-in double-click confirmation (instead of native confirm(), not reliable everywhere).
