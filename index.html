@@ -47,11 +47,14 @@
   .lang-btn.active{background:var(--accent);color:#fff}
   .lang-btn:not(.active):hover{background:var(--panel-2);color:var(--text)}
 
-  .intro-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px}
-  .intro-title{font-weight:700;font-size:.95rem;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-  .intro-card p{margin:0 0 8px;color:var(--muted);font-size:.86rem;line-height:1.55}
-  .intro-card p:last-child{margin-bottom:0}
-  .intro-note{border-left:3px solid var(--warn);background:var(--warn-bg);padding:8px 10px;border-radius:0 8px 8px 0;color:#e8c98a!important}
+  .intro-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
+  .intro-title{font-weight:700;font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .intro-lead{margin:0 0 14px;font-size:.95rem;font-weight:600;color:var(--text)}
+  .intro-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 18px;margin-bottom:14px}
+  .intro-feature{display:flex;align-items:flex-start;gap:9px;font-size:.85rem;color:var(--muted);line-height:1.45}
+  .intro-feature .ico{flex-shrink:0;font-size:1rem}
+  .intro-note{margin:0;padding-top:12px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);line-height:1.5}
+  .intro-note .warn-icon{color:var(--warn);margin-right:3px}
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
   button{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:9px;padding:10px 14px;font-size:.88rem;font-family:inherit;font-weight:600;transition:border-color .15s,background .15s}
@@ -131,9 +134,10 @@
   </div>
 
   <div class="card intro-card">
-    <div class="intro-title"><span>ℹ️</span><span id="introTitle">What this does</span></div>
-    <p id="introBody1"></p>
-    <p class="intro-note" id="introBody2"></p>
+    <div class="intro-title"><span>🧭</span><span id="introTitle">What this does</span></div>
+    <p class="intro-lead" id="introLead"></p>
+    <div class="intro-features" id="introFeatures"></div>
+    <p class="intro-note" id="introNote"></p>
   </div>
 
   <div class="toolbar">
@@ -168,8 +172,11 @@ const I18N = {
     title: "Resource Calculator",
     subtitle: "FC · AFC · Hyperalloy — track your progress, set your targets, calculate what you're missing.",
     introTitle: "What this does",
-    introBody1: "Set your current level and a target for each building and troop research tree. The app automatically resolves prerequisites and adds up the total FC / AFC / Hyperalloy needed, then shows what you're missing compared to your stock.",
-    introBody2: "Currently covers Warden Office progression from FC5 to FC8 only. Food, Wood, Steel and Gold Card costs aren't tracked — only FC, AFC and Hyperalloy.",
+    introLead: "Plan your next upgrade in seconds.",
+    introFeature1: "Set a current level and a target for every building and research tree",
+    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    introNote: "Currently only covers Warden Office progression from FC5 to FC8. Food, Wood, Steel, Gasoline and Gold Card aren't tracked — only FC, AFC and Hyperalloy.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -180,7 +187,7 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on a building or research below.",
     colTarget: "Target", colFrom: "From", colTo: "To",
     autoAdded: "(auto-added — prerequisite)",
-    catBuilding: "Buildings", catResearch: "Research", catOther: "Other",
+    catBuilding: "Buildings", catResearch: "Research",
     targetSet: "target set", noTarget: "no target",
     groupNoTargets: "no targets",
     groupTargetsSet: "{n} target(s) set",
@@ -188,13 +195,33 @@ const I18N = {
     stageWord: "stage", levelWord: "Level",
     resHyperalloy: "Hyperalloy",
     footer: "Data is stored only in your browser (localStorage).",
+    building_warden_office: "Warden Office",
+    building_shieldbearer_barrack: "Shieldbearer Barrack",
+    building_bomber_barrack: "Bomber Barrack",
+    building_shooter_barrack: "Shooter Barrack",
+    building_communication_center: "Communication Center",
+    building_command_center: "Command Center",
+    building_medical_station: "Medical Station",
+    troop_shieldbearer: "Shieldbearer",
+    troop_bomber: "Bomber",
+    troop_shooter: "Shooter",
+    research_expedition: "Expedition Troops Capacity",
+    research_lethality: "Increases Lethality",
+    research_atk: "Increases ATK",
+    research_def: "Increases DEF",
+    research_hp: "Increases HP",
+    research_rally: "Increase Rally Troop Capacity",
+    research_bastion: "Unlocks Troop Lv.11",
   },
   fr: {
     title: "Calculateur de ressources",
     subtitle: "FC · AFC · Hyperalliage — suis ta progression, fixe tes objectifs, calcule ce qu'il te manque.",
     introTitle: "Ce que fait l'outil",
-    introBody1: "Renseigne ton niveau actuel et un objectif pour chaque bâtiment et chaque arbre de recherche de troupes. L'appli résout automatiquement les prérequis et additionne le total de FC / AFC / Hyperalliage nécessaire, puis affiche ce qu'il te manque par rapport à ton stock.",
-    introBody2: "Ne couvre pour l'instant que la progression du Warden Office de FC5 à FC8. Les ressources Nourriture, Bois, Acier et Carte en Or ne sont pas prises en compte — seulement FC, AFC et Hyperalliage.",
+    introLead: "Planifie ta prochaine amélioration en quelques secondes.",
+    introFeature1: "Fixe un niveau actuel et un objectif pour chaque bâtiment et arbre de recherche",
+    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    introNote: "Ne couvre pour l'instant que la progression du Warden Office de FC5 à FC8. Nourriture, Bois, Acier, Essence et Carte en Or ne sont pas suivis — seulement FC, AFC et Hyperalliage.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -205,7 +232,7 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un bâtiment ou une recherche ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À",
     autoAdded: "(ajouté auto. — prérequis)",
-    catBuilding: "Bâtiments", catResearch: "Recherche", catOther: "Autre",
+    catBuilding: "Bâtiments", catResearch: "Recherche",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     groupNoTargets: "aucun objectif",
     groupTargetsSet: "{n} objectif(s) défini(s)",
@@ -213,6 +240,23 @@ const I18N = {
     stageWord: "palier", levelWord: "Niveau",
     resHyperalloy: "Hyperalliage",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    building_warden_office: "Bureau du Gardien",
+    building_shieldbearer_barrack: "Caserne des Porte-boucliers",
+    building_bomber_barrack: "Caserne des Bombardiers",
+    building_shooter_barrack: "Caserne des Tireurs",
+    building_communication_center: "Centre de Communication",
+    building_command_center: "Centre de Commandement",
+    building_medical_station: "Poste Médical",
+    troop_shieldbearer: "Porte-bouclier",
+    troop_bomber: "Bombardier",
+    troop_shooter: "Tireur",
+    research_expedition: "Capacité des Troupes d'Expédition",
+    research_lethality: "Augmente la Létalité",
+    research_atk: "Augmente l'Attaque",
+    research_def: "Augmente la Défense",
+    research_hp: "Augmente les PV",
+    research_rally: "Augmente la Capacité de Ralliement",
+    research_bastion: "Débloque les Troupes Niv.11",
   },
 };
 
@@ -236,7 +280,16 @@ function levelLabel(track, level){
   return `${t("levelWord")} ${id}`;
 }
 
-function buildingTrack(id, name, s56, s67, s78, gateByWardenOffice){
+// Short name shown on the track's own card (no troop prefix for research).
+function trackShortName(track){
+  return track.category === "Building" ? t("building_"+track.id) : t("research_"+track.statKey);
+}
+// Full name shown wherever context is needed, e.g. the flat breakdown table.
+function trackDisplayName(track){
+  return track.category === "Building" ? t("building_"+track.id) : `${t("troop_"+track.troopKey)} — ${t("research_"+track.statKey)}`;
+}
+
+function buildingTrack(id, s56, s67, s78, gateByWardenOffice){
   // s56/s67/s78 = {afc,fc} per-stage for F5->F6, F6->F7, F7->F8
   const levels = [
     { id:"F5", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }
@@ -252,10 +305,10 @@ function buildingTrack(id, name, s56, s67, s78, gateByWardenOffice){
   push("F5", s56, "F6");
   push("F6", s67, "F7");
   push("F7", s78, "F8");
-  return { id, name, category:"Building", currentLevelIndex:0, targetLevelIndex:0, levels };
+  return { id, category:"Building", currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
-function fclabTrack(id, name, hyperCosts, requiresMap){
+function fclabTrack(id, statKey, hyperCosts, requiresMap){
   const levels = [{ id:"0", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
   hyperCosts.forEach((h,i)=>{
     const idx = i+1;
@@ -265,11 +318,11 @@ function fclabTrack(id, name, hyperCosts, requiresMap){
       requires: (requiresMap && requiresMap[idx]) ? requiresMap[idx] : []
     });
   });
-  return { id, name, category:"Research", currentLevelIndex:0, targetLevelIndex:0, levels };
+  return { id, statKey, category:"Research", currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
 function defaultData(){
-  const wardenOffice = buildingTrack("warden_office","Warden Office",{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460});
+  const wardenOffice = buildingTrack("warden_office",{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460});
   // Warden Office = main building (HQ): moving to a new FC tier requires 2 support buildings
   // to have already reached the previous tier (requirements table).
   const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
@@ -279,31 +332,31 @@ function defaultData(){
 
   const buildings = [
     wardenOffice,
-    buildingTrack("shieldbearer_barrack","Shieldbearer Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("bomber_barrack","Bomber Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("shooter_barrack","Shooter Barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("communication_center","Communication Center",{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110},true),
-    buildingTrack("command_center","Command Center",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
-    buildingTrack("medical_station","Medical Station",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
+    buildingTrack("shieldbearer_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("bomber_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("shooter_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
+    buildingTrack("communication_center",{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110},true),
+    buildingTrack("command_center",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
+    buildingTrack("medical_station",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
   ];
 
   // FC Lab itself is considered maxed out: no track or requirement for it.
   // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent research
   // tree leading to T11: internal requirements only concern that type.
-  function fcLabTree(troopKey, troopLabel){
-    const expedition = fclabTrack(`fclab_${troopKey}_expedition`, `${troopLabel} — Expedition Troops Capacity`,
+  function fcLabTree(troopKey){
+    const expedition = fclabTrack(`fclab_${troopKey}_expedition`, "expedition",
       [30,50,80,130,220]
     );
-    const mkCombat = (id,name) => fclabTrack(id,name,
+    const mkCombat = (id,statKey) => fclabTrack(id,statKey,
       [80,100,140,180,240,300,380,480,600,800],
       { 5:[{trackId:`fclab_${troopKey}_expedition`,levelId:"4"}] } // 4->5 needs "Stage 1 Lv.4"
     );
-    const lethality = mkCombat(`fclab_${troopKey}_lethality`, `${troopLabel} — Increases Lethality`);
-    const atk = mkCombat(`fclab_${troopKey}_atk`, `${troopLabel} — Increases ATK`);
-    const def = mkCombat(`fclab_${troopKey}_def`, `${troopLabel} — Increases DEF`);
-    const hp = mkCombat(`fclab_${troopKey}_hp`, `${troopLabel} — Increases HP`);
+    const lethality = mkCombat(`fclab_${troopKey}_lethality`, "lethality");
+    const atk = mkCombat(`fclab_${troopKey}_atk`, "atk");
+    const def = mkCombat(`fclab_${troopKey}_def`, "def");
+    const hp = mkCombat(`fclab_${troopKey}_hp`, "hp");
     // Max Rally level requires all other stats to also be maxed out.
-    const rally = fclabTrack(`fclab_${troopKey}_rally`, `${troopLabel} — Increase Rally Troop Capacity`,
+    const rally = fclabTrack(`fclab_${troopKey}_rally`, "rally",
       [160,200,240,290,360,430,530,650,810,1010,1260,1580],
       { 1:[
         {trackId:`fclab_${troopKey}_expedition`,levelId:"5"},
@@ -314,19 +367,19 @@ function defaultData(){
       ] }
     );
     // Unlocking T11 requires Rally Troop Capacity at max level (12).
-    const bastion = fclabTrack(`fclab_${troopKey}_bastion`, `${troopLabel} — Unlocks Troop Lv.11`,
+    const bastion = fclabTrack(`fclab_${troopKey}_bastion`, "bastion",
       [4500],
       { 1:[{trackId:`fclab_${troopKey}_rally`,levelId:"12"}] }
     );
     const set = [expedition, lethality, atk, def, hp, rally, bastion];
-    set.forEach(t=> t.group = troopLabel);
+    set.forEach(tr=> tr.troopKey = troopKey);
     return set;
   }
 
   const research = [
-    ...fcLabTree("shieldbearer","Shieldbearer"),
-    ...fcLabTree("bomber","Bomber"),
-    ...fcLabTree("shooter","Shooter"),
+    ...fcLabTree("shieldbearer"),
+    ...fcLabTree("bomber"),
+    ...fcLabTree("shooter"),
   ];
 
   return {
@@ -411,8 +464,10 @@ function renderChrome(){
   document.getElementById("appTitle").textContent = t("title");
   document.getElementById("appSubtitle").textContent = t("subtitle");
   document.getElementById("introTitle").textContent = t("introTitle");
-  document.getElementById("introBody1").textContent = t("introBody1");
-  document.getElementById("introBody2").textContent = t("introBody2");
+  document.getElementById("introLead").textContent = t("introLead");
+  document.getElementById("introFeatures").innerHTML = ["introFeature1","introFeature2","introFeature3"]
+    .map((key,i)=>`<div class="intro-feature"><span class="ico">${["🎯","🔗","📊"][i]}</span><span>${t(key)}</span></div>`).join("");
+  document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
   document.getElementById("footerText").textContent = t("footer");
@@ -473,7 +528,7 @@ function renderBreakdown(breakdown){
   if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
   el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th><th>FC</th><th>AFC</th><th>${resourceLabel("Hyperalloy")}</th></tr></thead><tbody>
     ${breakdown.map(b=>`<tr>
-      <td>${b.track.name} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
+      <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
       <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
       <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
       <td>${fmt(b.cost.FC)}</td><td>${fmt(b.cost.AFC)}</td><td>${fmt(b.cost.Hyperalloy)}</td>
@@ -483,38 +538,33 @@ function renderBreakdown(breakdown){
 
 const uiOpen = { groups:new Set() };
 
-function stripGroupPrefix(name, group){
-  const prefix = group + " — ";
-  return name.startsWith(prefix) ? name.slice(prefix.length) : name;
-}
-
 function researchGroupsHtml(tracks){
-  const groupIcons = { "Shooter":"🏹", "Bomber":"💣", "Shieldbearer":"🛡️" };
+  const groupIcons = { shooter:"🏹", bomber:"💣", shieldbearer:"🛡️" };
   const order = [];
-  tracks.forEach(tr=>{ const g = tr.group || "General"; if(!order.includes(g)) order.push(g); });
-  return order.map(g=>{
-    const gTracks = tracks.filter(tr=>(tr.group||"General")===g);
+  tracks.forEach(tr=>{ if(!order.includes(tr.troopKey)) order.push(tr.troopKey); });
+  return order.map(troopKey=>{
+    const gTracks = tracks.filter(tr=>tr.troopKey===troopKey);
     const activeCount = gTracks.filter(tr=>tr.targetLevelIndex>tr.currentLevelIndex).length;
-    const isOpen = uiOpen.groups.has(g);
-    const icon = groupIcons[g] || "🧬";
+    const isOpen = uiOpen.groups.has(troopKey);
+    const icon = groupIcons[troopKey] || "🧬";
     const badgeText = activeCount ? t("groupTargetsSet",{n:activeCount}) : t("groupNoTargets");
     return `<div class="research-group">
-      <div class="group-head" data-group="${g}">
+      <div class="group-head" data-group="${troopKey}">
         <span class="group-icon">${icon}</span>
-        <span class="group-name">${g}</span>
+        <span class="group-name">${t("troop_"+troopKey)}</span>
         <span class="group-badge ${activeCount?'active':''}">${badgeText}</span>
         <span class="group-chevron ${isOpen?'open':''}">▸</span>
       </div>
       <div class="group-body ${isOpen?'open':''}">
-        ${gTracks.map(tr=> trackHtml(tr, stripGroupPrefix(tr.name, g))).join("")}
+        ${gTracks.map(tr=> trackHtml(tr)).join("")}
       </div>
     </div>`;
   }).join("");
 }
 
 function renderCategories(){
-  const cats = ["Building","Research","Other"];
-  const catLabels = { "Building":t("catBuilding"), "Research":t("catResearch"), "Other":t("catOther") };
+  const cats = ["Building","Research"];
+  const catLabels = { "Building":t("catBuilding"), "Research":t("catResearch") };
   const cont = document.getElementById("categories");
   cont.innerHTML = cats.map(cat=>{
     const tracks = state.tracks.filter(tr=>tr.category===cat);
@@ -543,14 +593,14 @@ function renderCategories(){
 }
 
 function catIcon(cat){
-  return { "Building":"🏠", "Research":"🔬", "Other":"📦" }[cat] || "";
+  return { "Building":"🏠", "Research":"🔬" }[cat] || "";
 }
 
-function trackHtml(tr, displayName){
+function trackHtml(tr){
   const active = tr.targetLevelIndex > tr.currentLevelIndex;
   return `<div class="track">
     <div class="track-head">
-      <span class="track-name">${displayName || tr.name}</span>
+      <span class="track-name">${trackShortName(tr)}</span>
       <span class="track-badge ${active?'active':''}">${active? t("targetSet") : t("noTarget")}</span>
       <div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
