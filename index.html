@@ -165,7 +165,7 @@
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
 const LANG_KEY = "resource-calc-lang";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const RES_ACCENT = { FC:"#6fb3ff", AFC:"#ffb648", Hyperalloy:"#c48bff" };
 
 const I18N = {
@@ -177,7 +177,7 @@ const I18N = {
     introFeature1: "Set a current level and a target for every building and research tree",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Currently only covers Warden's Office progression from FC5 to FC8. Food, Wood, Steel, Gasoline and Gold Card aren't tracked — only FC, AFC and Hyperalloy.",
+    introNote: "Warden's Office progression is modeled from Level 30 all the way to FC8. Food, Wood, Steel, Gasoline and Gold Card aren't tracked — only FC, AFC and Hyperalloy.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -222,7 +222,7 @@ const I18N = {
     introFeature1: "Fixe un niveau actuel et un objectif pour chaque bâtiment et arbre de recherche",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Ne couvre pour l'instant que la progression du Bureau du Directeur de FC5 à FC8. Nourriture, Bois, Acier, Essence et Carte en Or ne sont pas suivis — seulement FC, AFC et Hyperalliage.",
+    introNote: "La progression du Bureau du Directeur est modélisée du Niveau 30 jusqu'à FC8. Nourriture, Bois, Acier, Essence et Carte en Or ne sont pas suivis — seulement FC, AFC et Hyperalliage.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -274,7 +274,7 @@ function fmt(n){ return Math.round(n).toLocaleString(lang === "fr" ? "fr-FR" : "
 function levelLabel(track, level){
   const id = level.id;
   if(track.category === "Building"){
-    const m = id.match(/^(F\d)_s(\d)$/);
+    const m = id.match(/^(.+)_s(\d)$/);
     if(m) return `${m[1]} · ${t("stageWord")} ${m[2]}`;
     return id;
   }
@@ -290,22 +290,30 @@ function trackDisplayName(track){
   return track.category === "Building" ? t("building_"+track.id) : `${t("troop_"+track.troopKey)} — ${t("research_"+track.statKey)}`;
 }
 
-function buildingTrack(id, s56, s67, s78, gateByWardenOffice){
-  // s56/s67/s78 = {afc,fc} per-stage for F5->F6, F6->F7, F7->F8
+// Builds the full chain of stage costs for a building, from its earliest known
+// tier up through F8. Each entry in `earlyFC` is the per-stage FC cost for one
+// tier transition before AFC exists (30->F1, F1->F2, ... F4->F5). `lateAfcFc`
+// is the 3 per-stage {afc,fc} costs for F5->F6, F6->F7, F7->F8 (AFC required
+// starting at F5).
+function tierChain(earlyFC, lateAfcFc){
+  const froms = ["30","F1","F2","F3","F4","F5","F6","F7"];
+  const tos   = ["F1","F2","F3","F4","F5","F6","F7","F8"];
+  const stages = [...earlyFC.map(fc=>({afc:0,fc})), ...lateAfcFc];
+  return stages.map((s,i)=>({from:froms[i], to:tos[i], afc:s.afc, fc:s.fc}));
+}
+
+function buildingTrack(id, tiers, gateByWardenOffice){
   const levels = [
-    { id:"F5", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }
+    { id:tiers[0].from, cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }
   ];
-  const push = (tier, s, endLabel) => {
+  tiers.forEach(tier=>{
     // To progress beyond a tier, Warden Office must already have reached the next tier.
-    const gate = () => gateByWardenOffice ? [{trackId:"warden_office",levelId:endLabel}] : [];
+    const gate = () => gateByWardenOffice ? [{trackId:"warden_office",levelId:tier.to}] : [];
     for(let i=1;i<=4;i++){
-      levels.push({ id:`${tier}_s${i}`, cost:{FC:s.fc,AFC:s.afc,Hyperalloy:0}, requires:gate() });
+      levels.push({ id:`${tier.from}_s${i}`, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate() });
     }
-    levels.push({ id:endLabel, cost:{FC:s.fc,AFC:s.afc,Hyperalloy:0}, requires:gate() });
-  };
-  push("F5", s56, "F6");
-  push("F6", s67, "F7");
-  push("F7", s78, "F8");
+    levels.push({ id:tier.to, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate() });
+  });
   return { id, category:"Building", currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
@@ -323,22 +331,31 @@ function fclabTrack(id, statKey, hyperCosts, requiresMap){
 }
 
 function defaultData(){
-  const wardenOffice = buildingTrack("warden_office",{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460});
+  const wardenOffice = buildingTrack("warden_office", tierChain(
+    [250,320,490,600,720],
+    [{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460}]
+  ));
   // Warden Office = main building (HQ): moving to a new FC tier requires 2 support buildings
-  // to have already reached the previous tier (requirements table).
+  // to have already reached the previous tier (requirements table). The very first
+  // climb (30->F1) needs Communication Center + Shooter Barracks at Lv.29, which is
+  // outside our tracked range (tracks start at 30), so no gate is set for F1.
   const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
+  setRequires("F2", [{trackId:"bomber_barrack",levelId:"F1"},{trackId:"communication_center",levelId:"F1"}]);
+  setRequires("F3", [{trackId:"shieldbearer_barrack",levelId:"F2"},{trackId:"communication_center",levelId:"F2"}]);
+  setRequires("F4", [{trackId:"shooter_barrack",levelId:"F3"},{trackId:"communication_center",levelId:"F3"}]);
+  setRequires("F5", [{trackId:"bomber_barrack",levelId:"F4"},{trackId:"communication_center",levelId:"F4"}]);
   setRequires("F6", [{trackId:"shieldbearer_barrack",levelId:"F5"},{trackId:"communication_center",levelId:"F5"}]);
   setRequires("F7", [{trackId:"shooter_barrack",levelId:"F6"},{trackId:"communication_center",levelId:"F6"}]);
   setRequires("F8", [{trackId:"bomber_barrack",levelId:"F7"},{trackId:"communication_center",levelId:"F7"}]);
 
   const buildings = [
     wardenOffice,
-    buildingTrack("shieldbearer_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("bomber_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("shooter_barrack",{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210},true),
-    buildingTrack("communication_center",{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110},true),
-    buildingTrack("command_center",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
-    buildingTrack("medical_station",{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90},true),
+    buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
+    buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
+    buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
+    buildingTrack("communication_center", tierChain([50,60,80,110,130], [{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110}]), true),
+    buildingTrack("command_center", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
+    buildingTrack("medical_station", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
   ];
 
   // FC Lab itself is considered maxed out: no track or requirement for it.

@@ -11,7 +11,7 @@ A single-page tool to calculate how many **FC**, **AFC**, and **Hyperalloy** you
 - The app automatically resolves prerequisites — e.g. targeting Warden Office F8 pulls in the support buildings it requires, targeting a troop's T11 unlock pulls in maxing Rally Troop Capacity and every other stat it depends on — and adds up the total cost.
 - Shows exactly what's missing per resource, with a full breakdown of every objective contributing to the total.
 - Available in English and French, switchable in the UI.
-- **Scope right now:** only Warden Office progression **from FC5 to FC8** is modeled. **Food, Wood, Steel, Gasoline, and Gold Card** are not tracked — only FC, AFC, and Hyperalloy.
+- **Scope right now:** Warden Office progression is modeled **from Level 30 all the way to FC8**. AFC only applies from FC5 onward (matches in-game: earlier tiers cost FC only). **Food, Wood, Steel, Gasoline, and Gold Card** are not tracked — only FC, AFC, and Hyperalloy.
 
 ## How it works
 
@@ -43,5 +43,5 @@ Connected to Vercel: every push to `main` auto-deploys to production.
 ## Known gaps
 
 - FC Lab's own level costs aren't modeled yet (treated as already maxed).
-- Building levels before F5 aren't in the data yet.
 - Per-troop-type cost differences aren't confirmed — all three trees (Shooter/Bomber/Shieldbearer) currently share the same placeholder numbers.
+- Building/research names shown in French are best-effort translations, not yet verified against in-game text.
