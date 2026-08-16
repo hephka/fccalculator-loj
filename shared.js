@@ -6,9 +6,15 @@
 //   SCHEMA_VERSION- bump whenever this route's track data shape changes
 //   I18N          - {en:{...}, fr:{...}} translation dictionaries (route-specific keys +
 //                   the shared chrome keys listed below)
-//   CATEGORIES    - [{key, labelKey, icon, grouped}] in display order
+//   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic}] in display order.
+//                   grouped:true renders tracks grouped by track.troopKey.
+//                   dynamic:{countLabelKey, makeTrack(index)} renders a quantity
+//                   input instead of a fixed track list: the user types how many
+//                   items to track and makeTrack(i) builds each one on demand.
+//                   Dynamic tracks need a numeric track.qtyIndex for ordering.
 //   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
-//   defaultData() - returns {schemaVersion, stock, tracks}
+//   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
+//                   only needed if the page has any dynamic categories.
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -47,12 +53,14 @@ function levelLabel(track, level){
   return m ? `${base} · ${stageW} ${m[2]}` : base;
 }
 
-// Every track carries `nameParts`: an array of i18n keys. A single-part track
-// (e.g. a building) shows that one name everywhere. A multi-part track (e.g.
-// a research/tome grouped by troop) shows only its last part on its own card,
+// Every track carries `nameParts`: an array of i18n keys, or {key,vars} objects
+// for parts that need substitution (e.g. "Tome {n}"). A single-part track (e.g.
+// a building) shows that one name everywhere. A multi-part track (e.g. a
+// research tree grouped by troop) shows only its last part on its own card,
 // and the full "Troop — Item" chain wherever standalone context is needed.
-function trackShortName(track){ return t(track.nameParts[track.nameParts.length-1]); }
-function trackDisplayName(track){ return track.nameParts.map(t).join(" — "); }
+function resolveNamePart(part){ return typeof part === "string" ? t(part) : t(part.key, part.vars); }
+function trackShortName(track){ return resolveNamePart(track.nameParts[track.nameParts.length-1]); }
+function trackDisplayName(track){ return track.nameParts.map(resolveNamePart).join(" — "); }
 
 let state = load();
 
@@ -236,13 +244,37 @@ function groupedTracksHtml(tracks){
   }).join("");
 }
 
+// A "dynamic" category has no fixed set of tracks: the user types how many
+// items they want to track (state.counts[catKey]), and this adds/removes
+// tracks (via catDef.dynamic.makeTrack(index)) to match. Existing tracks keep
+// their progress; only the extras at the end are added or trimmed.
+function syncDynamicCategory(catDef){
+  if(!catDef || !catDef.dynamic) return;
+  const want = Math.max(0, state.counts[catDef.key] || 0);
+  let existing = state.tracks.filter(tr=>tr.category===catDef.key).sort((a,b)=>a.qtyIndex-b.qtyIndex);
+  while(existing.length > want){
+    const removed = existing.pop();
+    state.tracks = state.tracks.filter(tr=>tr!==removed);
+  }
+  while(existing.length < want){
+    const nt = catDef.dynamic.makeTrack(existing.length+1);
+    state.tracks.push(nt);
+    existing.push(nt);
+  }
+}
+
 function renderCategories(){
   const cont = document.getElementById("categories");
   cont.innerHTML = CATEGORIES.map(catDef=>{
     const tracks = state.tracks.filter(tr=>tr.category===catDef.key);
-    if(!tracks.length) return "";
+    const qtyControl = catDef.dynamic ? `
+      <div class="qty-control">
+        <label for="qty_${catDef.key}">${t(catDef.dynamic.countLabelKey)}</label>
+        <input type="number" min="0" data-qty="${catDef.key}" id="qty_${catDef.key}" value="${state.counts[catDef.key]||0}">
+      </div>` : "";
+    if(!tracks.length && !catDef.dynamic) return "";
     const body = catDef.grouped ? groupedTracksHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
-    return `<div class="cat-title">${catDef.icon} ${t(catDef.labelKey)}</div>${body}`;
+    return `<div class="cat-title">${catDef.icon} ${t(catDef.labelKey)}</div>${qtyControl}${body}`;
   }).join("");
 
   cont.querySelectorAll(".group-head").forEach(h=>{
@@ -254,6 +286,14 @@ function renderCategories(){
       body.classList.toggle("open", nowOpen);
       chevron.classList.toggle("open", nowOpen);
       if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
+    });
+  });
+  cont.querySelectorAll("input[data-qty]").forEach(inp=>{
+    inp.addEventListener("change", e=>{
+      const key = inp.dataset.qty;
+      state.counts[key] = Math.max(0, Number(e.target.value)||0);
+      syncDynamicCategory(CATEGORIES.find(c=>c.key===key));
+      save();
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{

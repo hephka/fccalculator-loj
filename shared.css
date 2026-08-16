@@ -84,6 +84,9 @@ input[type=number]{-moz-appearance:textfield}
 .missing.good{color:var(--good);background:var(--good-bg)}
 
 .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.qty-control{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.qty-control label{font-size:.85rem;color:var(--muted);font-weight:600}
+.qty-control input{width:80px}
 .research-group{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;background:var(--panel);overflow:hidden}
 .group-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;transition:background .15s}
 .group-head:hover{background:var(--panel-2)}
