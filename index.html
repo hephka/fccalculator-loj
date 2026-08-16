@@ -165,6 +165,7 @@
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
 const LANG_KEY = "resource-calc-lang";
+const SCHEMA_VERSION = 2;
 const RES_ACCENT = { FC:"#6fb3ff", AFC:"#ffb648", Hyperalloy:"#c48bff" };
 
 const I18N = {
@@ -383,6 +384,7 @@ function defaultData(){
   ];
 
   return {
+    schemaVersion: SCHEMA_VERSION,
     stock: { FC:0, AFC:0, Hyperalloy:0 },
     tracks: [...buildings, ...research]
   };
@@ -390,10 +392,15 @@ function defaultData(){
 
 let state = load();
 
+// Bump SCHEMA_VERSION whenever the track data shape changes (new/renamed fields).
+// Saved states from an older schema are discarded instead of loaded broken.
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed.schemaVersion === SCHEMA_VERSION) return parsed;
+    }
   }catch(e){}
   return defaultData();
 }
