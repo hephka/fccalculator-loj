@@ -10,6 +10,8 @@ A single-page tool to calculate how many **FC**, **AFC**, and **Hyperalloy** you
 - Enter your current resource stock (FC / AFC / Hyperalloy).
 - The app automatically resolves prerequisites — e.g. targeting Warden Office F8 pulls in the support buildings it requires, targeting a troop's T11 unlock pulls in maxing Rally Troop Capacity and every other stat it depends on — and adds up the total cost.
 - Shows exactly what's missing per resource, with a full breakdown of every objective contributing to the total.
+- Available in English and French, switchable in the UI.
+- **Scope right now:** only Warden Office progression **from FC5 to FC8** is modeled. **Food, Wood, Steel, and Gold Card** are not tracked — only FC, AFC, and Hyperalloy.
 
 ## How it works
 
