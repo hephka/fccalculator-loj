@@ -165,7 +165,7 @@
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
 const LANG_KEY = "resource-calc-lang";
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const RES_ACCENT = { FC:"#6fb3ff", AFC:"#ffb648", Hyperalloy:"#c48bff" };
 
 const I18N = {
@@ -296,8 +296,8 @@ function trackDisplayName(track){
 // is the 3 per-stage {afc,fc} costs for F5->F6, F6->F7, F7->F8 (AFC required
 // starting at F5).
 function tierChain(earlyFC, lateAfcFc){
-  const froms = ["30","F1","F2","F3","F4","F5","F6","F7"];
-  const tos   = ["F1","F2","F3","F4","F5","F6","F7","F8"];
+  const froms = ["30","FC1","FC2","FC3","FC4","FC5","FC6","FC7"];
+  const tos   = ["FC1","FC2","FC3","FC4","FC5","FC6","FC7","FC8"];
   const stages = [...earlyFC.map(fc=>({afc:0,fc})), ...lateAfcFc];
   return stages.map((s,i)=>({from:froms[i], to:tos[i], afc:s.afc, fc:s.fc}));
 }
@@ -340,13 +340,13 @@ function defaultData(){
   // climb (30->F1) needs Communication Center + Shooter Barracks at Lv.29, which is
   // outside our tracked range (tracks start at 30), so no gate is set for F1.
   const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
-  setRequires("F2", [{trackId:"bomber_barrack",levelId:"F1"},{trackId:"communication_center",levelId:"F1"}]);
-  setRequires("F3", [{trackId:"shieldbearer_barrack",levelId:"F2"},{trackId:"communication_center",levelId:"F2"}]);
-  setRequires("F4", [{trackId:"shooter_barrack",levelId:"F3"},{trackId:"communication_center",levelId:"F3"}]);
-  setRequires("F5", [{trackId:"bomber_barrack",levelId:"F4"},{trackId:"communication_center",levelId:"F4"}]);
-  setRequires("F6", [{trackId:"shieldbearer_barrack",levelId:"F5"},{trackId:"communication_center",levelId:"F5"}]);
-  setRequires("F7", [{trackId:"shooter_barrack",levelId:"F6"},{trackId:"communication_center",levelId:"F6"}]);
-  setRequires("F8", [{trackId:"bomber_barrack",levelId:"F7"},{trackId:"communication_center",levelId:"F7"}]);
+  setRequires("FC2", [{trackId:"bomber_barrack",levelId:"FC1"},{trackId:"communication_center",levelId:"FC1"}]);
+  setRequires("FC3", [{trackId:"shieldbearer_barrack",levelId:"FC2"},{trackId:"communication_center",levelId:"FC2"}]);
+  setRequires("FC4", [{trackId:"shooter_barrack",levelId:"FC3"},{trackId:"communication_center",levelId:"FC3"}]);
+  setRequires("FC5", [{trackId:"bomber_barrack",levelId:"FC4"},{trackId:"communication_center",levelId:"FC4"}]);
+  setRequires("FC6", [{trackId:"shieldbearer_barrack",levelId:"FC5"},{trackId:"communication_center",levelId:"FC5"}]);
+  setRequires("FC7", [{trackId:"shooter_barrack",levelId:"FC6"},{trackId:"communication_center",levelId:"FC6"}]);
+  setRequires("FC8", [{trackId:"bomber_barrack",levelId:"FC7"},{trackId:"communication_center",levelId:"FC7"}]);
 
   const buildings = [
     wardenOffice,
