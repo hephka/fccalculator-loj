@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tomes & Collections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
+    <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+  </nav>
+
+  <div class="topbar">
+    <div>
+      <h1>📖 <span id="appTitle">Tomes &amp; Collections</span></h1>
+      <p class="sub" id="appSubtitle">Track your tome and collection progress.</p>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
+  </div>
+
+  <div class="card intro-card">
+    <div class="intro-title"><span>🧭</span><span id="introTitle">What this does</span></div>
+    <p class="intro-lead" id="introLead"></p>
+    <div class="intro-features" id="introFeatures"></div>
+    <p class="intro-note" id="introNote"></p>
+  </div>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger"></button>
+  </div>
+
+  <div class="card">
+    <h2 id="stockHeading">Current stock</h2>
+    <div class="stock-grid" id="stockGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="missingHeading">What you're missing</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div id="categories"></div>
+
+  <footer id="footerText"></footer>
+</div>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+const RESOURCES = ["SealOfWisdom","SealOfKnowledge","CommonCoin","RareCoin","PreciousCoin","LegendaryCoin"];
+const STORAGE_KEY = "resource-calc-tomes-state-v1";
+const SCHEMA_VERSION = 1;
+const RES_ACCENT = {
+  SealOfWisdom:"#9b8cff", SealOfKnowledge:"#5bc8ff",
+  CommonCoin:"#8ec7ff", RareCoin:"#ff8ecf", PreciousCoin:"#ffb648", LegendaryCoin:"#ff5c72",
+};
+const CATEGORIES = [
+  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:true },
+  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false },
+];
+const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
+
+const I18N = {
+  en: {
+    navBuildings: "Buildings & Research",
+    navTomes: "Tomes & Collections",
+    title: "Tomes & Collections - LoJ",
+    subtitle: "Seals · Trove Coins — track your tome and collection progress.",
+    introTitle: "What this does",
+    introLead: "Plan your tome and Trove Collection upgrades.",
+    introFeature1: "Track each of your 6 tomes per troop type, and your Trove Collection progress",
+    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    introNote: "Tome costs are identical across all three troop types. The Trove Collection sequence covers Uncommon through Exotic T3.",
+    resetButton: "↺ Reset to default values",
+    resetConfirm: "Click again to confirm ↺",
+    currentStock: "Current stock",
+    whatMissing: "What you're missing",
+    needed: "needed",
+    missing: "Missing",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "No target set yet — pick a target level on a tome or the collection below.",
+    colTarget: "Target", colFrom: "From", colTo: "To",
+    autoAdded: "(auto-added — prerequisite)",
+    catTome: "Tomes", catCollection: "Trove Collection",
+    targetSet: "target set", noTarget: "no target",
+    groupNoTargets: "no targets",
+    groupTargetsSet: "{n} target(s) set",
+    current: "Current", target: "Target",
+    stageWord: "stage", levelWord: "Level", starWord: "star",
+    footer: "Data is stored only in your browser (localStorage).",
+    res_SealOfWisdom: "Seal of Wisdom", res_SealOfKnowledge: "Seal of Knowledge",
+    res_CommonCoin: "Common Trove Coin", res_RareCoin: "Rare Trove Coin",
+    res_PreciousCoin: "Precious Trove Coin", res_LegendaryCoin: "Legendary Trove Coin",
+    troop_shieldbearer: "Shieldbearer", troop_bomber: "Bomber", troop_shooter: "Shooter",
+    tome_1:"Tome 1", tome_2:"Tome 2", tome_3:"Tome 3", tome_4:"Tome 4", tome_5:"Tome 5", tome_6:"Tome 6",
+    collection_track_name: "Trove Collection",
+    coltier_start: "Not started",
+    coltier_uncommon: "Uncommon", coltier_rare: "Rare",
+    coltier_epic: "Epic", coltier_epic_t1: "Epic T1",
+    coltier_legendary: "Legendary", coltier_legendary_t1: "Legendary T1", coltier_legendary_t2: "Legendary T2",
+    coltier_exotic: "Exotic", coltier_exotic_t1: "Exotic T1", coltier_exotic_t2: "Exotic T2", coltier_exotic_t3: "Exotic T3",
+  },
+  fr: {
+    navBuildings: "Bâtiments & Recherches",
+    navTomes: "Tomes & Collections",
+    title: "Tomes & Collections - LoJ",
+    subtitle: "Sceaux · Pièces de Coffres — suis ta progression des tomes et collections.",
+    introTitle: "Ce que fait l'outil",
+    introLead: "Planifie tes améliorations de tomes et de Collection de Coffres.",
+    introFeature1: "Suis chacun de tes 6 tomes par type de troupe, et ta progression de Collection de Coffres",
+    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    introNote: "Le coût des tomes est identique pour les trois types de troupes. La séquence de Collection de Coffres va de Commun à Exotique T3.",
+    resetButton: "↺ Réinitialiser aux valeurs par défaut",
+    resetConfirm: "Clique à nouveau pour confirmer ↺",
+    currentStock: "Stock actuel",
+    whatMissing: "Ce qu'il te manque",
+    needed: "nécessaire",
+    missing: "Manque",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un tome ou la collection ci-dessous.",
+    colTarget: "Objectif", colFrom: "De", colTo: "À",
+    autoAdded: "(ajouté auto. — prérequis)",
+    catTome: "Tomes", catCollection: "Collection de Coffres",
+    targetSet: "objectif défini", noTarget: "aucun objectif",
+    groupNoTargets: "aucun objectif",
+    groupTargetsSet: "{n} objectif(s) défini(s)",
+    current: "Actuel", target: "Cible",
+    stageWord: "palier", levelWord: "Niveau", starWord: "étoile",
+    footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    res_SealOfWisdom: "Sceau de Sagesse", res_SealOfKnowledge: "Sceau de Connaissance",
+    res_CommonCoin: "Pièce de Coffre Commune", res_RareCoin: "Pièce de Coffre Rare",
+    res_PreciousCoin: "Pièce de Coffre Précieuse", res_LegendaryCoin: "Pièce de Coffre Légendaire",
+    troop_shieldbearer: "Déflecteurs", troop_bomber: "Bombardier", troop_shooter: "Tireur",
+    tome_1:"Tome 1", tome_2:"Tome 2", tome_3:"Tome 3", tome_4:"Tome 4", tome_5:"Tome 5", tome_6:"Tome 6",
+    collection_track_name: "Collection de Coffres",
+    coltier_start: "Non commencé",
+    coltier_uncommon: "Commun", coltier_rare: "Rare",
+    coltier_epic: "Épique", coltier_epic_t1: "Épique T1",
+    coltier_legendary: "Légendaire", coltier_legendary_t1: "Légendaire T1", coltier_legendary_t2: "Légendaire T2",
+    coltier_exotic: "Exotique", coltier_exotic_t1: "Exotique T1", coltier_exotic_t2: "Exotique T2", coltier_exotic_t3: "Exotique T3",
+  },
+};
+
+// Levels 0->12: cost jump for that single step, in {SealOfWisdom, SealOfKnowledge}.
+// Identical for every tome regardless of troop type (confirmed against source table).
+const TOME_COSTS = [
+  {w:10,k:10},{w:50,k:60},{w:90,k:110},{w:160,k:200},{w:270,k:330},
+  {w:380,k:460},{w:480,k:600},{w:540,k:660},{w:620,k:780},{w:760,k:920},
+  {w:920,k:1040},{w:1040,k:1240},
+];
+
+function tomeTrack(troopKey, n){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  TOME_COSTS.forEach((c,i)=>{
+    const cost = zeroResources();
+    cost.SealOfWisdom = c.w;
+    cost.SealOfKnowledge = c.k;
+    levels.push({ id:String(i+1), cost, requires:[] });
+  });
+  return {
+    id:`tome_${troopKey}_${n}`, category:"Tome", troopKey,
+    nameParts:["troop_"+troopKey, "tome_"+n], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+// One continuous sequence: each collection tier has a base level plus up to
+// 3 "star" sub-levels (Uncommon only goes to 1 star; every tier after has 3).
+// Costs are {Common, Rare, Precious, Legendary} Trove Souvenir Coin.
+function collectionTrack(){
+  const tiers = [
+    { key:"uncommon", levels:[
+      {c:3000,r:30}, {c:7500,r:75},
+    ]},
+    { key:"rare", levels:[
+      {c:13500,r:135}, {c:20000,r:200}, {c:5000,r:50,p:70}, {c:6000,r:60,p:80},
+    ]},
+    { key:"epic", levels:[
+      {c:7000,r:70,p:90}, {c:8000,r:80,p:100}, {c:9000,r:90,p:110}, {c:10000,r:100,p:120},
+    ]},
+    { key:"epic_t1", levels:[
+      {c:15000,r:150,p:140}, {c:20000,r:200,p:150}, {c:25000,r:250,p:170}, {c:30000,r:300,p:210},
+    ]},
+    { key:"legendary", levels:[
+      {c:41000,r:410,p:90}, {c:43000,r:430,p:90}, {c:47000,r:470,p:100}, {c:49000,r:490,p:100},
+    ]},
+    { key:"legendary_t1", levels:[
+      {c:53000,r:530,p:100}, {c:57000,r:570,p:120}, {c:61000,r:610,p:120}, {c:66000,r:660,p:120},
+    ]},
+    { key:"legendary_t2", levels:[
+      {c:71000,r:710,p:120}, {c:83000,r:830,p:160}, {c:88000,r:880,p:170}, {c:95000,r:950,p:180},
+    ]},
+    { key:"exotic", levels:[
+      {c:100000,r:1000,p:180,l:15}, {c:105000,r:1050,p:190,l:20}, {c:110000,r:1100,p:200,l:20}, {c:115000,r:1150,p:210,l:25},
+    ]},
+    { key:"exotic_t1", levels:[
+      {c:120000,r:1200,p:245,l:25}, {c:125000,r:1250,p:255,l:30}, {c:130000,r:1300,p:265,l:30}, {c:135000,r:1350,p:275,l:35},
+    ]},
+    { key:"exotic_t2", levels:[
+      {c:140000,r:1400,p:310,l:35}, {c:145000,r:1450,p:315,l:40}, {c:150000,r:1500,p:325,l:40}, {c:160000,r:1600,p:335,l:45},
+    ]},
+    { key:"exotic_t3", levels:[
+      {c:165000,r:1650,p:350,l:45}, {c:170000,r:1700,p:365,l:50}, {c:175000,r:1750,p:385,l:50}, {c:180000,r:1800,p:410,l:55},
+    ]},
+  ];
+  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
+  tiers.forEach(tier=>{
+    tier.levels.forEach((lv,i)=>{
+      const cost = zeroResources();
+      cost.CommonCoin = lv.c||0; cost.RareCoin = lv.r||0; cost.PreciousCoin = lv.p||0; cost.LegendaryCoin = lv.l||0;
+      const id = i===0 ? tier.key : `${tier.key}_s${i}`;
+      levels.push({ id, cost, requires:[] });
+    });
+  });
+  return {
+    id:"trove_collection", category:"Collection",
+    nameParts:["collection_track_name"], levelStyle:"keyed", levelKeyPrefix:"coltier_", stageWordKey:"starWord",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+function defaultData(){
+  const tomes = [];
+  ["shieldbearer","bomber","shooter"].forEach(troopKey=>{
+    for(let n=1;n<=6;n++) tomes.push(tomeTrack(troopKey, n));
+  });
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    stock: zeroResources(),
+    tracks: [...tomes, collectionTrack()]
+  };
+}
+</script>
+<script src="shared.js"></script>
+<script>initApp();</script>
+</body>
+</html>

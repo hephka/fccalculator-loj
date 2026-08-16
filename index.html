@@ -7,121 +7,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0a0c11;
-    --panel:#151a24;
-    --panel-2:#1a2030;
-    --border:#262c3a;
-    --text:#eef1f8;
-    --muted:#8891a6;
-    --accent:#5b8cff;
-    --accent-2:#9b6bff;
-    --good:#3ecf8e;
-    --good-bg:rgba(62,207,142,.13);
-    --bad:#ff5c72;
-    --bad-bg:rgba(255,92,114,.13);
-    --warn:#ffb648;
-    --warn-bg:rgba(255,182,72,.1);
-    --radius:14px;
-    --radius-sm:10px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    background:
-      radial-gradient(circle at 15% -10%, #1c2438 0%, transparent 55%),
-      radial-gradient(circle at 100% 0%, #221733 0%, transparent 50%),
-      var(--bg);
-    background-repeat:no-repeat;
-    color:var(--text);
-    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:960px;margin:0 auto;padding:24px 16px 90px}
-  .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
-  h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-  .sub{color:var(--muted);font-size:.92rem;margin:0;max-width:520px;line-height:1.5}
-  .lang-switch{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
-  .lang-btn{border:none;padding:8px 14px;background:var(--panel);color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
-  .lang-btn.active{background:var(--accent);color:#fff}
-  .lang-btn:not(.active):hover{background:var(--panel-2);color:var(--text)}
-
-  .intro-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
-  .intro-title{font-weight:700;font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:7px}
-  .intro-lead{margin:0 0 14px;font-size:.95rem;font-weight:600;color:var(--text)}
-  .intro-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 18px;margin-bottom:14px}
-  .intro-feature{display:flex;align-items:flex-start;gap:9px;font-size:.85rem;color:var(--muted);line-height:1.45}
-  .intro-feature .ico{flex-shrink:0;font-size:1rem}
-  .intro-note{margin:0;padding-top:12px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);line-height:1.5}
-  .intro-note .warn-icon{color:var(--warn);margin-right:3px}
-
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-  button{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:9px;padding:10px 14px;font-size:.88rem;font-family:inherit;font-weight:600;transition:border-color .15s,background .15s}
-  button:hover{border-color:var(--accent)}
-  button.danger{border-color:var(--bad);color:var(--bad);background:transparent}
-  button.confirming{background:var(--bad);border-color:var(--bad);color:#fff;animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-
-  input[type=number],input[type=text],select{
-    background:#0e1119;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 11px;font-size:16px;font-family:inherit;
-    transition:border-color .15s;
-  }
-  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent)}
-  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-  input[type=number]{-moz-appearance:textfield}
-
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
-  .card h2{margin:0 0 14px;font-size:.98rem;font-weight:700}
-  .stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
-  .stock-item label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:600}
-  .stock-item input{width:100%;font-size:1.15rem;padding:10px 12px;font-weight:600}
-
-  .res-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
-  .res-FC{color:#6fb3ff}.res-AFC{color:#ffb648}.res-Hyperalloy{color:#c48bff}
-
-  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .res-card{border:1px solid var(--border);border-left:3px solid var(--accent-color,var(--border));border-radius:var(--radius-sm);padding:14px 16px;background:var(--panel-2)}
-  .res-card .name{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:flex;align-items:center}
-  .res-card .need{font-size:1.55rem;font-weight:800;margin:6px 0;letter-spacing:-.02em}
-  .res-card .missing{display:inline-flex;align-items:center;font-size:.82rem;font-weight:700;padding:3px 10px;border-radius:20px}
-  .missing.bad{color:var(--bad);background:var(--bad-bg)}
-  .missing.good{color:var(--good);background:var(--good-bg)}
-
-  .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
-  .research-group{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;background:var(--panel);overflow:hidden}
-  .group-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;transition:background .15s}
-  .group-head:hover{background:var(--panel-2)}
-  .group-icon{font-size:1.15rem}
-  .group-name{font-weight:700;flex:1}
-  .group-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
-  .group-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
-  .group-chevron{color:var(--muted);transition:transform .18s;font-size:.8rem}
-  .group-chevron.open{transform:rotate(90deg)}
-  .group-body{display:none;padding:0 12px 12px}
-  .group-body.open{display:block}
-
-  .track{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;background:var(--panel-2);overflow:hidden}
-  .track-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:13px 16px}
-  .track-name{font-weight:600;flex:1;min-width:160px}
-  .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
-  .track-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
-  .track-controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.8rem;color:var(--muted);width:100%}
-  .track-controls .field{display:flex;align-items:center;gap:6px;flex:1 1 130px;font-weight:600}
-  .track-controls select{flex:1;min-width:0;max-width:100%}
-
-  table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
-  th,td{padding:8px 8px;text-align:left;border-bottom:1px solid var(--border)}
-  th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
-  .empty-hint{color:var(--muted);font-size:.85rem;font-style:italic;margin:0}
-  .breakdown{margin-top:4px;overflow-x:auto}
-  .breakdown th,.breakdown td{white-space:nowrap}
-  .auto-tag{color:var(--warn);font-size:.72rem}
-  footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px;opacity:.8}
-</style>
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
+    <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+  </nav>
+
   <div class="topbar">
     <div>
       <h1>🏗️ <span id="appTitle">Resource Calculator</span></h1>
@@ -164,12 +58,18 @@
 <script>
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
-const LANG_KEY = "resource-calc-lang";
 const SCHEMA_VERSION = 4;
 const RES_ACCENT = { FC:"#6fb3ff", AFC:"#ffb648", Hyperalloy:"#c48bff" };
+const CATEGORIES = [
+  { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:false },
+  { key:"Research", labelKey:"catResearch", icon:"🔬", grouped:true },
+];
+const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
 
 const I18N = {
   en: {
+    navBuildings: "Buildings & Research",
+    navTomes: "Tomes & Collections",
     title: "Resource Calculator - LoJ",
     subtitle: "FC · AFC · Hyperalloy — track your progress, set your targets, calculate what you're missing.",
     introTitle: "What this does",
@@ -194,7 +94,7 @@ const I18N = {
     groupTargetsSet: "{n} target(s) set",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
-    resHyperalloy: "Hyperalloy",
+    res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalloy",
     footer: "Data is stored only in your browser (localStorage).",
     building_warden_office: "Warden's Office",
     building_shieldbearer_barrack: "Shieldbearer Barracks",
@@ -215,6 +115,8 @@ const I18N = {
     research_bastion: "Unlocks Troop Lv.11",
   },
   fr: {
+    navBuildings: "Bâtiments & Recherches",
+    navTomes: "Tomes & Collections",
     title: "Calculateur de ressources - LoJ",
     subtitle: "FC · AFC · Hyperalliage — suis ta progression, fixe tes objectifs, calcule ce qu'il te manque.",
     introTitle: "Ce que fait l'outil",
@@ -239,7 +141,7 @@ const I18N = {
     groupTargetsSet: "{n} objectif(s) défini(s)",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
-    resHyperalloy: "Hyperalliage",
+    res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalliage",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
     building_warden_office: "Bureau du Directeur",
     building_shieldbearer_barrack: "Quartier des Déflecteurs",
@@ -261,40 +163,11 @@ const I18N = {
   },
 };
 
-let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
-
-function t(key, vars){
-  let s = (I18N[lang] && I18N[lang][key]) || key;
-  if(vars) Object.keys(vars).forEach(k=> s = s.replace(`{${k}}`, vars[k]));
-  return s;
-}
-function resourceLabel(r){ return r === "Hyperalloy" ? t("resHyperalloy") : r; }
-function fmt(n){ return Math.round(n).toLocaleString(lang === "fr" ? "fr-FR" : "en-US"); }
-
-function levelLabel(track, level){
-  const id = level.id;
-  if(track.category === "Building"){
-    const m = id.match(/^(.+)_s(\d)$/);
-    if(m) return `${m[1]} · ${t("stageWord")} ${m[2]}`;
-    return id;
-  }
-  return `${t("levelWord")} ${id}`;
-}
-
-// Short name shown on the track's own card (no troop prefix for research).
-function trackShortName(track){
-  return track.category === "Building" ? t("building_"+track.id) : t("research_"+track.statKey);
-}
-// Full name shown wherever context is needed, e.g. the flat breakdown table.
-function trackDisplayName(track){
-  return track.category === "Building" ? t("building_"+track.id) : `${t("troop_"+track.troopKey)} — ${t("research_"+track.statKey)}`;
-}
-
 // Builds the full chain of stage costs for a building, from its earliest known
-// tier up through F8. Each entry in `earlyFC` is the per-stage FC cost for one
-// tier transition before AFC exists (30->F1, F1->F2, ... F4->F5). `lateAfcFc`
-// is the 3 per-stage {afc,fc} costs for F5->F6, F6->F7, F7->F8 (AFC required
-// starting at F5).
+// tier up through FC8. Each entry in `earlyFC` is the per-stage FC cost for one
+// tier transition before AFC exists (30->FC1, FC1->FC2, ... FC4->FC5). `lateAfcFc`
+// is the 3 per-stage {afc,fc} costs for FC5->FC6, FC6->FC7, FC7->FC8 (AFC required
+// starting at FC5).
 function tierChain(earlyFC, lateAfcFc){
   const froms = ["30","FC1","FC2","FC3","FC4","FC5","FC6","FC7"];
   const tos   = ["FC1","FC2","FC3","FC4","FC5","FC6","FC7","FC8"];
@@ -314,7 +187,7 @@ function buildingTrack(id, tiers, gateByWardenOffice){
     }
     levels.push({ id:tier.to, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate() });
   });
-  return { id, category:"Building", currentLevelIndex:0, targetLevelIndex:0, levels };
+  return { id, category:"Building", nameParts:["building_"+id], currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
 function fclabTrack(id, statKey, hyperCosts, requiresMap){
@@ -327,7 +200,7 @@ function fclabTrack(id, statKey, hyperCosts, requiresMap){
       requires: (requiresMap && requiresMap[idx]) ? requiresMap[idx] : []
     });
   });
-  return { id, statKey, category:"Research", currentLevelIndex:0, targetLevelIndex:0, levels };
+  return { id, statKey, category:"Research", levelStyle:"numeric", currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
 function defaultData(){
@@ -337,8 +210,8 @@ function defaultData(){
   ));
   // Warden Office = main building (HQ): moving to a new FC tier requires 2 support buildings
   // to have already reached the previous tier (requirements table). The very first
-  // climb (30->F1) needs Communication Center + Shooter Barracks at Lv.29, which is
-  // outside our tracked range (tracks start at 30), so no gate is set for F1.
+  // climb (30->FC1) needs Communication Center + Shooter Barracks at Lv.29, which is
+  // outside our tracked range (tracks start at 30), so no gate is set for FC1.
   const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
   setRequires("FC2", [{trackId:"bomber_barrack",levelId:"FC1"},{trackId:"communication_center",levelId:"FC1"}]);
   setRequires("FC3", [{trackId:"shieldbearer_barrack",levelId:"FC2"},{trackId:"communication_center",levelId:"FC2"}]);
@@ -390,7 +263,7 @@ function defaultData(){
       { 1:[{trackId:`fclab_${troopKey}_rally`,levelId:"12"}] }
     );
     const set = [expedition, lethality, atk, def, hp, rally, bastion];
-    set.forEach(tr=> tr.troopKey = troopKey);
+    set.forEach(tr=>{ tr.troopKey = troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
     return set;
   }
 
@@ -402,276 +275,12 @@ function defaultData(){
 
   return {
     schemaVersion: SCHEMA_VERSION,
-    stock: { FC:0, AFC:0, Hyperalloy:0 },
+    stock: zeroResources(),
     tracks: [...buildings, ...research]
   };
 }
-
-let state = load();
-
-// Bump SCHEMA_VERSION whenever the track data shape changes (new/renamed fields).
-// Saved states from an older schema are discarded instead of loaded broken.
-function load(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(parsed.schemaVersion === SCHEMA_VERSION) return parsed;
-    }
-  }catch(e){}
-  return defaultData();
-}
-function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-function save(){
-  persist();
-  render();
-}
-function refreshSummary(){
-  const { totals, breakdown } = computeCascade();
-  renderSummary(totals);
-  renderBreakdown(breakdown);
-}
-
-function trackById(id){ return state.tracks.find(t=>t.id===id); }
-function levelIndexOf(track, levelId){ return track.levels.findIndex(l=>l.id===levelId); }
-
-function computeCascade(){
-  const required = {};
-  state.tracks.forEach(t=> required[t.id] = Math.max(t.currentLevelIndex, t.targetLevelIndex||0));
-  let changed = true, guard=0;
-  const autoBumped = {};
-  while(changed && guard++ < 200){
-    changed = false;
-    for(const t of state.tracks){
-      const reqIdx = required[t.id];
-      for(let i=t.currentLevelIndex+1; i<=reqIdx; i++){
-        const lvl = t.levels[i];
-        if(!lvl) continue;
-        (lvl.requires||[]).forEach(r=>{
-          const rt = trackById(r.trackId);
-          if(!rt) return;
-          const needIdx = levelIndexOf(rt, r.levelId);
-          if(needIdx > required[rt.id]){
-            required[rt.id] = needIdx;
-            autoBumped[rt.id] = true;
-            changed = true;
-          }
-        });
-      }
-    }
-  }
-  const totals = { FC:0, AFC:0, Hyperalloy:0 };
-  const breakdown = [];
-  state.tracks.forEach(t=>{
-    const reqIdx = required[t.id];
-    if(reqIdx > t.currentLevelIndex){
-      const rowCost = { FC:0, AFC:0, Hyperalloy:0 };
-      for(let i=t.currentLevelIndex+1;i<=reqIdx;i++){
-        const lvl = t.levels[i];
-        if(!lvl) continue;
-        RESOURCES.forEach(r=> rowCost[r]+= (lvl.cost[r]||0));
-      }
-      RESOURCES.forEach(r=> totals[r]+=rowCost[r]);
-      breakdown.push({
-        track:t, from:t.currentLevelIndex, to:reqIdx, cost:rowCost,
-        auto: autoBumped[t.id] && reqIdx > (t.targetLevelIndex||0)
-      });
-    }
-  });
-  return { totals, breakdown };
-}
-
-function renderChrome(){
-  document.title = t("title");
-  document.getElementById("appTitle").textContent = t("title");
-  document.getElementById("appSubtitle").textContent = t("subtitle");
-  document.getElementById("introTitle").textContent = t("introTitle");
-  document.getElementById("introLead").textContent = t("introLead");
-  document.getElementById("introFeatures").innerHTML = ["introFeature1","introFeature2","introFeature3"]
-    .map((key,i)=>`<div class="intro-feature"><span class="ico">${["🎯","🔗","📊"][i]}</span><span>${t(key)}</span></div>`).join("");
-  document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
-  document.getElementById("stockHeading").textContent = t("currentStock");
-  document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").textContent = t("footer");
-  const resetBtn = document.getElementById("btnReset");
-  if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
-  document.querySelectorAll(".lang-btn").forEach(b=>{
-    b.classList.toggle("active", b.dataset.lang === lang);
-  });
-}
-
-function setLang(l){
-  lang = l;
-  localStorage.setItem(LANG_KEY, l);
-  document.documentElement.lang = l;
-  renderChrome();
-  render();
-}
-
-function render(){
-  renderStock();
-  const { totals, breakdown } = computeCascade();
-  renderSummary(totals);
-  renderBreakdown(breakdown);
-  renderCategories();
-}
-
-function renderStock(){
-  const grid = document.getElementById("stockGrid");
-  grid.innerHTML = RESOURCES.map(r=>`
-    <div class="stock-item">
-      <label class="res-${r}">${resourceLabel(r)}</label>
-      <input type="number" min="0" data-stock="${r}" value="${state.stock[r]}">
-    </div>`).join("");
-  grid.querySelectorAll("input[data-stock]").forEach(inp=>{
-    inp.addEventListener("input", e=>{
-      state.stock[inp.dataset.stock] = Number(e.target.value)||0;
-      persist();
-      refreshSummary();
-    });
-    inp.addEventListener("focus", e=> e.target.select());
-  });
-}
-
-function renderSummary(totals){
-  const grid = document.getElementById("summaryGrid");
-  grid.innerHTML = RESOURCES.map(r=>{
-    const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
-    return `<div class="res-card" style="--accent-color:${RES_ACCENT[r]}">
-      <div class="name res-${r}"><span class="res-dot res-${r}"></span>${resourceLabel(r)}</div>
-      <div class="need">${fmt(need)} ${t("needed")}</div>
-      <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? t("missing")+" "+fmt(missing) : t("okSurplus",{n:fmt(-missing)})}</div>
-    </div>`;
-  }).join("");
-}
-
-function renderBreakdown(breakdown){
-  const el = document.getElementById("breakdown");
-  if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
-  el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th><th>FC</th><th>AFC</th><th>${resourceLabel("Hyperalloy")}</th></tr></thead><tbody>
-    ${breakdown.map(b=>`<tr>
-      <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
-      <td>${fmt(b.cost.FC)}</td><td>${fmt(b.cost.AFC)}</td><td>${fmt(b.cost.Hyperalloy)}</td>
-    </tr>`).join("")}
-  </tbody></table>`;
-}
-
-const uiOpen = { groups:new Set() };
-
-function researchGroupsHtml(tracks){
-  const groupIcons = { shooter:"🏹", bomber:"💣", shieldbearer:"🛡️" };
-  const order = [];
-  tracks.forEach(tr=>{ if(!order.includes(tr.troopKey)) order.push(tr.troopKey); });
-  return order.map(troopKey=>{
-    const gTracks = tracks.filter(tr=>tr.troopKey===troopKey);
-    const activeCount = gTracks.filter(tr=>tr.targetLevelIndex>tr.currentLevelIndex).length;
-    const isOpen = uiOpen.groups.has(troopKey);
-    const icon = groupIcons[troopKey] || "🧬";
-    const badgeText = activeCount ? t("groupTargetsSet",{n:activeCount}) : t("groupNoTargets");
-    return `<div class="research-group">
-      <div class="group-head" data-group="${troopKey}">
-        <span class="group-icon">${icon}</span>
-        <span class="group-name">${t("troop_"+troopKey)}</span>
-        <span class="group-badge ${activeCount?'active':''}">${badgeText}</span>
-        <span class="group-chevron ${isOpen?'open':''}">▸</span>
-      </div>
-      <div class="group-body ${isOpen?'open':''}">
-        ${gTracks.map(tr=> trackHtml(tr)).join("")}
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function renderCategories(){
-  const cats = ["Building","Research"];
-  const catLabels = { "Building":t("catBuilding"), "Research":t("catResearch") };
-  const cont = document.getElementById("categories");
-  cont.innerHTML = cats.map(cat=>{
-    const tracks = state.tracks.filter(tr=>tr.category===cat);
-    if(!tracks.length) return "";
-    const body = cat==="Research" ? researchGroupsHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
-    return `<div class="cat-title">${catIcon(cat)} ${catLabels[cat]}</div>${body}`;
-  }).join("");
-
-  cont.querySelectorAll(".group-head").forEach(h=>{
-    h.addEventListener("click", ()=>{
-      const g = h.dataset.group;
-      const body = h.nextElementSibling;
-      const chevron = h.querySelector(".group-chevron");
-      const nowOpen = !body.classList.contains("open");
-      body.classList.toggle("open", nowOpen);
-      chevron.classList.toggle("open", nowOpen);
-      if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
-    });
-  });
-  cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
-    trackById(s.dataset.cur).currentLevelIndex = Number(e.target.value); save();
-  }));
-  cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
-    trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
-  }));
-}
-
-function catIcon(cat){
-  return { "Building":"🏠", "Research":"🔬" }[cat] || "";
-}
-
-function trackHtml(tr){
-  const active = tr.targetLevelIndex > tr.currentLevelIndex;
-  return `<div class="track">
-    <div class="track-head">
-      <span class="track-name">${trackShortName(tr)}</span>
-      <span class="track-badge ${active?'active':''}">${active? t("targetSet") : t("noTarget")}</span>
-      <div class="track-controls">
-        <span class="field">${t("current")}: <select data-cur="${tr.id}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
-        <span class="field">${t("target")}: <select data-tgt="${tr.id}">${optionsWithSelected(tr,tr.targetLevelIndex)}</select></span>
-      </div>
-    </div>
-  </div>`;
-}
-function optionsWithSelected(track, idx){
-  return track.levels.map((l,i)=>`<option value="${i}" ${i===idx?"selected":""}>${levelLabel(track,l)}</option>`).join("");
-}
-
-// Built-in double-click confirmation (instead of native confirm(), not reliable everywhere).
-function armConfirm(btn, confirmLabel, action){
-  if(btn.dataset.armed === "1"){
-    clearTimeout(Number(btn.dataset.armTimer));
-    btn.dataset.armed = "0";
-    btn.textContent = btn.dataset.originalLabel;
-    btn.classList.remove("confirming");
-    action();
-    return;
-  }
-  btn.dataset.originalLabel = btn.textContent;
-  btn.dataset.armed = "1";
-  btn.textContent = confirmLabel;
-  btn.classList.add("confirming");
-  const timerId = setTimeout(()=>{
-    btn.dataset.armed = "0";
-    btn.textContent = btn.dataset.originalLabel;
-    btn.classList.remove("confirming");
-  }, 4000);
-  btn.dataset.armTimer = String(timerId);
-}
-
-document.getElementById("btnReset").addEventListener("click", ()=>{
-  armConfirm(document.getElementById("btnReset"), t("resetConfirm"), ()=>{
-    state = defaultData();
-    save();
-  });
-});
-document.querySelectorAll(".lang-btn").forEach(b=>{
-  b.addEventListener("click", ()=> setLang(b.dataset.lang));
-});
-
-document.documentElement.lang = lang;
-renderChrome();
-render();
 </script>
+<script src="shared.js"></script>
+<script>initApp();</script>
 </body>
 </html>
