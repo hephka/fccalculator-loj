@@ -41,33 +41,15 @@ function zeroResources(){ return Object.fromEntries(RESOURCES.map(r=>[r,0])); }
 const MAX_NUMBER_INPUT = 99999999;
 
 // Sanitizes a raw <input> string into a non-negative integer capped at `max`
-// (99,999,999 unless a tighter cap already applies). Returns {value, errorKey}
-// so a caller can show a small hint explaining what got corrected, if anything.
+// (99,999,999 unless a tighter cap already applies). The field silently
+// corrects itself as you type — no message needed, blocking the bad
+// character is feedback enough.
 function sanitizeIntInput(raw, max){
   max = max == null ? MAX_NUMBER_INPUT : max;
-  let errorKey = null;
-  if(/[.,]/.test(raw)) errorKey = "err_decimal";
-  if(/^\s*-/.test(raw)) errorKey = "err_negative";
   const digits = raw.replace(/[^0-9]/g, "");
   let n = digits === "" ? 0 : parseInt(digits, 10);
-  if(n > max){ n = max; errorKey = "err_max"; }
-  return { value:n, errorKey };
-}
-
-// Shows (or clears) a small message right under `inp`, e.g. "Whole numbers only".
-function showFieldMessage(inp, errorKey, vars){
-  let msg = inp.nextElementSibling;
-  if(!msg || !msg.classList || !msg.classList.contains("field-msg")) msg = null;
-  if(!errorKey){
-    if(msg) msg.remove();
-    return;
-  }
-  if(!msg){
-    msg = document.createElement("div");
-    msg.className = "field-msg";
-    inp.insertAdjacentElement("afterend", msg);
-  }
-  msg.textContent = t(errorKey, vars);
+  if(n > max) n = max;
+  return n;
 }
 
 function toRoman(n){
@@ -227,17 +209,16 @@ function renderStock(){
       <label style="color:${RES_ACCENT[r]}">${resourceLabel(r)}</label>
       <input type="text" inputmode="numeric" data-stock="${r}" value="${state.stock[r]}">
     </div>`).join("");
-  // type="text" (not "number") is deliberate: number inputs report an empty
-  // value while the user is mid-typing something invalid (e.g. just "-"),
-  // which makes it impossible to detect and explain what went wrong.
+  // type="text" (not "number") is deliberate: number inputs silently discard
+  // whatever's typed while it's mid-invalid (e.g. just "-"), which fights
+  // against sanitizing it ourselves.
   grid.querySelectorAll("input[data-stock]").forEach(inp=>{
     inp.addEventListener("input", e=>{
-      const { value, errorKey } = sanitizeIntInput(e.target.value);
+      const value = sanitizeIntInput(e.target.value);
       if(String(value) !== e.target.value) e.target.value = value;
       state.stock[inp.dataset.stock] = value;
       persist();
       refreshSummary();
-      showFieldMessage(inp, errorKey, {max: fmt(MAX_NUMBER_INPUT)});
     });
     inp.addEventListener("focus", e=> e.target.select());
   });
