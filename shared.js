@@ -19,12 +19,18 @@
 //   romanLevels: true         - numeric levelStyle renders as roman numerals (Level VII)
 //
 // Shared chrome i18n keys every page's I18N must provide:
-//   title, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
+//   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, groupNoTargets, groupTargetsSet, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
+//
+// title      - browser tab title (route name + " - LoJ"), also used as document.title
+// appBrand   - the app-wide brand line shown above the h1 on every page, identical
+//              text across all routes ("Resource Calculator - LoJ")
+// pageTitle  - this route's own name shown in the h1 (e.g. "Robots & Satellites"),
+//              without the "- LoJ" suffix
 
 const LANG_KEY = "resource-calc-lang";
 let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
@@ -166,7 +172,8 @@ function computeCascade(){
 
 function renderChrome(){
   document.title = t("title");
-  document.getElementById("appTitle").textContent = t("title");
+  document.getElementById("brandTitle").textContent = t("appBrand");
+  document.getElementById("appTitle").textContent = t("pageTitle");
   document.getElementById("appSubtitle").textContent = t("subtitle");
   document.getElementById("introTitle").textContent = t("introTitle");
   document.getElementById("introLead").textContent = t("introLead");
