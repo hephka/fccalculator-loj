@@ -85,6 +85,11 @@ input[type=number]{-moz-appearance:textfield}
 .missing.good{color:var(--good);background:var(--good-bg)}
 
 .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.route-part{margin-top:36px}
+.route-part:first-child{margin-top:0}
+.part-header{font-size:1.15rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;padding-bottom:12px;margin-bottom:16px;border-bottom:2px solid var(--border)}
+.rarity-badge{display:inline-flex;align-items:center;font-size:.78rem;font-weight:800;letter-spacing:.04em;padding:4px 14px;border-radius:20px;margin:22px 0 10px;color:var(--badge-color);border:1px solid var(--badge-color);background:var(--panel-2)}
+.part-header+.rarity-badge{margin-top:0}
 .qty-control{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .add-item{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.08)}
 .add-item:hover{background:rgba(91,140,255,.16)}

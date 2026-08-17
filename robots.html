@@ -65,11 +65,15 @@ const RES_ACCENT = {
   PrisonerArmorData:"#4fc3f7", PowerModule:"#4fc3f7", AdvancedPowerModule:"#ffd60a",
   DataDisk:"#5b8cff", PlanetCoin:"#ffb648",
 };
+const PARTS = [
+  { key:"robots", labelKey:"partRobots", icon:"🤖" },
+  { key:"satellites", labelKey:"partSatellites", icon:"🛰️" },
+];
 const CATEGORIES = [
-  { key:"Robot", labelKey:"catRobot", icon:"🤖", grouped:false, dynamic:{addLabelKey:"addRobot", makeTrack:makeRobotTrack, max:12} },
-  { key:"SatelliteR", labelKey:"catSatelliteR", icon:"🛰️", grouped:false },
-  { key:"SatelliteSR", labelKey:"catSatelliteSR", icon:"🛰️", grouped:false },
-  { key:"SatelliteSSR", labelKey:"catSatelliteSSR", icon:"🛰️", grouped:false },
+  { key:"Robot", labelKey:"catRobot", icon:"🤖", grouped:false, part:"robots", dynamic:{addLabelKey:"addRobot", makeTrack:makeRobotTrack, max:12} },
+  { key:"SatelliteR", labelKey:"catSatelliteR", grouped:false, part:"satellites", badge:"#5b8cff" },
+  { key:"SatelliteSR", labelKey:"catSatelliteSR", grouped:false, part:"satellites", badge:"#9b6bff" },
+  { key:"SatelliteSSR", labelKey:"catSatelliteSSR", grouped:false, part:"satellites", badge:"#ffd60a" },
 ];
 
 const I18N = {
@@ -97,7 +101,8 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on a robot or satellite below.",
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
-    catRobot: "Robots", catSatelliteR: "R Satellites", catSatelliteSR: "SR Satellites", catSatelliteSSR: "SSR Satellites",
+    partRobots: "Robots", partSatellites: "Satellites",
+    catRobot: "Robots", catSatelliteR: "R", catSatelliteSR: "SR", catSatelliteSSR: "SSR",
     targetSet: "target set", noTarget: "no target",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level", starWord: "star",
@@ -135,7 +140,8 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un robot ou un satellite ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
-    catRobot: "Robots", catSatelliteR: "Satellites R", catSatelliteSR: "Satellites SR", catSatelliteSSR: "Satellites SSR",
+    partRobots: "Robots", partSatellites: "Satellites",
+    catRobot: "Robots", catSatelliteR: "R", catSatelliteSR: "SR", catSatelliteSSR: "SSR",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau", starWord: "étoile",

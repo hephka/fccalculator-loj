@@ -6,11 +6,22 @@
 //   SCHEMA_VERSION- bump whenever this route's track data shape changes
 //   I18N          - {en:{...}, fr:{...}} translation dictionaries (route-specific keys +
 //                   the shared chrome keys listed below)
-//   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic}] in display order.
+//   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic, part, badge}] in display order.
 //                   grouped:true renders tracks grouped by track.troopKey.
 //                   dynamic:{addLabelKey, makeTrack(index), max} starts with
 //                   a default item and adds one more item per button press.
 //                   Dynamic tracks need a numeric track.qtyIndex for ordering.
+//                   part:"partKey" groups this category under a PARTS entry
+//                   (see below) instead of rendering its own top-level title.
+//                   badge:"#hexcolor" (optional, only meaningful with `part`)
+//                   renders a compact colored pill instead of a title — for
+//                   a handful of same-shape variants under one part (e.g. R/
+//                   SR/SSR rarities under a "Satellites" part).
+//   PARTS         - optional [{key, labelKey, icon}]. Groups CATEGORIES that
+//                   share a `part` key under one bigger section header, for
+//                   routes with multiple distinct areas (e.g. "Robots" vs
+//                   "Satellites"). Omit entirely for routes with only one
+//                   flat list of categories — they render exactly as before.
 //   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
 //   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
 //                   only needed if the page has any dynamic categories.
@@ -306,20 +317,39 @@ function syncDynamicCategory(catDef){
   }
 }
 
+// Renders one category: its title (full "cat-title", a compact colored
+// "rarity-badge" if catDef.badge is a color, or nothing if it belongs to a
+// PARTS group without a badge — the part header already names it), its
+// add-button if dynamic, and its tracks.
+function categoryHtml(catDef){
+  const tracks = state.tracks.filter(tr=>tr.category===catDef.key);
+  const qtyMax = catDef.dynamic && catDef.dynamic.max;
+  const currentCount = tracks.length;
+  const qtyControl = catDef.dynamic ? `
+    <div class="qty-control">
+      <button type="button" class="add-item" data-add-item="${catDef.key}" ${qtyMax && currentCount>=qtyMax ? "disabled" : ""}>${t(catDef.dynamic.addLabelKey)}</button>
+    </div>` : "";
+  if(!tracks.length && !catDef.dynamic) return "";
+  const title = catDef.badge ? `<div class="rarity-badge" style="--badge-color:${catDef.badge}">${t(catDef.labelKey)}</div>`
+    : catDef.part ? ""
+    : `<div class="cat-title">${catDef.icon} ${t(catDef.labelKey)}</div>`;
+  const body = catDef.grouped ? groupedTracksHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
+  return `${title}${qtyControl}${body}`;
+}
+
+// A page can optionally group its CATEGORIES into named PARTS (e.g. "Robots"
+// vs "Satellites") for a bigger visual separation than a plain cat-title —
+// each part gets one header, and its categories render as normal underneath
+// (or as compact badges, via categoryHtml above). Pages without PARTS render
+// categories flat, exactly as before.
 function renderCategories(){
   const cont = document.getElementById("categories");
-  cont.innerHTML = CATEGORIES.map(catDef=>{
-    const tracks = state.tracks.filter(tr=>tr.category===catDef.key);
-    const qtyMax = catDef.dynamic && catDef.dynamic.max;
-    const currentCount = tracks.length;
-    const qtyControl = catDef.dynamic ? `
-      <div class="qty-control">
-        <button type="button" class="add-item" data-add-item="${catDef.key}" ${qtyMax && currentCount>=qtyMax ? "disabled" : ""}>${t(catDef.dynamic.addLabelKey)}</button>
-      </div>` : "";
-    if(!tracks.length && !catDef.dynamic) return "";
-    const body = catDef.grouped ? groupedTracksHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
-    return `<div class="cat-title">${catDef.icon} ${t(catDef.labelKey)}</div>${qtyControl}${body}`;
-  }).join("");
+  cont.innerHTML = (typeof PARTS !== "undefined" && PARTS)
+    ? PARTS.map(part=>{
+        const body = CATEGORIES.filter(c=>c.part===part.key).map(categoryHtml).join("");
+        return `<div class="route-part"><div class="part-header">${part.icon} ${t(part.labelKey)}</div>${body}</div>`;
+      }).join("")
+    : CATEGORIES.map(categoryHtml).join("");
 
   cont.querySelectorAll(".group-head").forEach(h=>{
     h.addEventListener("click", ()=>{
