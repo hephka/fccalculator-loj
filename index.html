@@ -62,9 +62,13 @@ const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
 const SCHEMA_VERSION = 4;
 const RES_ACCENT = { FC:"#ffb648", AFC:"#ffb648", Hyperalloy:"#ffb648" };
+const PARTS = [
+  { key:"buildings", labelKey:"partBuildings", icon:"🏠" },
+  { key:"research", labelKey:"partResearch", icon:"🔬" },
+];
 const CATEGORIES = [
-  { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:false },
-  { key:"Research", labelKey:"catResearch", icon:"🔬", grouped:true },
+  { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:false, part:"buildings" },
+  { key:"Research", labelKey:"catResearch", icon:"🔬", grouped:true, part:"research" },
 ];
 const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
 
@@ -93,6 +97,7 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on a building or research below.",
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
+    partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
     targetSet: "target set", noTarget: "no target",
     groupNoTargets: "no targets",
@@ -143,6 +148,7 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un bâtiment ou une recherche ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
+    partBuildings: "Bâtiments Forticlad", partResearch: "Recherches T11",
     catBuilding: "Bâtiments Forticlad", catResearch: "Recherches T11",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     groupNoTargets: "aucun objectif",

@@ -65,9 +65,13 @@ const RES_ACCENT = {
   SealOfWisdom:"#ffd60a", SealOfKnowledge:"#ffd60a",
   CommonCoin:"#8ec7ff", RareCoin:"#ff8ecf", PreciousCoin:"#ffb648", LegendaryCoin:"#ff5c72",
 };
+const PARTS = [
+  { key:"tomes", labelKey:"partTomes", icon:"📖" },
+  { key:"collection", labelKey:"partCollection", icon:"🏺" },
+];
 const CATEGORIES = [
-  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, dynamic:{addLabelKey:"addTome", makeTrack:makeTomeTrack, max:18} },
-  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, dynamic:{addLabelKey:"addCollection", makeTrack:makeCollectionTrack, max:6} },
+  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, part:"tomes", dynamic:{addLabelKey:"addTome", makeTrack:makeTomeTrack, max:18} },
+  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, part:"collection", dynamic:{addLabelKey:"addCollection", makeTrack:makeCollectionTrack, max:6} },
 ];
 
 const I18N = {
@@ -95,6 +99,7 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on a tome or collection below.",
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
+    partTomes: "Tomes", partCollection: "Collection",
     catTome: "Tomes", catCollection: "Collection",
     targetSet: "target set", noTarget: "no target",
     current: "Current", target: "Target",
@@ -137,6 +142,7 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un tome ou une collection ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
+    partTomes: "Tomes", partCollection: "Collection",
     catTome: "Tomes", catCollection: "Collection",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     current: "Actuel", target: "Cible",
