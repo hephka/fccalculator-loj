@@ -21,7 +21,7 @@
     <div>
       <p class="brand-eyebrow" id="brandTitle">Resource Calculator - LoJ</p>
       <h1>🤖 <span id="appTitle">Robots &amp; Satellites</span></h1>
-      <p class="sub" id="appSubtitle">Track your robot armor progress.</p>
+      <p class="sub" id="appSubtitle">Track your robot and satellite progress.</p>
     </div>
     <div class="lang-switch" role="group" aria-label="Language">
       <button type="button" class="lang-btn" data-lang="en">EN</button>
@@ -34,11 +34,6 @@
     <p class="intro-lead" id="introLead"></p>
     <div class="intro-features" id="introFeatures"></div>
     <p class="intro-note" id="introNote"></p>
-  </div>
-
-  <div class="card" id="satCard">
-    <div class="intro-title"><span>🛰️</span><span id="satTitle"></span></div>
-    <p class="intro-lead no-features" id="satNote"></p>
   </div>
 
   <div class="toolbar">
@@ -63,14 +58,18 @@
 
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-const RESOURCES = ["PrisonerArmorData","PowerModule","AdvancedPowerModule"];
+const RESOURCES = ["PrisonerArmorData","PowerModule","AdvancedPowerModule","DataDisk","PlanetCoin"];
 const STORAGE_KEY = "resource-calc-robots-state-v1";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const RES_ACCENT = {
   PrisonerArmorData:"#4fc3f7", PowerModule:"#4fc3f7", AdvancedPowerModule:"#ffd60a",
+  DataDisk:"#5b8cff", PlanetCoin:"#ffb648",
 };
 const CATEGORIES = [
   { key:"Robot", labelKey:"catRobot", icon:"🤖", grouped:false, dynamic:{addLabelKey:"addRobot", makeTrack:makeRobotTrack, max:12} },
+  { key:"SatelliteR", labelKey:"catSatelliteR", icon:"🛰️", grouped:false, dynamic:{addLabelKey:"addSatelliteR", makeTrack:makeSatelliteRTrack, max:3} },
+  { key:"SatelliteSR", labelKey:"catSatelliteSR", icon:"🛰️", grouped:false, dynamic:{addLabelKey:"addSatelliteSR", makeTrack:makeSatelliteSRTrack, max:2} },
+  { key:"SatelliteSSR", labelKey:"catSatelliteSSR", icon:"🛰️", grouped:false, dynamic:{addLabelKey:"addSatelliteSSR", makeTrack:makeSatelliteSSRTrack, max:4} },
 ];
 
 const I18N = {
@@ -81,15 +80,13 @@ const I18N = {
     title: "Robots & Satellites - LoJ",
     appBrand: "Resource Calculator - LoJ",
     pageTitle: "Robots & Satellites",
-    subtitle: "Prisoner Armor — track your robots' upgrade progress.",
+    subtitle: "Prisoner Armor & Satellite upgrades — track your robots' and satellites' progress.",
     introTitle: "What this does",
-    introLead: "Plan your Robot armor upgrades.",
-    introFeature1: "Track each Robot individually, then set its current level and target",
+    introLead: "Plan your Robot and Satellite upgrades.",
+    introFeature1: "Track each Robot and Satellite individually, then set its current level and target",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all Robots. Levels go from Level 0 to Level 100, in steps of 10.",
-    satTitle: "Satellites",
-    satNote: "Satellite data isn't ready yet. This section will be added once we have reliable data.",
+    introNote: "Cost is identical across all Robots and Satellites of the same type. Robots go from Level 0 to 100 in steps of 10. R Satellites go up to Level 40, SR up to Level 60, SSR up to Level 90 (tracked level by level).",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -97,17 +94,20 @@ const I18N = {
     needed: "needed",
     missing: "Missing",
     okSurplus: "OK (surplus {n})",
-    noTargetHint: "No target set yet — pick a target level on a robot below.",
+    noTargetHint: "No target set yet — pick a target level on a robot or satellite below.",
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
-    catRobot: "Robots",
+    catRobot: "Robots", catSatelliteR: "R Satellites", catSatelliteSR: "SR Satellites", catSatelliteSSR: "SSR Satellites",
     targetSet: "target set", noTarget: "no target",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level", starWord: "star",
     footer: "Data is stored only in your browser (localStorage).",
     res_PrisonerArmorData: "Prisoner Armor Data", res_PowerModule: "Power Module", res_AdvancedPowerModule: "Advanced Power Module",
+    res_DataDisk: "Data Disk", res_PlanetCoin: "Planet Coin",
     addRobot: "+ Add Robot",
+    addSatelliteR: "+ Add R Satellite", addSatelliteSR: "+ Add SR Satellite", addSatelliteSSR: "+ Add SSR Satellite",
     robotLabel: "Robot {n}",
+    satelliteRLabel: "R Satellite {n}", satelliteSRLabel: "SR Satellite {n}", satelliteSSRLabel: "SSR Satellite {n}",
   },
   fr: {
     navBuildings: "Bâtiments & Recherches",
@@ -116,15 +116,13 @@ const I18N = {
     title: "Robots & Satellites - LoJ",
     appBrand: "Calculateur de ressources - LoJ",
     pageTitle: "Robots & Satellites",
-    subtitle: "Armure de prisonnier — suis la progression de tes robots.",
+    subtitle: "Armure de prisonnier et améliorations de Satellites — suis la progression de tes robots et de tes satellites.",
     introTitle: "Ce que fait l'outil",
-    introLead: "Planifie les améliorations d'armure de tes Robots.",
-    introFeature1: "Suis chaque Robot individuellement, puis fixe son niveau actuel et sa cible",
+    introLead: "Planifie les améliorations de tes Robots et de tes Satellites.",
+    introFeature1: "Suis chaque Robot et Satellite individuellement, puis fixe son niveau actuel et sa cible",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour tous les Robots. Les niveaux vont de Niveau 0 à Niveau 100, par palier de 10.",
-    satTitle: "Satellites",
-    satNote: "Les données des Satellites ne sont pas encore prêtes. Cette section sera ajoutée dès que nous aurons des données fiables.",
+    introNote: "Le coût est identique pour tous les Robots et Satellites d'un même type. Les Robots vont de Niveau 0 à 100 par palier de 10. Les Satellites R vont jusqu'au Niveau 40, les SR jusqu'au 60, les SSR jusqu'au 90 (suivis niveau par niveau).",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -132,17 +130,20 @@ const I18N = {
     needed: "nécessaire",
     missing: "Manque",
     okSurplus: "OK (surplus {n})",
-    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un robot ci-dessous.",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un robot ou un satellite ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
-    catRobot: "Robots",
+    catRobot: "Robots", catSatelliteR: "Satellites R", catSatelliteSR: "Satellites SR", catSatelliteSSR: "Satellites SSR",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau", starWord: "étoile",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
     res_PrisonerArmorData: "Données d'armure", res_PowerModule: "Module d'énergie", res_AdvancedPowerModule: "Module d'énergie avancé",
+    res_DataDisk: "Disque de Données", res_PlanetCoin: "Pièce de Planète",
     addRobot: "+ Ajouter un Robot",
+    addSatelliteR: "+ Ajouter un Satellite R", addSatelliteSR: "+ Ajouter un Satellite SR", addSatelliteSSR: "+ Ajouter un Satellite SSR",
     robotLabel: "Robot {n}",
+    satelliteRLabel: "Satellite R {n}", satelliteSRLabel: "Satellite SR {n}", satelliteSSRLabel: "Satellite SSR {n}",
   },
 };
 
@@ -179,12 +180,79 @@ function makeRobotTrack(idx){
   };
 }
 
+// Levels 0->40, in steps of 10 (bracket totals confirmed against source table).
+const SAT_R_COSTS = [
+  {lvl:"10", dd:1565, pc:10},
+  {lvl:"20", dd:2840, pc:20},
+  {lvl:"30", dd:4730, pc:40},
+  {lvl:"40", dd:7480, pc:60},
+];
+
+// Levels 0->60, in steps of 10.
+const SAT_SR_COSTS = [
+  {lvl:"10", dd:1740,  pc:20},
+  {lvl:"20", dd:3125,  pc:40},
+  {lvl:"30", dd:5205,  pc:60},
+  {lvl:"40", dd:8225,  pc:100},
+  {lvl:"50", dd:12350, pc:150},
+  {lvl:"60", dd:17565, pc:200},
+];
+
+function makeSatelliteTrack(idx, category, nameKey, costs){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  costs.forEach(c=>{
+    const cost = zeroResources();
+    cost.DataDisk = c.dd;
+    cost.PlanetCoin = c.pc;
+    levels.push({ id:c.lvl, cost, requires:[] });
+  });
+  return {
+    id:`${category}_${idx}`, category, qtyIndex:idx,
+    nameParts:[{key:nameKey, vars:{n:idx}}], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+function makeSatelliteRTrack(idx){ return makeSatelliteTrack(idx, "SatelliteR", "satelliteRLabel", SAT_R_COSTS); }
+function makeSatelliteSRTrack(idx){ return makeSatelliteTrack(idx, "SatelliteSR", "satelliteSRLabel", SAT_SR_COSTS); }
+
+// Levels 0->90, one by one (source table gives per-level Data Disk cost, unlike
+// R/SR which only had 10-level bracket totals). Planet Coin is a one-time
+// "Breakthrough" cost bundled into the level where it's paid (10, 20, ... 90).
+const SSR_LEVEL_DATADISK = [
+  280,120,130,145,155,165,175,185,205,225,
+  240,260,275,290,310,325,340,355,380,405,
+  430,450,470,495,515,540,560,580,615,655,
+  685,720,750,785,820,850,885,915,960,1010,
+  1055,1100,1140,1185,1230,1275,1320,1360,1415,1475,
+  1530,1585,1640,1695,1750,1805,1860,1915,1985,2055,
+  2120,2185,2250,2315,2380,2445,2510,2575,2640,2710,
+  2745,2780,2815,2850,2885,2920,2955,2990,3025,3060,
+  3105,3145,3185,3225,3265,3305,3345,3385,3425,3470,
+];
+const SSR_BREAKTHROUGH_PLANETCOIN = {10:30,20:60,30:100,40:150,50:210,60:280,70:360,80:450,90:500};
+
+function makeSatelliteSSRTrack(idx){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  SSR_LEVEL_DATADISK.forEach((dd,i)=>{
+    const lvl = i+1;
+    const cost = zeroResources();
+    cost.DataDisk = dd;
+    cost.PlanetCoin = SSR_BREAKTHROUGH_PLANETCOIN[lvl] || 0;
+    levels.push({ id:String(lvl), cost, requires:[] });
+  });
+  return {
+    id:`SatelliteSSR_${idx}`, category:"SatelliteSSR", qtyIndex:idx,
+    nameParts:[{key:"satelliteSSRLabel", vars:{n:idx}}], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
 function defaultData(){
   return {
     schemaVersion: SCHEMA_VERSION,
     stock: zeroResources(),
-    counts: { Robot:1 },
-    tracks: [makeRobotTrack(1)]
+    counts: { Robot:1, SatelliteR:1, SatelliteSR:1, SatelliteSSR:1 },
+    tracks: [makeRobotTrack(1), makeSatelliteRTrack(1), makeSatelliteSRTrack(1), makeSatelliteSSRTrack(1)]
   };
 }
 

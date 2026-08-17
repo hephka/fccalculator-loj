@@ -180,10 +180,6 @@ function renderChrome(){
   document.getElementById("introFeatures").innerHTML = ["introFeature1","introFeature2","introFeature3"]
     .map((key,i)=>`<div class="intro-feature"><span class="ico">${["🎯","🔗","📊"][i]}</span><span>${t(key)}</span></div>`).join("");
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
-  const satTitleEl = document.getElementById("satTitle");
-  if(satTitleEl) satTitleEl.textContent = t("satTitle");
-  const satNoteEl = document.getElementById("satNote");
-  if(satNoteEl) satNoteEl.textContent = t("satNote");
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
   document.getElementById("footerText").textContent = t("footer");
