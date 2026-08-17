@@ -14,6 +14,7 @@
   <nav class="nav-bar">
     <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
     <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+    <a class="nav-link" href="robots.html" data-navkey="navRobots">Robots &amp; Satellites</a>
   </nav>
 
   <div class="topbar">
@@ -59,7 +60,7 @@
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
 const SCHEMA_VERSION = 4;
-const RES_ACCENT = { FC:"#6fb3ff", AFC:"#ffb648", Hyperalloy:"#c48bff" };
+const RES_ACCENT = { FC:"#ffb648", AFC:"#ffb648", Hyperalloy:"#ffb648" };
 const CATEGORIES = [
   { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:false },
   { key:"Research", labelKey:"catResearch", icon:"🔬", grouped:true },
@@ -70,6 +71,7 @@ const I18N = {
   en: {
     navBuildings: "Buildings & Research",
     navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
     title: "Resource Calculator - LoJ",
     subtitle: "FC · AFC · Hyperalloy — track your progress, set your targets, calculate what you're missing.",
     introTitle: "What this does",
@@ -117,6 +119,7 @@ const I18N = {
   fr: {
     navBuildings: "Bâtiments & Recherches",
     navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
     title: "Calculateur de ressources - LoJ",
     subtitle: "FC · AFC · Hyperalliage — suis ta progression, fixe tes objectifs, calcule ce qu'il te manque.",
     introTitle: "Ce que fait l'outil",

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robots & Satellites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
+    <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+    <a class="nav-link" href="robots.html" data-navkey="navRobots">Robots &amp; Satellites</a>
+  </nav>
+
+  <div class="topbar">
+    <div>
+      <h1>🤖 <span id="appTitle">Robots &amp; Satellites</span></h1>
+      <p class="sub" id="appSubtitle">Track your robot armor progress.</p>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
+  </div>
+
+  <div class="card intro-card">
+    <div class="intro-title"><span>🧭</span><span id="introTitle">What this does</span></div>
+    <p class="intro-lead" id="introLead"></p>
+    <div class="intro-features" id="introFeatures"></div>
+    <p class="intro-note" id="introNote"></p>
+  </div>
+
+  <div class="card" id="satCard">
+    <div class="intro-title"><span>🛰️</span><span id="satTitle"></span></div>
+    <p class="intro-lead no-features" id="satNote"></p>
+  </div>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger"></button>
+  </div>
+
+  <div class="card">
+    <h2 id="stockHeading">Current stock</h2>
+    <div class="stock-grid" id="stockGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="missingHeading">What you're missing</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div id="categories"></div>
+
+  <footer id="footerText"></footer>
+</div>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+const RESOURCES = ["PrisonerArmorData","PowerModule","AdvancedPowerModule"];
+const STORAGE_KEY = "resource-calc-robots-state-v1";
+const SCHEMA_VERSION = 1;
+const RES_ACCENT = {
+  PrisonerArmorData:"#4fc3f7", PowerModule:"#4fc3f7", AdvancedPowerModule:"#ffd60a",
+};
+const CATEGORIES = [
+  { key:"Robot", labelKey:"catRobot", icon:"🤖", grouped:false, dynamic:{addLabelKey:"addRobot", makeTrack:makeRobotTrack, max:12} },
+];
+
+const I18N = {
+  en: {
+    navBuildings: "Buildings & Research",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    title: "Robots & Satellites - LoJ",
+    subtitle: "Prisoner Armor — track your robots' upgrade progress.",
+    introTitle: "What this does",
+    introLead: "Plan your Robot armor upgrades.",
+    introFeature1: "Track each Robot individually, then set its current level and target",
+    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    introNote: "Cost is identical across all Robots. Levels go from Level 0 to Level 100, in steps of 10.",
+    satTitle: "Satellites",
+    satNote: "Satellite data isn't ready yet. This section will be added once we have reliable data.",
+    resetButton: "↺ Reset to default values",
+    resetConfirm: "Click again to confirm ↺",
+    currentStock: "Current stock",
+    whatMissing: "What you're missing",
+    needed: "needed",
+    missing: "Missing",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "No target set yet — pick a target level on a robot below.",
+    colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
+    autoAdded: "(auto-added — prerequisite)",
+    catRobot: "Robots",
+    targetSet: "target set", noTarget: "no target",
+    current: "Current", target: "Target",
+    stageWord: "stage", levelWord: "Level", starWord: "star",
+    footer: "Data is stored only in your browser (localStorage).",
+    res_PrisonerArmorData: "Prisoner Armor Data", res_PowerModule: "Power Module", res_AdvancedPowerModule: "Advanced Power Module",
+    addRobot: "+ Add Robot",
+    robotLabel: "Robot {n}",
+  },
+  fr: {
+    navBuildings: "Bâtiments & Recherches",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    title: "Robots & Satellites - LoJ",
+    subtitle: "Armure de prisonnier — suis la progression de tes robots.",
+    introTitle: "Ce que fait l'outil",
+    introLead: "Planifie les améliorations d'armure de tes Robots.",
+    introFeature1: "Suis chaque Robot individuellement, puis fixe son niveau actuel et sa cible",
+    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    introNote: "Le coût est identique pour tous les Robots. Les niveaux vont de Niveau 0 à Niveau 100, par palier de 10.",
+    satTitle: "Satellites",
+    satNote: "Les données des Satellites ne sont pas encore prêtes. Cette section sera ajoutée dès que nous aurons des données fiables.",
+    resetButton: "↺ Réinitialiser aux valeurs par défaut",
+    resetConfirm: "Clique à nouveau pour confirmer ↺",
+    currentStock: "Stock actuel",
+    whatMissing: "Ce qu'il te manque",
+    needed: "nécessaire",
+    missing: "Manque",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un robot ci-dessous.",
+    colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
+    autoAdded: "(ajouté auto. — prérequis)",
+    catRobot: "Robots",
+    targetSet: "objectif défini", noTarget: "aucun objectif",
+    current: "Actuel", target: "Cible",
+    stageWord: "palier", levelWord: "Niveau", starWord: "étoile",
+    footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    res_PrisonerArmorData: "Données d'armure", res_PowerModule: "Module d'énergie", res_AdvancedPowerModule: "Module d'énergie avancé",
+    addRobot: "+ Ajouter un Robot",
+    robotLabel: "Robot {n}",
+  },
+};
+
+// Levels 0->100, in steps of 10. Each step's cost is the sum of every single
+// level-up in that range plus the one-time "Breakthrough" cost paid at the
+// milestone (confirmed against source table; Level 30->40's Breakthrough was
+// corrected from a misread "30/0" to the verified "60/15").
+const ROBOT_COSTS = [
+  {lvl:"10", pad:1200,  pm:20,  apm:0},
+  {lvl:"20", pad:2310,  pm:30,  apm:0},
+  {lvl:"30", pad:3600,  pm:40,  apm:10},
+  {lvl:"40", pad:5320,  pm:60,  apm:15},
+  {lvl:"50", pad:7560,  pm:80,  apm:20},
+  {lvl:"60", pad:10260, pm:100, apm:30},
+  {lvl:"70", pad:19400, pm:130, apm:140},
+  {lvl:"80", pad:24800, pm:160, apm:50},
+  {lvl:"90", pad:30300, pm:190, apm:70},
+  {lvl:"100",pad:36300, pm:230, apm:90},
+];
+
+function makeRobotTrack(idx){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  ROBOT_COSTS.forEach(c=>{
+    const cost = zeroResources();
+    cost.PrisonerArmorData = c.pad;
+    cost.PowerModule = c.pm;
+    cost.AdvancedPowerModule = c.apm;
+    levels.push({ id:c.lvl, cost, requires:[] });
+  });
+  return {
+    id:`robot_${idx}`, category:"Robot", qtyIndex:idx,
+    nameParts:[{key:"robotLabel", vars:{n:idx}}], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+function defaultData(){
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    stock: zeroResources(),
+    counts: { Robot:1 },
+    tracks: [makeRobotTrack(1)]
+  };
+}
+
+function summaryResourceKeys(totals){
+  return RESOURCES.filter(resource => totals[resource] > 0);
+}
+</script>
+<script src="shared.js"></script>
+<script>initApp();</script>
+</body>
+</html>
