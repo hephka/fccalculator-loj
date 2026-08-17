@@ -38,6 +38,38 @@ function resourceLabel(r){ return t("res_"+r); }
 function fmt(n){ return Math.round(n).toLocaleString(lang === "fr" ? "fr-FR" : "en-US"); }
 function zeroResources(){ return Object.fromEntries(RESOURCES.map(r=>[r,0])); }
 
+const MAX_NUMBER_INPUT = 99999999;
+
+// Sanitizes a raw <input> string into a non-negative integer capped at `max`
+// (99,999,999 unless a tighter cap already applies). Returns {value, errorKey}
+// so a caller can show a small hint explaining what got corrected, if anything.
+function sanitizeIntInput(raw, max){
+  max = max == null ? MAX_NUMBER_INPUT : max;
+  let errorKey = null;
+  if(/[.,]/.test(raw)) errorKey = "err_decimal";
+  if(/^\s*-/.test(raw)) errorKey = "err_negative";
+  const digits = raw.replace(/[^0-9]/g, "");
+  let n = digits === "" ? 0 : parseInt(digits, 10);
+  if(n > max){ n = max; errorKey = "err_max"; }
+  return { value:n, errorKey };
+}
+
+// Shows (or clears) a small message right under `inp`, e.g. "Whole numbers only".
+function showFieldMessage(inp, errorKey, vars){
+  let msg = inp.nextElementSibling;
+  if(!msg || !msg.classList || !msg.classList.contains("field-msg")) msg = null;
+  if(!errorKey){
+    if(msg) msg.remove();
+    return;
+  }
+  if(!msg){
+    msg = document.createElement("div");
+    msg.className = "field-msg";
+    inp.insertAdjacentElement("afterend", msg);
+  }
+  msg.textContent = t(errorKey, vars);
+}
+
 function toRoman(n){
   n = Number(n);
   if(!n || n<1) return String(n);
@@ -193,13 +225,19 @@ function renderStock(){
   grid.innerHTML = RESOURCES.map(r=>`
     <div class="stock-item">
       <label style="color:${RES_ACCENT[r]}">${resourceLabel(r)}</label>
-      <input type="number" min="0" data-stock="${r}" value="${state.stock[r]}">
+      <input type="text" inputmode="numeric" data-stock="${r}" value="${state.stock[r]}">
     </div>`).join("");
+  // type="text" (not "number") is deliberate: number inputs report an empty
+  // value while the user is mid-typing something invalid (e.g. just "-"),
+  // which makes it impossible to detect and explain what went wrong.
   grid.querySelectorAll("input[data-stock]").forEach(inp=>{
     inp.addEventListener("input", e=>{
-      state.stock[inp.dataset.stock] = Number(e.target.value)||0;
+      const { value, errorKey } = sanitizeIntInput(e.target.value);
+      if(String(value) !== e.target.value) e.target.value = value;
+      state.stock[inp.dataset.stock] = value;
       persist();
       refreshSummary();
+      showFieldMessage(inp, errorKey, {max: fmt(MAX_NUMBER_INPUT)});
     });
     inp.addEventListener("focus", e=> e.target.select());
   });
