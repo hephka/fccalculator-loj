@@ -8,7 +8,7 @@ A multi-page tool to calculate how many resources you're missing to reach a targ
 
 - **`index.html`** — Buildings & Research: Warden's Office and its 6 support buildings (Level 30 → FC8), plus each troop's FC Lab research tree (Shooter/Bomber/Shieldbearer). Resources: FC, AFC, Hyperalloy.
 - **`tomes.html`** — Tomes & Collections: all 6 tomes per troop type (Level 0 → 12), and the Trove Collection sequence (Uncommon → Exotic T3). Resources: Seal of Wisdom, Seal of Knowledge, Common/Rare/Precious/Legendary Trove Coin.
-- **`robots.html`** — Robots & Satellites: Prisoner Armor upgrades (Level 0 → 100, in steps of 10) for up to 12 robots (Prisoner Armor Data, Power Module, Advanced Power Module), plus Satellite upgrades for R (up to 3, Level 0 → 40), SR (up to 2, Level 0 → 60) and SSR (up to 4, Level 0 → 90, tracked level by level) satellites (Data Disk, Planet Coin).
+- **`robots.html`** — Robots & Satellites: Prisoner Armor upgrades (Level 0 → 100, in steps of 10) for up to 12 robots (Prisoner Armor Data, Power Module, Advanced Power Module), plus each named Satellite's own progress — R: Laser/Observer/Radiance (Level 0 → 50), SR: Arbiter/Sentinel (Level 0 → 70), SSR: Omniscient Domain/Celestial Nexus/Argus/Polaris (Level 0 → 90, tracked level by level) — using Data Disk and Planet Coin.
 - More routes planned: Hero Equipment, Hero Stars & Exclusive Equipment.
 
 Every route works the same way: set a current level and a target level for each item, prerequisites resolve automatically, and the app totals up exactly what you're missing per resource.
@@ -42,3 +42,4 @@ Connected to Vercel. Work happens on the `dev` branch and deploys to a private p
 - Per-troop-type research cost differences aren't confirmed — all three trees (Shooter/Bomber/Shieldbearer) currently share the same placeholder numbers.
 - Building/research/tome names shown in French are best-effort translations, not yet verified against in-game text.
 - Hero Equipment and Hero Stars & Exclusive Equipment routes are not built yet.
+- The R Satellite's Level 40 → 50 Data Disk cost is an estimate (~11,230), not confirmed data — see the in-app note on that route.
