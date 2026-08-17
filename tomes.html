@@ -58,23 +58,14 @@
 <script>
 const RESOURCES = ["SealOfWisdom","SealOfKnowledge","CommonCoin","RareCoin","PreciousCoin","LegendaryCoin"];
 const STORAGE_KEY = "resource-calc-tomes-state-v1";
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const RES_ACCENT = {
   SealOfWisdom:"#ffd60a", SealOfKnowledge:"#ffd60a",
   CommonCoin:"#8ec7ff", RareCoin:"#ff8ecf", PreciousCoin:"#ffb648", LegendaryCoin:"#ff5c72",
 };
-// Rarity colors, lightly tinting each collection tier's label wherever it's shown.
-const RARITY_COLORS = {
-  uncommon:"#3ecf8e",
-  rare:"#5bc8ff",
-  epic:"#c48bff", epic_t1:"#c48bff",
-  legendary:"#ffb648", legendary_t1:"#ffb648", legendary_t2:"#ffb648",
-  exotic:"#ff5c72", exotic_t1:"#ff5c72", exotic_t2:"#ff5c72", exotic_t3:"#ff5c72",
-};
-
 const CATEGORIES = [
-  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, dynamic:{countLabelKey:"tomeCountLabel", makeTrack:makeTomeTrack, max:18} },
-  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, dynamic:{countLabelKey:"collectionCountLabel", makeTrack:makeCollectionTrack, max:6}, tierColorFn:(baseId)=>RARITY_COLORS[baseId] },
+  { key:"Tome", labelKey:"catTome", icon:"📖", grouped:false, dynamic:{addLabelKey:"addTome", makeTrack:makeTomeTrack, max:18} },
+  { key:"Collection", labelKey:"catCollection", icon:"🏺", grouped:false, dynamic:{addLabelKey:"addCollection", makeTrack:makeCollectionTrack, max:6} },
 ];
 
 const I18N = {
@@ -82,13 +73,13 @@ const I18N = {
     navBuildings: "Buildings & Research",
     navTomes: "Tomes & Collections",
     title: "Tomes & Collections - LoJ",
-    subtitle: "Director's Treasure — track your tome and collection progress.",
+    subtitle: "Warden's Trove — track your tome and collection progress.",
     introTitle: "What this does",
     introLead: "Plan your Tome and Collection upgrades.",
-    introFeature1: "Choose how many Tomes and Collection Items you want to track, and set each one's progress individually",
+    introFeature1: "Track each Tome and Collection individually, then set its current level and target",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all Tomes. A Collection Item's sequence goes from Uncommon to Exotic T3.",
+    introNote: "Cost is identical across all Tomes. A Collection sequence goes from Uncommon to Exotic T3.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -96,10 +87,10 @@ const I18N = {
     needed: "needed",
     missing: "Missing",
     okSurplus: "OK (surplus {n})",
-    noTargetHint: "No target set yet — pick a target level on a tome or collection item below.",
-    colTarget: "Target", colFrom: "From", colTo: "To",
+    noTargetHint: "No target set yet — pick a target level on a tome or collection below.",
+    colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
-    catTome: "Tomes", catCollection: "Collection Items",
+    catTome: "Tomes", catCollection: "Collection",
     targetSet: "target set", noTarget: "no target",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level", starWord: "star",
@@ -107,10 +98,10 @@ const I18N = {
     res_SealOfWisdom: "Seal of Wisdom", res_SealOfKnowledge: "Seal of Knowledge",
     res_CommonCoin: "Common Trove Coin", res_RareCoin: "Rare Trove Coin",
     res_PreciousCoin: "Precious Trove Coin", res_LegendaryCoin: "Legendary Trove Coin",
-    tomeCountLabel: "Number of tomes to track",
-    collectionCountLabel: "Number of Collection Items to track",
+    addTome: "+ Add Tome",
+    addCollection: "+ Add Collection",
     tomeLabel: "Tome {n}",
-    collectionLabel: "Collection Item {n}",
+    collectionLabel: "Collection {n}",
     coltier_start: "Not started",
     coltier_uncommon: "Uncommon", coltier_rare: "Rare",
     coltier_epic: "Epic", coltier_epic_t1: "Epic T1",
@@ -124,10 +115,10 @@ const I18N = {
     subtitle: "Trésor du directeur — suis ta progression des tomes et collections.",
     introTitle: "Ce que fait l'outil",
     introLead: "Planifie tes améliorations de Tomes et de Collection.",
-    introFeature1: "Choisis combien de Tomes et d'Objets de Collection tu veux suivre, et fixe leur progression individuellement",
+    introFeature1: "Suis chaque Tome et Collection individuellement, puis fixe son niveau actuel et sa cible",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour tous les Tomes. La séquence d'un Objet de Collection va de Commun à Exotique T3.",
+    introNote: "Le coût est identique pour tous les Tomes. La séquence d'une Collection va de Commun à Exotique T3.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -135,10 +126,10 @@ const I18N = {
     needed: "nécessaire",
     missing: "Manque",
     okSurplus: "OK (surplus {n})",
-    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un tome ou un objet de collection ci-dessous.",
-    colTarget: "Objectif", colFrom: "De", colTo: "À",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un tome ou une collection ci-dessous.",
+    colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
-    catTome: "Tomes", catCollection: "Objets de Collection",
+    catTome: "Tomes", catCollection: "Collection",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau", starWord: "étoile",
@@ -146,10 +137,10 @@ const I18N = {
     res_SealOfWisdom: "Sceau de Sagesse", res_SealOfKnowledge: "Sceau de Connaissance",
     res_CommonCoin: "Pièce de Coffre Commune", res_RareCoin: "Pièce de Coffre Rare",
     res_PreciousCoin: "Pièce de Coffre Précieuse", res_LegendaryCoin: "Pièce de Coffre Légendaire",
-    tomeCountLabel: "Nombre de Tomes à suivre",
-    collectionCountLabel: "Nombre d'Objets de Collection à suivre",
+    addTome: "+ Ajouter un Tome",
+    addCollection: "+ Ajouter une Collection",
     tomeLabel: "Tome {n}",
-    collectionLabel: "Objet de Collection {n}",
+    collectionLabel: "Collection {n}",
     coltier_start: "Non commencé",
     coltier_uncommon: "Commun", coltier_rare: "Rare",
     coltier_epic: "Épique", coltier_epic_t1: "Épique T1",
@@ -242,9 +233,13 @@ function defaultData(){
   return {
     schemaVersion: SCHEMA_VERSION,
     stock: zeroResources(),
-    counts: { Tome:0, Collection:0 },
-    tracks: []
+    counts: { Tome:1, Collection:1 },
+    tracks: [makeTomeTrack(1), makeCollectionTrack(1)]
   };
+}
+
+function summaryResourceKeys(totals){
+  return RESOURCES.filter(resource => totals[resource] > 0);
 }
 </script>
 <script src="shared.js"></script>

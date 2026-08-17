@@ -8,19 +8,15 @@
 //                   the shared chrome keys listed below)
 //   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic}] in display order.
 //                   grouped:true renders tracks grouped by track.troopKey.
-//                   dynamic:{countLabelKey, makeTrack(index), max} renders a
-//                   quantity input (capped at `max` if given) instead of a
-//                   fixed track list: the user types how many items to track
-//                   and makeTrack(i) builds each one on demand. Dynamic tracks
-//                   need a numeric track.qtyIndex for ordering.
+//                   dynamic:{addLabelKey, makeTrack(index), max} starts with
+//                   a default item and adds one more item per button press.
+//                   Dynamic tracks need a numeric track.qtyIndex for ordering.
 //   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
 //   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
 //                   only needed if the page has any dynamic categories.
 //
 // Per-track optional flags:
 //   romanLevels: true         - numeric levelStyle renders as roman numerals (Level VII)
-//   tierColorFn(baseId)       - returns a hex color to lightly tint that level's
-//                               label wherever it's shown (e.g. rarity tinting)
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -57,16 +53,6 @@ function toRoman(n){
 //   "keyed"   - the id looked up via t(track.levelKeyPrefix + id), e.g. tier names
 // Any id ending in "_s<N>" is a sub-level (stage/star/...): its base is styled
 // per the rules above, suffixed with "· <stageWordKey or stageWord> <N>".
-// If the track's category defines tierColorFn(baseId), levelColor() exposes
-// the color it returns so callers can tint that level's label (e.g. by
-// rarity). Lives on the category (not the track) because tracks round-trip
-// through JSON in localStorage, which would silently drop a function.
-function levelColor(track, level){
-  const catDef = CATEGORIES.find(c=>c.key===track.category);
-  if(!catDef || !catDef.tierColorFn) return null;
-  const m = level.id.match(/^(.+)_s(\d)$/);
-  return catDef.tierColorFn(m ? m[1] : level.id) || null;
-}
 function levelLabel(track, level){
   const id = level.id;
   const stageW = t(track.stageWordKey || "stageWord");
@@ -111,7 +97,7 @@ function save(){
 }
 function refreshSummary(){
   const { totals, breakdown } = computeCascade();
-  renderSummary(totals);
+  renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
 }
 
@@ -197,7 +183,7 @@ function setLang(l){
 function render(){
   renderStock();
   const { totals, breakdown } = computeCascade();
-  renderSummary(totals);
+  renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
   renderCategories();
 }
@@ -219,9 +205,12 @@ function renderStock(){
   });
 }
 
-function renderSummary(totals){
+function renderSummary(totals, breakdown){
   const grid = document.getElementById("summaryGrid");
-  grid.innerHTML = RESOURCES.map(r=>{
+  const visibleResources = typeof summaryResourceKeys === "function"
+    ? summaryResourceKeys(totals, breakdown)
+    : RESOURCES;
+  grid.innerHTML = visibleResources.map(r=>{
     const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
     return `<div class="res-card" style="--accent-color:${RES_ACCENT[r]}">
       <div class="name"><span class="res-dot" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</div>
@@ -231,24 +220,22 @@ function renderSummary(totals){
   }).join("");
 }
 
-// HTML-safe level label: wraps in a light color span when the track defines
-// a tierColorFn (e.g. rarity tinting), plain text otherwise.
-function coloredLevelLabel(track, level){
-  const label = levelLabel(track, level);
-  const color = levelColor(track, level);
-  return color ? `<span style="color:${color}">${label}</span>` : label;
-}
-
+// Only lists resources this specific row actually costs (>0) instead of a
+// fixed column per RESOURCES entry — tomes and collections don't use the
+// same resources, so a shared fixed-column table would show a lot of zeros.
 function renderBreakdown(breakdown){
   const el = document.getElementById("breakdown");
   if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
-  el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th>${RESOURCES.map(r=>`<th>${resourceLabel(r)}</th>`).join("")}</tr></thead><tbody>
-    ${breakdown.map(b=>`<tr>
+  el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th><th>${t("colCost")}</th></tr></thead><tbody>
+    ${breakdown.map(b=>{
+      const cost = RESOURCES.filter(r=> b.cost[r] > 0).map(r=> `${fmt(b.cost[r])} ${resourceLabel(r)}`).join(", ");
+      return `<tr>
       <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
-      <td>${coloredLevelLabel(b.track, b.track.levels[b.from])}</td>
-      <td>${coloredLevelLabel(b.track, b.track.levels[b.to])}</td>
-      ${RESOURCES.map(r=>`<td>${fmt(b.cost[r])}</td>`).join("")}
-    </tr>`).join("")}
+      <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
+      <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
+      <td class="cost-cell">${cost}</td>
+    </tr>`;
+    }).join("")}
   </tbody></table>`;
 }
 
@@ -277,10 +264,7 @@ function groupedTracksHtml(tracks){
   }).join("");
 }
 
-// A "dynamic" category has no fixed set of tracks: the user types how many
-// items they want to track (state.counts[catKey]), and this adds/removes
-// tracks (via catDef.dynamic.makeTrack(index)) to match. Existing tracks keep
-// their progress; only the extras at the end are added or trimmed.
+// A "dynamic" category starts with one item and adds tracks on demand.
 function syncDynamicCategory(catDef){
   if(!catDef || !catDef.dynamic) return;
   const want = Math.max(0, state.counts[catDef.key] || 0);
@@ -301,10 +285,10 @@ function renderCategories(){
   cont.innerHTML = CATEGORIES.map(catDef=>{
     const tracks = state.tracks.filter(tr=>tr.category===catDef.key);
     const qtyMax = catDef.dynamic && catDef.dynamic.max;
+    const currentCount = tracks.length;
     const qtyControl = catDef.dynamic ? `
       <div class="qty-control">
-        <label for="qty_${catDef.key}">${t(catDef.dynamic.countLabelKey)}</label>
-        <input type="number" min="0" ${qtyMax?`max="${qtyMax}"`:""} data-qty="${catDef.key}" id="qty_${catDef.key}" value="${state.counts[catDef.key]||0}">
+        <button type="button" class="add-item" data-add-item="${catDef.key}" ${qtyMax && currentCount>=qtyMax ? "disabled" : ""}>${t(catDef.dynamic.addLabelKey)}</button>
       </div>` : "";
     if(!tracks.length && !catDef.dynamic) return "";
     const body = catDef.grouped ? groupedTracksHtml(tracks) : tracks.map(tr=>trackHtml(tr)).join("");
@@ -322,14 +306,13 @@ function renderCategories(){
       if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
     });
   });
-  cont.querySelectorAll("input[data-qty]").forEach(inp=>{
-    inp.addEventListener("change", e=>{
-      const key = inp.dataset.qty;
+  cont.querySelectorAll("button[data-add-item]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const key = btn.dataset.addItem;
       const catDef = CATEGORIES.find(c=>c.key===key);
       const max = catDef.dynamic.max;
-      let n = Math.max(0, Number(e.target.value)||0);
-      if(max) n = Math.min(n, max);
-      state.counts[key] = n;
+      const nextCount = (state.counts[key] || 0) + 1;
+      state.counts[key] = max ? Math.min(nextCount, max) : nextCount;
       syncDynamicCategory(catDef);
       save();
     });
@@ -356,10 +339,7 @@ function trackHtml(tr){
   </div>`;
 }
 function optionsWithSelected(track, idx){
-  return track.levels.map((l,i)=>{
-    const color = levelColor(track, l);
-    return `<option value="${i}" ${i===idx?"selected":""} ${color?`style="color:${color}"`:""}>${levelLabel(track,l)}</option>`;
-  }).join("");
+  return track.levels.map((l,i)=>`<option value="${i}" ${i===idx?"selected":""}>${levelLabel(track,l)}</option>`).join("");
 }
 
 // Built-in double-click confirmation (instead of native confirm(), not reliable everywhere).
