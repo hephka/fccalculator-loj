@@ -60,7 +60,7 @@
 <script>
 const RESOURCES = ["PrisonerArmorData","PowerModule","AdvancedPowerModule","DataDisk","PlanetCoin"];
 const STORAGE_KEY = "resource-calc-robots-state-v1";
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const RES_ACCENT = {
   PrisonerArmorData:"#4fc3f7", PowerModule:"#4fc3f7", AdvancedPowerModule:"#ffd60a",
   DataDisk:"#5b8cff", PlanetCoin:"#ffb648",
@@ -90,7 +90,7 @@ const I18N = {
     introFeature1: "Track each Robot and Satellite individually, then set its current level and target",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all Robots, and across Satellites of the same type. Robots go from Level 0 to 100 in steps of 10. R Satellites go up to Level 50, SR up to Level 70, SSR up to Level 90 (tracked level by level). The R Satellite's last step (40→50) uses an estimated Data Disk cost (≈ 11,230) based on the other satellites' growth pattern, pending confirmed data — its Planet Coin cost (80) is confirmed.",
+    introNote: "Cost is identical across all Robots, and across Satellites of the same type. All go in steps of 10: Robots to Level 100, R Satellites to Level 50, SR to Level 70, SSR to Level 90. The R Satellite's last step (40→50) uses an estimated Data Disk cost (≈ 11,230) based on the other satellites' growth pattern, pending confirmed data — its Planet Coin cost (80) is confirmed.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -129,7 +129,7 @@ const I18N = {
     introFeature1: "Suis chaque Robot et Satellite individuellement, puis fixe son niveau actuel et sa cible",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour tous les Robots, et pour les Satellites d'un même type. Les Robots vont de Niveau 0 à 100 par palier de 10. Les Satellites R vont jusqu'au Niveau 50, les SR jusqu'au 70, les SSR jusqu'au 90 (suivis niveau par niveau). Le dernier palier du Satellite R (40→50) utilise un coût de Disques de Données estimé (≈ 11 230) d'après la progression des autres satellites, en attendant les données confirmées — son coût en Pièces de Planète (80) est confirmé.",
+    introNote: "Le coût est identique pour tous les Robots, et pour les Satellites d'un même type. Tous progressent par palier de 10 : les Robots jusqu'au Niveau 100, les Satellites R jusqu'au 50, les SR jusqu'au 70, les SSR jusqu'au 90. Le dernier palier du Satellite R (40→50) utilise un coût de Disques de Données estimé (≈ 11 230) d'après la progression des autres satellites, en attendant les données confirmées — son coût en Pièces de Planète (80) est confirmé.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -214,9 +214,10 @@ const SAT_SR_COSTS = [
   {lvl:"70", dd:23825, pc:260},
 ];
 
-// Levels 0->90, one by one (source table gives per-level Data Disk cost, unlike
-// R/SR which only had 10-level bracket totals). Planet Coin is a one-time
-// "Breakthrough" cost bundled into the level where it's paid (10, 20, ... 90).
+// Levels 0->90, in steps of 10 like R and SR. The source table only gave a
+// per-level Data Disk breakdown, so each bracket's cost is the sum of its 10
+// individual level-ups (kept below for traceability) plus that bracket's
+// one-time "Breakthrough" Planet Coin cost (10, 20, ... 90).
 const SSR_LEVEL_DATADISK = [
   280,120,130,145,155,165,175,185,205,225,
   240,260,275,290,310,325,340,355,380,405,
@@ -229,9 +230,10 @@ const SSR_LEVEL_DATADISK = [
   3105,3145,3185,3225,3265,3305,3345,3385,3425,3470,
 ];
 const SSR_BREAKTHROUGH_PLANETCOIN = {10:30,20:60,30:100,40:150,50:210,60:280,70:360,80:450,90:500};
-const SAT_SSR_COSTS = SSR_LEVEL_DATADISK.map((dd,i)=>{
-  const lvl = i+1;
-  return { lvl:String(lvl), dd, pc: SSR_BREAKTHROUGH_PLANETCOIN[lvl] || 0 };
+const SAT_SSR_COSTS = Object.keys(SSR_BREAKTHROUGH_PLANETCOIN).map(lvl=>{
+  const bracketStart = Number(lvl) - 10;
+  const dd = SSR_LEVEL_DATADISK.slice(bracketStart, bracketStart+10).reduce((a,b)=>a+b, 0);
+  return { lvl, dd, pc: SSR_BREAKTHROUGH_PLANETCOIN[lvl] };
 });
 
 // Unlike Robots, each Satellite is a specific named unit (not "however many
