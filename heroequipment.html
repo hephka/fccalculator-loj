@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero Equipment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
+    <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+    <a class="nav-link" href="robots.html" data-navkey="navRobots">Robots &amp; Satellites</a>
+    <a class="nav-link" href="heroequipment.html" data-navkey="navHeroEquipment">Hero Equipment</a>
+  </nav>
+
+  <div class="topbar">
+    <div>
+      <p class="brand-eyebrow" id="brandTitle">Resource Calculator - LoJ</p>
+      <h1>🛡️ <span id="appTitle">Hero Equipment</span></h1>
+      <p class="sub" id="appSubtitle">Track your hero equipment progress.</p>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
+  </div>
+
+  <div class="card intro-card">
+    <div class="intro-title"><span>🧭</span><span id="introTitle">What this does</span></div>
+    <p class="intro-lead" id="introLead"></p>
+    <div class="intro-features" id="introFeatures"></div>
+    <p class="intro-note" id="introNote"></p>
+  </div>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger"></button>
+  </div>
+
+  <div class="card">
+    <h2 id="stockHeading">Current stock</h2>
+    <div class="stock-grid" id="stockGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="missingHeading">What you're missing</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div id="categories"></div>
+
+  <footer id="footerText"></footer>
+</div>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+const RESOURCES = ["EquipmentParts","Magnet","PotentialCoil","PrecisionEquipment"];
+const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
+const SCHEMA_VERSION = 1;
+const RES_ACCENT = {
+  EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#5b8cff", PrecisionEquipment:"#9b6bff",
+};
+const PARTS = [
+  { key:"equipment", labelKey:"partEquipment", icon:"🛡️" },
+  { key:"reformation", labelKey:"partReformation", icon:"🔧" },
+];
+const CATEGORIES = [
+  { key:"Equipment", labelKey:"catEquipment", icon:"🛡️", grouped:true, part:"equipment" },
+  { key:"Reformation", labelKey:"catReformation", icon:"🔧", grouped:true, part:"reformation" },
+];
+const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
+
+const I18N = {
+  en: {
+    navBuildings: "Buildings & Research",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    navHeroEquipment: "Hero Equipment",
+    title: "Hero Equipment - LoJ",
+    appBrand: "Resource Calculator - LoJ",
+    pageTitle: "Hero Equipment",
+    subtitle: "Gloves, Helmet, Chest, Boots — track every troop's hero equipment progress.",
+    introTitle: "What this does",
+    introLead: "Plan your Hero Equipment upgrades.",
+    introFeature1: "Track each equipment piece per troop individually, then set its current level and target",
+    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    introNote: "Cost is identical across all troops and equipment slots. Levels go from 0 to 200; reaching Legendary T2 (Level 120) requires that same piece's Reformation to be at Level 10. Common's Level 0→10 Equipment Parts cost is estimated (≈ 970), pending confirmed data.",
+    resetButton: "↺ Reset to default values",
+    resetConfirm: "Click again to confirm ↺",
+    currentStock: "Current stock",
+    whatMissing: "What you're missing",
+    needed: "needed",
+    missing: "Missing",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "No target set yet — pick a target level on an equipment piece below.",
+    colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
+    autoAdded: "(auto-added — prerequisite)",
+    partEquipment: "Equipment", partReformation: "Equipment Reformation",
+    catEquipment: "Equipment", catReformation: "Equipment Reformation",
+    targetSet: "target set", noTarget: "no target",
+    groupNoTargets: "no targets",
+    groupTargetsSet: "{n} target(s) set",
+    current: "Current", target: "Target",
+    stageWord: "stage", levelWord: "Level",
+    footer: "Data is stored only in your browser (localStorage).",
+    res_EquipmentParts: "Equipment Parts", res_Magnet: "Magnet",
+    res_PotentialCoil: "Potential Coil", res_PrecisionEquipment: "Precision Equipment",
+    troop_shieldbearer: "Shieldbearer",
+    troop_bomber: "Bomber",
+    troop_shooter: "Shooter",
+    equip_gloves: "Gloves", equip_helmet: "Helmet", equip_chest: "Chest", equip_boots: "Boots",
+    reformslot_gloves: "Gloves (Reformation)", reformslot_helmet: "Helmet (Reformation)",
+    reformslot_chest: "Chest (Reformation)", reformslot_boots: "Boots (Reformation)",
+  },
+  fr: {
+    navBuildings: "Bâtiments & Recherches",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    navHeroEquipment: "Équipement de Héros",
+    title: "Équipement de Héros - LoJ",
+    appBrand: "Calculateur de ressources - LoJ",
+    pageTitle: "Équipement de Héros",
+    subtitle: "Gants, Casque, Torse, Bottes — suis la progression de l'équipement de héros de chaque troupe.",
+    introTitle: "Ce que fait l'outil",
+    introLead: "Planifie les améliorations de ton Équipement de Héros.",
+    introFeature1: "Suis chaque pièce d'équipement par troupe individuellement, puis fixe son niveau actuel et sa cible",
+    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements d'équipement. Les niveaux vont de 0 à 200 ; atteindre Legendary T2 (Niveau 120) nécessite que la Reformation de cette même pièce soit au Niveau 10. Le coût en Parties d'Équipement du palier Common Niveau 0→10 est estimé (≈ 970), en attendant les données confirmées.",
+    resetButton: "↺ Réinitialiser aux valeurs par défaut",
+    resetConfirm: "Clique à nouveau pour confirmer ↺",
+    currentStock: "Stock actuel",
+    whatMissing: "Ce qu'il te manque",
+    needed: "nécessaire",
+    missing: "Manque",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur une pièce d'équipement ci-dessous.",
+    colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
+    autoAdded: "(ajouté auto. — prérequis)",
+    partEquipment: "Équipement", partReformation: "Réformation d'Équipement",
+    catEquipment: "Équipement", catReformation: "Réformation d'Équipement",
+    targetSet: "objectif défini", noTarget: "aucun objectif",
+    groupNoTargets: "aucun objectif",
+    groupTargetsSet: "{n} objectif(s) défini(s)",
+    current: "Actuel", target: "Cible",
+    stageWord: "palier", levelWord: "Niveau",
+    footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    res_EquipmentParts: "Parties d'Équipement", res_Magnet: "Aimant",
+    res_PotentialCoil: "Bobine Potentielle", res_PrecisionEquipment: "Équipement de Précision",
+    troop_shieldbearer: "Déflecteurs",
+    troop_bomber: "Bombardiers",
+    troop_shooter: "Tireurs",
+    equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Torse", equip_boots: "Bottes",
+    reformslot_gloves: "Gants (Réformation)", reformslot_helmet: "Casque (Réformation)",
+    reformslot_chest: "Torse (Réformation)", reformslot_boots: "Bottes (Réformation)",
+  },
+};
+
+// Levels 0->200. Common through Legendary (0-100) use 4-6 small brackets per
+// rarity, each ending in a one-time Magnet cost when the rarity completes.
+// Legendary T1+ (100-200) use single big brackets (confirmed source table).
+// Common's 0->10 Equipment Parts cost isn't in the source (only 11-15 and
+// 16-20 were given) — estimated (~970) by fitting a geometric growth curve
+// to the 6 known Common/Uncommon brackets (fits within 5% on every point)
+// and extrapolating backward. Flagged in introNote, not verified in-game.
+const EQUIPMENT_COSTS = [
+  {lvl:"10",  parts:970},
+  {lvl:"15",  parts:700},
+  {lvl:"20",  parts:950,   magnet:20},
+  {lvl:"25",  parts:1200},
+  {lvl:"30",  parts:1460},
+  {lvl:"35",  parts:1900},
+  {lvl:"40",  parts:2420,  magnet:40},
+  {lvl:"45",  parts:3300},
+  {lvl:"50",  parts:4300},
+  {lvl:"55",  parts:5300},
+  {lvl:"60",  parts:6320,  magnet:120},
+  {lvl:"65",  parts:7700},
+  {lvl:"70",  parts:9220},
+  {lvl:"75",  parts:11100},
+  {lvl:"80",  parts:13000, magnet:200},
+  {lvl:"85",  parts:15500},
+  {lvl:"90",  parts:18000},
+  {lvl:"95",  parts:20500},
+  {lvl:"100", parts:23000, magnet:400},
+  {lvl:"120", parts:117000, magnet:600,  coil:20,  gate:true},
+  {lvl:"140", parts:157000, magnet:1000, coil:40},
+  {lvl:"160", parts:197000, magnet:1000, coil:60},
+  {lvl:"180", parts:258000, magnet:2000, coil:80},
+  {lvl:"200", parts:338200, magnet:2000, coil:100},
+];
+
+function makeEquipmentTrack(troopKey, slotKey){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  EQUIPMENT_COSTS.forEach(c=>{
+    const cost = zeroResources();
+    cost.EquipmentParts = c.parts;
+    cost.Magnet = c.magnet || 0;
+    cost.PotentialCoil = c.coil || 0;
+    // Promoting past Legendary (Level 100) to Legendary T2 requires this same
+    // piece's own Reformation track to already be at Level 10.
+    const requires = c.gate ? [{trackId:`reform_${troopKey}_${slotKey}`, levelId:"10"}] : [];
+    levels.push({ id:c.lvl, cost, requires });
+  });
+  return {
+    id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
+    nameParts:["troop_"+troopKey, "equip_"+slotKey], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+// Levels 0->20, one by one (source table gives per-level Precision Equipment
+// cost; Magnet is only spent from Level 10 onward). Kept exactly as given,
+// including its minor non-linear jumps — they're small and at low levels.
+const REFORMATION_PRECISION = [
+  20,40,60,80,100,120,140,160,180,200,
+  220,240,260,280,300,320,360,380,400,400,
+];
+const REFORMATION_MAGNET = {10:220,11:200,12:400,13:600,14:800,15:1000,16:1200,17:1400,18:1600,19:1800,20:2000};
+
+function makeReformationTrack(troopKey, slotKey){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  REFORMATION_PRECISION.forEach((precision,i)=>{
+    const lvl = i+1;
+    const cost = zeroResources();
+    cost.PrecisionEquipment = precision;
+    cost.Magnet = REFORMATION_MAGNET[lvl] || 0;
+    levels.push({ id:String(lvl), cost, requires:[] });
+  });
+  return {
+    id:`reform_${troopKey}_${slotKey}`, category:"Reformation", troopKey,
+    nameParts:["troop_"+troopKey, "reformslot_"+slotKey], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+const TROOPS = ["shieldbearer","bomber","shooter"];
+const SLOTS = ["gloves","helmet","chest","boots"];
+
+function defaultData(){
+  const equipment = [];
+  const reformation = [];
+  TROOPS.forEach(troop=>{
+    SLOTS.forEach(slot=>{
+      equipment.push(makeEquipmentTrack(troop, slot));
+      reformation.push(makeReformationTrack(troop, slot));
+    });
+  });
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    stock: zeroResources(),
+    tracks: [...equipment, ...reformation]
+  };
+}
+</script>
+<script src="shared.js"></script>
+<script>initApp();</script>
+</body>
+</html>
