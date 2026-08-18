@@ -61,17 +61,12 @@
 <script>
 const RESOURCES = ["EquipmentParts","Magnet","PotentialCoil","PrecisionEquipment"];
 const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const RES_ACCENT = {
   EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#5b8cff", PrecisionEquipment:"#9b6bff",
 };
-const PARTS = [
-  { key:"equipment", labelKey:"partEquipment", icon:"🛡️" },
-  { key:"reformation", labelKey:"partReformation", icon:"🔧" },
-];
 const CATEGORIES = [
-  { key:"Equipment", labelKey:"catEquipment", icon:"🛡️", grouped:true, part:"equipment" },
-  { key:"Reformation", labelKey:"catReformation", icon:"🔧", grouped:true, part:"reformation" },
+  { key:"Equipment", labelKey:"catEquipment", icon:"🛡️", grouped:true },
 ];
 const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
 
@@ -84,13 +79,13 @@ const I18N = {
     title: "Hero Equipment - LoJ",
     appBrand: "Resource Calculator - LoJ",
     pageTitle: "Hero Equipment",
-    subtitle: "Gloves, Helmet, Chest, Boots — track every troop's hero equipment progress.",
+    subtitle: "Gloves, Helmet, Jacket, Boots — track every troop's hero equipment progress.",
     introTitle: "What this does",
     introLead: "Plan your Hero Equipment upgrades.",
-    introFeature1: "Track each equipment piece per troop individually, then set its current level and target",
-    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature1: "Each piece has two linked progressions: Level (Equipment Parts) and Mastery (Precision Equipment)",
+    introFeature2: "Prerequisites are resolved automatically — promoting past Level 100 needs Mastery at a specific level",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all troops and equipment slots. Levels go from 0 to 200; reaching Legendary T2 (Level 120) requires that same piece's Reformation to be at Level 10. Common's Level 0→10 Equipment Parts cost is estimated (≈ 970), pending confirmed data.",
+    introNote: "Cost is identical across all troops and equipment slots. Level and Mastery are independent up to Level 100 — no prerequisite either way. Beyond that, each promotion (Legendary T1 at 101, T2 at 120, Exotic at 140, T1 at 160, T2 at 180, T3 at 200) requires Mastery at Level 10/11/12/13/14/15 respectively. Common's Level 0→10 Equipment Parts cost is estimated (≈ 970), pending confirmed data.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -101,8 +96,7 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on an equipment piece below.",
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
-    partEquipment: "Equipment", partReformation: "Equipment Reformation",
-    catEquipment: "Equipment", catReformation: "Equipment Reformation",
+    catEquipment: "Equipment",
     targetSet: "target set", noTarget: "no target",
     groupNoTargets: "no targets",
     groupTargetsSet: "{n} target(s) set",
@@ -114,9 +108,8 @@ const I18N = {
     troop_shieldbearer: "Shieldbearer",
     troop_bomber: "Bomber",
     troop_shooter: "Shooter",
-    equip_gloves: "Gloves", equip_helmet: "Helmet", equip_chest: "Chest", equip_boots: "Boots",
-    reformslot_gloves: "Gloves (Reformation)", reformslot_helmet: "Helmet (Reformation)",
-    reformslot_chest: "Chest (Reformation)", reformslot_boots: "Boots (Reformation)",
+    equip_gloves: "Gloves", equip_helmet: "Helmet", equip_chest: "Jacket", equip_boots: "Boots",
+    pairedMasteryLabel: "Mastery",
   },
   fr: {
     navBuildings: "Bâtiments & Recherches",
@@ -126,13 +119,13 @@ const I18N = {
     title: "Équipement de Héros - LoJ",
     appBrand: "Calculateur de ressources - LoJ",
     pageTitle: "Équipement de Héros",
-    subtitle: "Gants, Casque, Torse, Bottes — suis la progression de l'équipement de héros de chaque troupe.",
+    subtitle: "Gants, Casque, Veste, Bottes — suis la progression de l'équipement de héros de chaque troupe.",
     introTitle: "Ce que fait l'outil",
     introLead: "Planifie les améliorations de ton Équipement de Héros.",
-    introFeature1: "Suis chaque pièce d'équipement par troupe individuellement, puis fixe son niveau actuel et sa cible",
-    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature1: "Chaque pièce a deux progressions liées : le Niveau (Parties d'équipement) et la Maîtrise (Équipement de précision)",
+    introFeature2: "Les prérequis sont résolus automatiquement — promouvoir au-delà du Niveau 100 nécessite une Maîtrise à un niveau précis",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements d'équipement. Les niveaux vont de 0 à 200 ; atteindre Legendary T2 (Niveau 120) nécessite que la Reformation de cette même pièce soit au Niveau 10. Le coût en Parties d'Équipement du palier Common Niveau 0→10 est estimé (≈ 970), en attendant les données confirmées.",
+    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements. Niveau et Maîtrise sont indépendants jusqu'au Niveau 100 — aucun prérequis dans un sens ou l'autre. Au-delà, chaque promotion (Légendaire T1 à 101, T2 à 120, Exotique à 140, T1 à 160, T2 à 180, T3 à 200) nécessite la Maîtrise au Niveau 10/11/12/13/14/15 respectivement. Le coût en Parties d'Équipement du palier Common Niveau 0→10 est estimé (≈ 970), en attendant les données confirmées.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -143,8 +136,7 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur une pièce d'équipement ci-dessous.",
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
-    partEquipment: "Équipement", partReformation: "Réformation d'Équipement",
-    catEquipment: "Équipement", catReformation: "Réformation d'Équipement",
+    catEquipment: "Équipement",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     groupNoTargets: "aucun objectif",
     groupTargetsSet: "{n} objectif(s) défini(s)",
@@ -156,15 +148,28 @@ const I18N = {
     troop_shieldbearer: "Déflecteurs",
     troop_bomber: "Bombardiers",
     troop_shooter: "Tireurs",
-    equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Torse", equip_boots: "Bottes",
-    reformslot_gloves: "Gants (Réformation)", reformslot_helmet: "Casque (Réformation)",
-    reformslot_chest: "Torse (Réformation)", reformslot_boots: "Bottes (Réformation)",
+    equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Veste", equip_boots: "Bottes",
+    pairedMasteryLabel: "Maîtrise",
   },
 };
 
-// Levels 0->200. Common through Legendary (0-100) use 4-6 small brackets per
-// rarity, each ending in a one-time Magnet cost when the rarity completes.
-// Legendary T1+ (100-200) use single big brackets (confirmed source table).
+// Levels 0->200. Common(0-20)/Uncommon(20-40)/Rare(40-60)/Epic(60-80)/
+// Legendary(80-100) use 4-6 small brackets each, ending in a one-time Magnet
+// cost when the rarity completes. None of this needs Mastery.
+//
+// Beyond Level 100, leveling and promoting are the same bundled bracket cost
+// (Parts + Magnet + Coil) as before, but EACH promotion needs its own Mastery
+// threshold, confirmed directly from in-game observation:
+//   ->101 Legendary T1   needs Mastery Lv10 (folded into the "120" bracket
+//                         below, since reaching 120 already implies passing
+//                         through 101 — Mastery is a single ascending track,
+//                         so requiring Lv11 there covers both)
+//   ->120 Legendary T2   needs Mastery Lv11
+//   ->140 Exotic         needs Mastery Lv12
+//   ->160 Exotic T1      needs Mastery Lv13
+//   ->180 Exotic T2      needs Mastery Lv14
+//   ->200 Exotic T3      needs Mastery Lv15
+//
 // Common's 0->10 Equipment Parts cost isn't in the source (only 11-15 and
 // 16-20 were given) — estimated (~970) by fitting a geometric growth curve
 // to the 6 known Common/Uncommon brackets (fits within 5% on every point)
@@ -189,11 +194,11 @@ const EQUIPMENT_COSTS = [
   {lvl:"90",  parts:18000},
   {lvl:"95",  parts:20500},
   {lvl:"100", parts:23000, magnet:400},
-  {lvl:"120", parts:117000, magnet:600,  coil:20,  gate:true},
-  {lvl:"140", parts:157000, magnet:1000, coil:40},
-  {lvl:"160", parts:197000, magnet:1000, coil:60},
-  {lvl:"180", parts:258000, magnet:2000, coil:80},
-  {lvl:"200", parts:338200, magnet:2000, coil:100},
+  {lvl:"120", parts:117000, magnet:600,  coil:20,  masteryReq:11},
+  {lvl:"140", parts:157000, magnet:1000, coil:40,  masteryReq:12},
+  {lvl:"160", parts:197000, magnet:1000, coil:60,  masteryReq:13},
+  {lvl:"180", parts:258000, magnet:2000, coil:80,  masteryReq:14},
+  {lvl:"200", parts:338200, magnet:2000, coil:100, masteryReq:15},
 ];
 
 function makeEquipmentTrack(troopKey, slotKey){
@@ -203,14 +208,13 @@ function makeEquipmentTrack(troopKey, slotKey){
     cost.EquipmentParts = c.parts;
     cost.Magnet = c.magnet || 0;
     cost.PotentialCoil = c.coil || 0;
-    // Promoting past Legendary (Level 100) to Legendary T2 requires this same
-    // piece's own Reformation track to already be at Level 10.
-    const requires = c.gate ? [{trackId:`reform_${troopKey}_${slotKey}`, levelId:"10"}] : [];
+    const requires = c.masteryReq ? [{trackId:`mastery_${troopKey}_${slotKey}`, levelId:String(c.masteryReq)}] : [];
     levels.push({ id:c.lvl, cost, requires });
   });
   return {
     id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
     nameParts:["troop_"+troopKey, "equip_"+slotKey], levelStyle:"numeric",
+    pairedTrackId:`mastery_${troopKey}_${slotKey}`, pairedLabelKey:"pairedMasteryLabel",
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
 }
@@ -218,24 +222,25 @@ function makeEquipmentTrack(troopKey, slotKey){
 // Levels 0->20, one by one (source table gives per-level Precision Equipment
 // cost; Magnet is only spent from Level 10 onward). Kept exactly as given,
 // including its minor non-linear jumps — they're small and at low levels.
-const REFORMATION_PRECISION = [
+// Mastery never requires anything from the Level side — it's freestanding.
+const MASTERY_PRECISION = [
   20,40,60,80,100,120,140,160,180,200,
   220,240,260,280,300,320,360,380,400,400,
 ];
-const REFORMATION_MAGNET = {10:220,11:200,12:400,13:600,14:800,15:1000,16:1200,17:1400,18:1600,19:1800,20:2000};
+const MASTERY_MAGNET = {10:220,11:200,12:400,13:600,14:800,15:1000,16:1200,17:1400,18:1600,19:1800,20:2000};
 
-function makeReformationTrack(troopKey, slotKey){
+function makeMasteryTrack(troopKey, slotKey){
   const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
-  REFORMATION_PRECISION.forEach((precision,i)=>{
+  MASTERY_PRECISION.forEach((precision,i)=>{
     const lvl = i+1;
     const cost = zeroResources();
     cost.PrecisionEquipment = precision;
-    cost.Magnet = REFORMATION_MAGNET[lvl] || 0;
+    cost.Magnet = MASTERY_MAGNET[lvl] || 0;
     levels.push({ id:String(lvl), cost, requires:[] });
   });
   return {
-    id:`reform_${troopKey}_${slotKey}`, category:"Reformation", troopKey,
-    nameParts:["troop_"+troopKey, "reformslot_"+slotKey], levelStyle:"numeric",
+    id:`mastery_${troopKey}_${slotKey}`, category:"Mastery", troopKey,
+    nameParts:["troop_"+troopKey, "equip_"+slotKey], levelStyle:"numeric",
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
 }
@@ -244,18 +249,17 @@ const TROOPS = ["shieldbearer","bomber","shooter"];
 const SLOTS = ["gloves","helmet","chest","boots"];
 
 function defaultData(){
-  const equipment = [];
-  const reformation = [];
+  const tracks = [];
   TROOPS.forEach(troop=>{
     SLOTS.forEach(slot=>{
-      equipment.push(makeEquipmentTrack(troop, slot));
-      reformation.push(makeReformationTrack(troop, slot));
+      tracks.push(makeEquipmentTrack(troop, slot));
+      tracks.push(makeMasteryTrack(troop, slot));
     });
   });
   return {
     schemaVersion: SCHEMA_VERSION,
     stock: zeroResources(),
-    tracks: [...equipment, ...reformation]
+    tracks
   };
 }
 </script>

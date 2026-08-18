@@ -28,6 +28,11 @@
 //
 // Per-track optional flags:
 //   romanLevels: true         - numeric levelStyle renders as roman numerals (Level VII)
+//   pairedTrackId + pairedLabelKey - shows a second track's own current/target
+//                                controls in the same card (see trackHtml).
+//                                The paired track needs no CATEGORIES entry
+//                                of its own — it still lives in state.tracks
+//                                and participates in cascade/breakdown.
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -381,16 +386,32 @@ function renderCategories(){
   }));
 }
 
+// A track can optionally carry `pairedTrackId` + `pairedLabelKey` to show a
+// second, related track's own current/target controls in the same card —
+// for two progressions that are tracked separately (different cost curves)
+// but always set together from the user's point of view (e.g. an equipment
+// piece's Level and its Mastery, where Level's promotions require Mastery
+// thresholds). The paired track still lives in state.tracks and still
+// participates in cascade/breakdown normally; it just isn't given its own
+// top-level category card.
 function trackHtml(tr){
   const active = tr.targetLevelIndex > tr.currentLevelIndex;
+  const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
+  const pairedActive = paired && paired.targetLevelIndex > paired.currentLevelIndex;
   return `<div class="track">
     <div class="track-head">
       <span class="track-name">${trackShortName(tr)}</span>
-      <span class="track-badge ${active?'active':''}">${active? t("targetSet") : t("noTarget")}</span>
+      <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>
       <div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
         <span class="field">${t("target")}: <select data-tgt="${tr.id}">${optionsWithSelected(tr,tr.targetLevelIndex)}</select></span>
       </div>
+      ${paired ? `
+      <div class="track-controls paired-controls">
+        <span class="paired-label">${t(tr.pairedLabelKey)}</span>
+        <span class="field">${t("current")}: <select data-cur="${paired.id}">${optionsWithSelected(paired,paired.currentLevelIndex)}</select></span>
+        <span class="field">${t("target")}: <select data-tgt="${paired.id}">${optionsWithSelected(paired,paired.targetLevelIndex)}</select></span>
+      </div>` : ""}
     </div>
   </div>`;
 }

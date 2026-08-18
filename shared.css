@@ -114,6 +114,8 @@ input[type=number]{-moz-appearance:textfield}
 .track-controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.8rem;color:var(--muted);width:100%}
 .track-controls .field{display:flex;align-items:center;gap:6px;flex:1 1 130px;font-weight:600}
 .track-controls select{flex:1;min-width:0;max-width:100%}
+.track-controls.paired-controls{margin-top:8px;padding-top:10px;border-top:1px dashed var(--border)}
+.paired-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);flex:1 1 100%}
 
 table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
 th,td{padding:8px 8px;text-align:left;border-bottom:1px solid var(--border)}
