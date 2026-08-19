@@ -61,9 +61,9 @@
 <script>
 const RESOURCES = ["EquipmentParts","Magnet","PotentialCoil","PrecisionEquipment"];
 const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const RES_ACCENT = {
-  EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#5b8cff", PrecisionEquipment:"#9b6bff",
+  EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#ff5c72", PrecisionEquipment:"#ffb648",
 };
 const CATEGORIES = [
   { key:"Equipment", labelKey:"catEquipment", icon:"🛡️", grouped:true },
@@ -82,10 +82,10 @@ const I18N = {
     subtitle: "Gloves, Helmet, Jacket, Boots — track every troop's hero equipment progress.",
     introTitle: "What this does",
     introLead: "Plan your Hero Equipment upgrades.",
-    introFeature1: "Each piece has two linked progressions: Level (Equipment Parts) and Mastery (Precision Equipment)",
-    introFeature2: "Prerequisites are resolved automatically — promoting past Level 100 needs Mastery at a specific level",
+    introFeature1: "Each piece has two linked progressions: Rarity (Equipment EXP) and Mastery (Precision Equipment)",
+    introFeature2: "Prerequisites are resolved automatically — promoting past Legendary needs Mastery at a specific level",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all troops and equipment slots. Level and Mastery are independent up to Level 100 — no prerequisite either way. Beyond that, each promotion (Legendary T1 at 101, T2 at 120, Exotic at 140, T1 at 160, T2 at 180, T3 at 200) requires Mastery at Level 10/11/12/13/14/15 respectively. Common's Level 0→10 Equipment Parts cost is estimated (≈ 970), pending confirmed data.",
+    introNote: "Cost is identical across all troops and equipment slots. Rarity and Mastery are independent through Legendary — no prerequisite either way. Beyond that, each promotion (Legendary T1, T2, Exotic, T1, T2, T3) requires Mastery at Level 10/11/12/13/14/15 respectively. Part of the Common tier's total Equipment EXP cost is estimated (≈ 970 out of 2,620), pending confirmed data.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -103,13 +103,17 @@ const I18N = {
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
-    res_EquipmentParts: "Equipment Parts", res_Magnet: "Magnet",
-    res_PotentialCoil: "Potential Coil", res_PrecisionEquipment: "Precision Equipment",
+    res_EquipmentParts: "Equipment EXP", res_Magnet: "Magnet",
+    res_PotentialCoil: "Potential Gear", res_PrecisionEquipment: "Precision Equipment",
     troop_shieldbearer: "Shieldbearer",
     troop_bomber: "Bomber",
     troop_shooter: "Shooter",
-    equip_gloves: "Gloves", equip_helmet: "Helmet", equip_chest: "Jacket", equip_boots: "Boots",
+    equip_gloves: "Gloves", equip_helmet: "Helm", equip_chest: "Outerwear", equip_boots: "Boots",
     pairedMasteryLabel: "Mastery",
+    equiptier_start: "Not started",
+    equiptier_common: "Common", equiptier_uncommon: "Uncommon", equiptier_rare: "Rare", equiptier_epic: "Epic",
+    equiptier_legendary: "Legendary", equiptier_legendary_t1: "Legendary T1", equiptier_legendary_t2: "Legendary T2",
+    equiptier_exotic: "Exotic", equiptier_exotic_t1: "Exotic T1", equiptier_exotic_t2: "Exotic T2", equiptier_exotic_t3: "Exotic T3",
   },
   fr: {
     navBuildings: "Bâtiments & Recherches",
@@ -122,10 +126,10 @@ const I18N = {
     subtitle: "Gants, Casque, Veste, Bottes — suis la progression de l'équipement de héros de chaque troupe.",
     introTitle: "Ce que fait l'outil",
     introLead: "Planifie les améliorations de ton Équipement de Héros.",
-    introFeature1: "Chaque pièce a deux progressions liées : le Niveau (Parties d'équipement) et la Maîtrise (Équipement de précision)",
-    introFeature2: "Les prérequis sont résolus automatiquement — promouvoir au-delà du Niveau 100 nécessite une Maîtrise à un niveau précis",
+    introFeature1: "Chaque pièce a deux progressions liées : la Rareté (EXP d'équipement) et la Maîtrise (Équipement de précision)",
+    introFeature2: "Les prérequis sont résolus automatiquement — promouvoir au-delà de Légendaire nécessite une Maîtrise à un niveau précis",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements. Niveau et Maîtrise sont indépendants jusqu'au Niveau 100 — aucun prérequis dans un sens ou l'autre. Au-delà, chaque promotion (Légendaire T1 à 101, T2 à 120, Exotique à 140, T1 à 160, T2 à 180, T3 à 200) nécessite la Maîtrise au Niveau 10/11/12/13/14/15 respectivement. Le coût en Parties d'Équipement du palier Common Niveau 0→10 est estimé (≈ 970), en attendant les données confirmées.",
+    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements. Rareté et Maîtrise sont indépendantes jusqu'à Légendaire — aucun prérequis dans un sens ou l'autre. Au-delà, chaque promotion (Légendaire T1, T2, Exotique, T1, T2, T3) nécessite la Maîtrise au Niveau 10/11/12/13/14/15 respectivement. Une partie du coût total en EXP d'équipement du palier Commun est estimée (≈ 970 sur 2 620), en attendant les données confirmées.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -143,77 +147,61 @@ const I18N = {
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
-    res_EquipmentParts: "Parties d'Équipement", res_Magnet: "Aimant",
-    res_PotentialCoil: "Bobine Potentielle", res_PrecisionEquipment: "Équipement de Précision",
+    res_EquipmentParts: "EXP d'Équipement", res_Magnet: "Aimant",
+    res_PotentialCoil: "Engrenage Potentiel", res_PrecisionEquipment: "Équipement de Précision",
     troop_shieldbearer: "Déflecteurs",
     troop_bomber: "Bombardiers",
     troop_shooter: "Tireurs",
     equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Veste", equip_boots: "Bottes",
     pairedMasteryLabel: "Maîtrise",
+    equiptier_start: "Non commencé",
+    equiptier_common: "Commun", equiptier_uncommon: "Peu Commun", equiptier_rare: "Rare", equiptier_epic: "Épique",
+    equiptier_legendary: "Légendaire", equiptier_legendary_t1: "Légendaire T1", equiptier_legendary_t2: "Légendaire T2",
+    equiptier_exotic: "Exotique", equiptier_exotic_t1: "Exotique T1", equiptier_exotic_t2: "Exotique T2", equiptier_exotic_t3: "Exotique T3",
   },
 };
 
-// Levels 0->200. Common(0-20)/Uncommon(20-40)/Rare(40-60)/Epic(60-80)/
-// Legendary(80-100) use 4-6 small brackets each, ending in a one-time Magnet
-// cost when the rarity completes. None of this needs Mastery.
+// One entry per rarity tier (not per raw level — the underlying level ranges
+// are Common 0-20, Uncommon 20-40, Rare 40-60, Epic 60-80, Legendary 80-100,
+// then single-level promotions at 101/120/140/160/180/200). Each tier's cost
+// is the sum of its individual level-up brackets from the source table.
+// Common's total includes an estimated ~970 for the untracked Level 0->10
+// portion (only 11-15 and 16-20 were given) — fit from a geometric growth
+// curve across the 6 known Common/Uncommon brackets (within 5% on every
+// point) and extrapolated backward. Flagged in introNote, not verified.
 //
-// Beyond Level 100, leveling and promoting are the same bundled bracket cost
-// (Parts + Magnet + Coil) as before, but EACH promotion needs its own Mastery
-// threshold, confirmed directly from in-game observation:
-//   ->101 Legendary T1   needs Mastery Lv10 (folded into the "120" bracket
-//                         below, since reaching 120 already implies passing
-//                         through 101 — Mastery is a single ascending track,
-//                         so requiring Lv11 there covers both)
-//   ->120 Legendary T2   needs Mastery Lv11
-//   ->140 Exotic         needs Mastery Lv12
-//   ->160 Exotic T1      needs Mastery Lv13
-//   ->180 Exotic T2      needs Mastery Lv14
-//   ->200 Exotic T3      needs Mastery Lv15
-//
-// Common's 0->10 Equipment Parts cost isn't in the source (only 11-15 and
-// 16-20 were given) — estimated (~970) by fitting a geometric growth curve
-// to the 6 known Common/Uncommon brackets (fits within 5% on every point)
-// and extrapolating backward. Flagged in introNote, not verified in-game.
-const EQUIPMENT_COSTS = [
-  {lvl:"10",  parts:970},
-  {lvl:"15",  parts:700},
-  {lvl:"20",  parts:950,   magnet:20},
-  {lvl:"25",  parts:1200},
-  {lvl:"30",  parts:1460},
-  {lvl:"35",  parts:1900},
-  {lvl:"40",  parts:2420,  magnet:40},
-  {lvl:"45",  parts:3300},
-  {lvl:"50",  parts:4300},
-  {lvl:"55",  parts:5300},
-  {lvl:"60",  parts:6320,  magnet:120},
-  {lvl:"65",  parts:7700},
-  {lvl:"70",  parts:9220},
-  {lvl:"75",  parts:11100},
-  {lvl:"80",  parts:13000, magnet:200},
-  {lvl:"85",  parts:15500},
-  {lvl:"90",  parts:18000},
-  {lvl:"95",  parts:20500},
-  {lvl:"100", parts:23000, magnet:400},
-  {lvl:"120", parts:117000, magnet:600,  coil:20,  masteryReq:11},
-  {lvl:"140", parts:157000, magnet:1000, coil:40,  masteryReq:12},
-  {lvl:"160", parts:197000, magnet:1000, coil:60,  masteryReq:13},
-  {lvl:"180", parts:258000, magnet:2000, coil:80,  masteryReq:14},
-  {lvl:"200", parts:338200, magnet:2000, coil:100, masteryReq:15},
+// Legendary T1 itself costs nothing (it's the promotion at Level 101, gated
+// only by Mastery — the actual climb to Level 120 is what Legendary T2
+// costs). Each promotion beyond Legendary needs its own Mastery threshold,
+// confirmed directly from in-game observation (10/11/12/13/14/15).
+const EQUIPMENT_TIERS = [
+  { key:"common",       parts:2620 /* incl. ~970 estimated */, magnet:20 },
+  { key:"uncommon",     parts:6980,   magnet:40 },
+  { key:"rare",         parts:19220,  magnet:120 },
+  { key:"epic",         parts:41020,  magnet:200 },
+  { key:"legendary",    parts:77000,  magnet:400 },
+  { key:"legendary_t1", parts:0,                             masteryReq:10 },
+  { key:"legendary_t2", parts:117000, magnet:600,  coil:20,  masteryReq:11 },
+  { key:"exotic",       parts:157000, magnet:1000, coil:40,  masteryReq:12 },
+  { key:"exotic_t1",    parts:197000, magnet:1000, coil:60,  masteryReq:13 },
+  { key:"exotic_t2",    parts:258000, magnet:2000, coil:80,  masteryReq:14 },
+  { key:"exotic_t3",    parts:338200, magnet:2000, coil:100, masteryReq:15 },
 ];
 
 function makeEquipmentTrack(troopKey, slotKey){
-  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
-  EQUIPMENT_COSTS.forEach(c=>{
+  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
+  EQUIPMENT_TIERS.forEach(tier=>{
     const cost = zeroResources();
-    cost.EquipmentParts = c.parts;
-    cost.Magnet = c.magnet || 0;
-    cost.PotentialCoil = c.coil || 0;
-    const requires = c.masteryReq ? [{trackId:`mastery_${troopKey}_${slotKey}`, levelId:String(c.masteryReq)}] : [];
-    levels.push({ id:c.lvl, cost, requires });
+    cost.EquipmentParts = tier.parts || 0;
+    cost.Magnet = tier.magnet || 0;
+    cost.PotentialCoil = tier.coil || 0;
+    const requires = tier.masteryReq ? [{trackId:`mastery_${troopKey}_${slotKey}`, levelId:String(tier.masteryReq)}] : [];
+    levels.push({ id:tier.key, cost, requires });
   });
   return {
     id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
-    nameParts:["troop_"+troopKey, "equip_"+slotKey], levelStyle:"numeric",
+    nameParts:["troop_"+troopKey, "equip_"+slotKey],
+    levelStyle:"keyed", levelKeyPrefix:"equiptier_",
     pairedTrackId:`mastery_${troopKey}_${slotKey}`, pairedLabelKey:"pairedMasteryLabel",
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
