@@ -348,9 +348,14 @@ function groupedTracksHtml(tracks){
 }
 
 // A "dynamic" category starts with one item and adds tracks on demand.
+// Two categories can share one counter via dynamic.countKey (e.g. a "Hero"
+// count driving both a Star-progress category and an Exclusive-Equipment
+// category in lockstep, one instance of each per hero) — defaults to the
+// category's own key when unset, so unrelated categories don't collide.
 function syncDynamicCategory(catDef){
   if(!catDef || !catDef.dynamic) return;
-  const want = Math.max(0, state.counts[catDef.key] || 0);
+  const countKey = catDef.dynamic.countKey || catDef.key;
+  const want = Math.max(0, state.counts[countKey] || 0);
   let existing = state.tracks.filter(tr=>tr.category===catDef.key).sort((a,b)=>a.qtyIndex-b.qtyIndex);
   while(existing.length > want){
     const removed = existing.pop();
@@ -412,10 +417,13 @@ function renderCategories(){
     btn.addEventListener("click", ()=>{
       const key = btn.dataset.addItem;
       const catDef = CATEGORIES.find(c=>c.key===key);
+      const countKey = catDef.dynamic.countKey || catDef.key;
       const max = catDef.dynamic.max;
-      const nextCount = (state.counts[key] || 0) + 1;
-      state.counts[key] = max ? Math.min(nextCount, max) : nextCount;
-      syncDynamicCategory(catDef);
+      const nextCount = (state.counts[countKey] || 0) + 1;
+      state.counts[countKey] = max ? Math.min(nextCount, max) : nextCount;
+      // Sync every category sharing this counter, not just the one clicked —
+      // keeps a "one instance per hero" pair of categories in lockstep.
+      CATEGORIES.filter(c=>c.dynamic && (c.dynamic.countKey||c.key)===countKey).forEach(syncDynamicCategory);
       save();
     });
   });

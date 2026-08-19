@@ -10,7 +10,7 @@ A multi-page tool to calculate how many resources you're missing to reach a targ
 - **`tomes.html`** — Tomes & Collections: all 6 tomes per troop type (Level 0 → 12), and the Trove Collection sequence (Uncommon → Exotic T3). Resources: Seal of Wisdom, Seal of Knowledge, Common/Rare/Precious/Legendary Trove Coin.
 - **`robots.html`** — Robots & Satellites: Prisoner Armor upgrades (Level 0 → 100, in steps of 10) for up to 12 robots (Prisoner Armor Data, Power Module, Advanced Power Module), plus each named Satellite's own progress, also in steps of 10 — R: Laser/Observer/Radiance (Level 0 → 50), SR: Arbiter/Sentinel (Level 0 → 70), SSR: Omniscient Domain/Celestial Nexus/Argus/Polaris (Level 0 → 90) — using Data Disk and Planet Coin.
 - **`heroequipment.html`** — Hero Equipment: Gloves/Helm/Outerwear/Boots for each of the 3 troop types (12 pieces total). Each piece has two linked progressions shown on the same card — Rarity (Equipment EXP, Common through Exotic T3 — Common itself is free, each tier's cost is what it takes to reach the next one) and Mastery (Precision Equipment, Level 0 → 20). Rarity and Mastery are independent through Legendary; beyond that, each promotion (Legendary T1 through Exotic T3) requires Mastery at an increasing threshold (10 through 15), resolved automatically. Resources: Equipment EXP, Magnet, Potential Coil, Precision Equipment.
-- More routes planned: Hero Stars & Exclusive Equipment.
+- **`herostars.html`** — Hero Stars & Exclusive Equipment: up to 6 heroes, each with a Star-progress track (recruit for 10 Legendary Hero Fragments at 0 stars, then 5 stars costing 10/40/115/300/600 Fragments — 1,075 total to max) and an Exclusive Equipment track (Level 0 → 10, 550 Exclusive Equipment Pieces total). One "+ Add Hero" button grows both tracks together.
 
 Every route works the same way: set a current level and a target level for each item, prerequisites resolve automatically, and the app totals up exactly what you're missing per resource.
 
@@ -42,6 +42,5 @@ Connected to Vercel. Work happens on the `dev` branch and deploys to a private p
 - FC Lab's own level costs aren't modeled yet (treated as already maxed).
 - Per-troop-type research cost differences aren't confirmed — all three trees (Shooter/Bomber/Shieldbearer) currently share the same placeholder numbers.
 - Building/research/tome names shown in French are best-effort translations, not yet verified against in-game text.
-- Hero Stars & Exclusive Equipment route is not built yet.
 - The R Satellite's Level 40 → 50 Data Disk cost is an estimate (~11,230), not confirmed data — see the in-app note on that route.
 - Part of Hero Equipment's Uncommon step cost (~970 of its 2,620 total Equipment EXP, inherited from the untracked Common Level 0→10 range) is an estimate, not confirmed data — see the in-app note on that route.

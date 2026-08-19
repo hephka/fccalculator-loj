@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero Stars &amp; Exclusive Equipment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html" data-navkey="navBuildings">Buildings &amp; Research</a>
+    <a class="nav-link" href="tomes.html" data-navkey="navTomes">Tomes &amp; Collections</a>
+    <a class="nav-link" href="robots.html" data-navkey="navRobots">Robots &amp; Satellites</a>
+    <a class="nav-link" href="heroequipment.html" data-navkey="navHeroEquipment">Hero Equipment</a>
+    <a class="nav-link" href="herostars.html" data-navkey="navHeroStars">Hero Stars</a>
+  </nav>
+
+  <div class="topbar">
+    <div>
+      <p class="brand-eyebrow" id="brandTitle">Resource Calculator - LoJ</p>
+      <h1>⭐ <span id="appTitle">Hero Stars &amp; Exclusive Equipment</span></h1>
+      <p class="sub" id="appSubtitle">Track your heroes' star and exclusive equipment progress.</p>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
+  </div>
+
+  <div class="card intro-card">
+    <div class="intro-title"><span>🧭</span><span id="introTitle">What this does</span></div>
+    <p class="intro-lead" id="introLead"></p>
+    <div class="intro-features" id="introFeatures"></div>
+    <p class="intro-note" id="introNote"></p>
+  </div>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger"></button>
+  </div>
+
+  <div class="card">
+    <h2 id="stockHeading">Current stock</h2>
+    <div class="stock-grid" id="stockGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="missingHeading">What you're missing</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div id="categories"></div>
+
+  <footer id="footerText"></footer>
+</div>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+const RESOURCES = ["HeroFragment","ExclusiveEquipPart"];
+const STORAGE_KEY = "resource-calc-herostars-state-v1";
+const SCHEMA_VERSION = 1;
+const RES_ACCENT = {
+  HeroFragment:"#ffd60a", ExclusiveEquipPart:"#5b8cff",
+};
+const PARTS = [
+  { key:"stars", labelKey:"partStars", icon:"⭐" },
+  { key:"equipment", labelKey:"partEquipment", icon:"⚔️" },
+];
+// One "+ Add Hero" press grows both categories together (countKey:"Hero"),
+// since every hero has exactly one Star-progress track and one Exclusive
+// Equipment track.
+const CATEGORIES = [
+  { key:"HeroStar", labelKey:"catHeroStar", icon:"⭐", grouped:false, part:"stars",
+    dynamic:{addLabelKey:"addHero", makeTrack:makeHeroStarTrack, max:6, countKey:"Hero"} },
+  { key:"ExclusiveEquip", labelKey:"catExclusiveEquip", icon:"⚔️", grouped:false, part:"equipment",
+    dynamic:{addLabelKey:"addHero", makeTrack:makeExclusiveEquipTrack, max:6, countKey:"Hero"} },
+];
+
+const I18N = {
+  en: {
+    navBuildings: "Buildings & Research",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    navHeroEquipment: "Hero Equipment",
+    navHeroStars: "Hero Stars",
+    title: "Hero Stars & Exclusive Equipment - LoJ",
+    appBrand: "Resource Calculator - LoJ",
+    pageTitle: "Hero Stars & Exclusive Equipment",
+    subtitle: "Recruit and star up your heroes, and upgrade their exclusive equipment.",
+    introTitle: "What this does",
+    introLead: "Plan your heroes' star and exclusive equipment upgrades.",
+    introFeature1: "Track each hero individually, then set its current level and target",
+    introFeature2: "Prerequisites are resolved automatically — no manual math",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    introNote: "Cost is identical across all heroes. Recruiting costs 10 Hero Fragments, then each star (1 through 5) costs its own bundle of Fragments (10/40/115/300/600) — 1,075 total to fully max a hero. Exclusive Equipment goes from Level 0 to 10 (550 Exclusive Equipment Parts total). Adding a hero adds one of each to track together.",
+    resetButton: "↺ Reset to default values",
+    resetConfirm: "Click again to confirm ↺",
+    currentStock: "Current stock",
+    whatMissing: "What you're missing",
+    needed: "needed",
+    missing: "Missing",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "No target set yet — pick a target level on a hero below.",
+    colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
+    autoAdded: "(auto-added — prerequisite)",
+    partStars: "Hero Stars", partEquipment: "Exclusive Equipment",
+    catHeroStar: "Hero Stars", catExclusiveEquip: "Exclusive Equipment",
+    targetSet: "target set", noTarget: "no target",
+    current: "Current", target: "Target",
+    stageWord: "stage", levelWord: "Level",
+    footer: "Data is stored only in your browser (localStorage).",
+    res_HeroFragment: "Legendary Hero Fragment", res_ExclusiveEquipPart: "Exclusive Equipment Piece",
+    addHero: "+ Add Hero",
+    heroLabel: "Hero {n}",
+    herostartier_start: "Not recruited",
+    herostartier_recruited: "Recruited (0 stars)",
+    herostartier_star1: "1 star", herostartier_star2: "2 stars", herostartier_star3: "3 stars",
+    herostartier_star4: "4 stars", herostartier_star5: "5 stars",
+  },
+  fr: {
+    navBuildings: "Bâtiments & Recherches",
+    navTomes: "Tomes & Collections",
+    navRobots: "Robots & Satellites",
+    navHeroEquipment: "Équipement de Héros",
+    navHeroStars: "Étoiles de Héros",
+    title: "Étoiles de Héros & Équipement Exclusif - LoJ",
+    appBrand: "Calculateur de ressources - LoJ",
+    pageTitle: "Étoiles de Héros & Équipement Exclusif",
+    subtitle: "Recrute et fais monter en étoiles tes héros, et améliore leur équipement exclusif.",
+    introTitle: "Ce que fait l'outil",
+    introLead: "Planifie les améliorations d'étoiles et d'équipement exclusif de tes héros.",
+    introFeature1: "Suis chaque héros individuellement, puis fixe son niveau actuel et sa cible",
+    introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    introNote: "Le coût est identique pour tous les héros. Le recrutement coûte 10 Fragments de héros, puis chaque étoile (1 à 5) coûte son propre lot de Fragments (10/40/115/300/600) — 1 075 au total pour un héros à fond. L'Équipement Exclusif va du Niveau 0 à 10 (550 Pièces d'Équipement Exclusif au total). Ajouter un héros ajoute une instance de chaque à suivre ensemble.",
+    resetButton: "↺ Réinitialiser aux valeurs par défaut",
+    resetConfirm: "Clique à nouveau pour confirmer ↺",
+    currentStock: "Stock actuel",
+    whatMissing: "Ce qu'il te manque",
+    needed: "nécessaire",
+    missing: "Manque",
+    okSurplus: "OK (surplus {n})",
+    noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un héros ci-dessous.",
+    colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
+    autoAdded: "(ajouté auto. — prérequis)",
+    partStars: "Étoiles de Héros", partEquipment: "Équipement Exclusif",
+    catHeroStar: "Étoiles de Héros", catExclusiveEquip: "Équipement Exclusif",
+    targetSet: "objectif défini", noTarget: "aucun objectif",
+    current: "Actuel", target: "Cible",
+    stageWord: "palier", levelWord: "Niveau",
+    footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    res_HeroFragment: "Fragment de héros légendaire", res_ExclusiveEquipPart: "Pièce d'équipement exclusif",
+    addHero: "+ Ajouter un Héros",
+    heroLabel: "Héros {n}",
+    herostartier_start: "Non recruté",
+    herostartier_recruited: "Recruté (0 étoile)",
+    herostartier_star1: "1 étoile", herostartier_star2: "2 étoiles", herostartier_star3: "3 étoiles",
+    herostartier_star4: "4 étoiles", herostartier_star5: "5 étoiles",
+  },
+};
+
+// Recruiting (10 Fragments) unlocks the hero at 0 stars, then each star
+// (1-5) is its own bundle of 6 internal steps, collapsed into one selectable
+// checkpoint per star (matching how the source guide totals them):
+//   Star 1: 1+1+2+2+2+2  = 10   Star 4: 40x5+100      = 300
+//   Star 2: 5x5+15       = 40   Star 5: 100x6          = 600
+//   Star 3: 15x5+40      = 115
+const HERO_STAR_COSTS = [
+  { key:"recruited", fragments:10 },
+  { key:"star1", fragments:10 },
+  { key:"star2", fragments:40 },
+  { key:"star3", fragments:115 },
+  { key:"star4", fragments:300 },
+  { key:"star5", fragments:600 },
+];
+
+function makeHeroStarTrack(idx){
+  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
+  HERO_STAR_COSTS.forEach(c=>{
+    const cost = zeroResources();
+    cost.HeroFragment = c.fragments;
+    levels.push({ id:c.key, cost, requires:[] });
+  });
+  return {
+    id:`herostar_${idx}`, category:"HeroStar", qtyIndex:idx,
+    nameParts:[{key:"heroLabel", vars:{n:idx}}],
+    levelStyle:"keyed", levelKeyPrefix:"herostartier_",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+// Levels 0->10, one by one (confirmed source table, no discrepancies).
+const EXCLUSIVE_EQUIP_COSTS = [10,25,25,45,45,65,65,85,85,100];
+
+function makeExclusiveEquipTrack(idx){
+  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  EXCLUSIVE_EQUIP_COSTS.forEach((partsCost,i)=>{
+    const cost = zeroResources();
+    cost.ExclusiveEquipPart = partsCost;
+    levels.push({ id:String(i+1), cost, requires:[] });
+  });
+  return {
+    id:`exclusiveequip_${idx}`, category:"ExclusiveEquip", qtyIndex:idx,
+    nameParts:[{key:"heroLabel", vars:{n:idx}}], levelStyle:"numeric",
+    currentLevelIndex:0, targetLevelIndex:0, levels
+  };
+}
+
+function defaultData(){
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    stock: zeroResources(),
+    counts: { Hero:1 },
+    tracks: [makeHeroStarTrack(1), makeExclusiveEquipTrack(1)]
+  };
+}
+
+function summaryResourceKeys(totals){
+  return RESOURCES.filter(resource => totals[resource] > 0);
+}
+</script>
+<script src="shared.js"></script>
+<script>initApp();</script>
+</body>
+</html>
