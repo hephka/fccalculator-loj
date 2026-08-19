@@ -140,6 +140,30 @@ function refreshSummary(){
 function trackById(id){ return state.tracks.find(t=>t.id===id); }
 function levelIndexOf(track, levelId){ return track.levels.findIndex(l=>l.id===levelId); }
 
+// If a track's `requires` chain gates some of its levels behind its paired
+// track (see trackHtml/pairedTrackId), reaching one of those levels implies
+// the paired track's own current level must already be at least that high —
+// e.g. being at "Legendary T2" already implies Mastery >= 11, since that
+// promotion required it. Called whenever a track's own current level
+// changes, so the paired track's current level is floored accordingly
+// (never lowered — the user may have leveled it further already).
+function applyImpliedPairedCurrent(tr){
+  if(!tr.pairedTrackId) return;
+  const paired = trackById(tr.pairedTrackId);
+  if(!paired) return;
+  let impliedMin = 0;
+  for(let i=0;i<=tr.currentLevelIndex;i++){
+    const lvl = tr.levels[i];
+    if(!lvl) continue;
+    (lvl.requires||[]).forEach(r=>{
+      if(r.trackId!==paired.id) return;
+      const idx = levelIndexOf(paired, r.levelId);
+      if(idx>impliedMin) impliedMin = idx;
+    });
+  }
+  if(impliedMin > paired.currentLevelIndex) paired.currentLevelIndex = impliedMin;
+}
+
 function computeCascade(){
   const required = {};
   state.tracks.forEach(t=> required[t.id] = Math.max(t.currentLevelIndex, t.targetLevelIndex||0));
@@ -379,7 +403,10 @@ function renderCategories(){
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
-    trackById(s.dataset.cur).currentLevelIndex = Number(e.target.value); save();
+    const tr = trackById(s.dataset.cur);
+    tr.currentLevelIndex = Number(e.target.value);
+    applyImpliedPairedCurrent(tr);
+    save();
   }));
   cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
     trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
@@ -457,6 +484,11 @@ function initApp(){
     }
   });
   document.documentElement.lang = lang;
+  // Repairs saved state from before applyImpliedPairedCurrent existed (or
+  // from any direct state edit): a track's current level may imply a higher
+  // paired-track current level than what's actually stored.
+  state.tracks.forEach(applyImpliedPairedCurrent);
+  persist();
   renderChrome();
   render();
 }
