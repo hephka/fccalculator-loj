@@ -166,7 +166,7 @@ const SAT_R_COSTS = [
   {lvl:"20", dd:2840,  pc:20},
   {lvl:"30", dd:4730,  pc:40},
   {lvl:"40", dd:7480,  pc:60},
-  {lvl:"50", dd:11230, pc:80}, // dd estimated, not confirmed — see introNote
+  {lvl:"50", dd:11230, pc:80, estimated:true}, // dd estimated, not confirmed — see introNote
 ];
 
 // Levels 0->70, in steps of 10.
@@ -211,7 +211,7 @@ function makeSatelliteTrack(id, category, nameKey, costs){
     const cost = zeroResources();
     cost.DataDisk = c.dd;
     cost.PlanetCoin = c.pc;
-    levels.push({ id:c.lvl, cost, requires:[] });
+    levels.push({ id:c.lvl, cost, requires:[], estimated:!!c.estimated });
   });
   return {
     id, category,

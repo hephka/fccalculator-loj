@@ -125,4 +125,6 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
 .breakdown th,.breakdown td{white-space:nowrap}
 .breakdown td.cost-cell{white-space:normal;min-width:180px}
 .auto-tag{color:var(--warn);font-size:.72rem}
+.estimated-tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);border-radius:4px;
+  font-size:.68rem;line-height:1;padding:2px 4px;margin-left:4px;cursor:help}
 footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px;opacity:.8}

@@ -217,6 +217,35 @@ for (const file of ROUTE_FILES) {
 // (I18N page override, or falling back to I18N_CHROME) rather than silently
 // rendering the bare key name.
 console.log("\x1b[1mCross-page consistency\x1b[0m");
+
+// --- I18N_CHROME itself: EN/FR key + {placeholder} parity ---
+{
+  const sb = Object.values(sandboxes)[0];
+  const chrome = sb && sb.I18N_CHROME;
+  if (chrome) {
+    const enKeys = Object.keys(chrome.en).sort();
+    const frKeys = Object.keys(chrome.fr).sort();
+    const onlyEn = enKeys.filter((k) => !frKeys.includes(k));
+    const onlyFr = frKeys.filter((k) => !enKeys.includes(k));
+    if (onlyEn.length || onlyFr.length) {
+      fail(`I18N_CHROME key mismatch — only in EN: ${JSON.stringify(onlyEn)}, only in FR: ${JSON.stringify(onlyFr)}`);
+    } else {
+      pass(`I18N_CHROME EN/FR parity (${enKeys.length} keys each)`);
+    }
+    const placeholderMismatch = enKeys.filter((k) => {
+      if (!chrome.fr[k] || typeof chrome.en[k] !== "string") return false;
+      const varsEn = (chrome.en[k].match(/\{\w+\}/g) || []).sort().join(",");
+      const varsFr = (chrome.fr[k].match(/\{\w+\}/g) || []).sort().join(",");
+      return varsEn !== varsFr;
+    });
+    if (placeholderMismatch.length) {
+      fail(`I18N_CHROME {placeholder} mismatch between EN/FR: ${placeholderMismatch.join(", ")}`);
+    } else {
+      pass("I18N_CHROME EN/FR placeholder consistency");
+    }
+  }
+}
+
 const NAV_KEYS = ["navBuildings", "navTomes", "navRobots", "navHeroEquipment", "navHeroStars"];
 let chromeMissing = [];
 NAV_KEYS.forEach((k) => {

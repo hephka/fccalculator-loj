@@ -73,6 +73,8 @@ const I18N_CHROME = {
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
+    dataUpdated: "Data last updated: {date}",
+    estimatedNote: "Includes an estimated value, not yet confirmed — see the note above.",
   },
   fr: {
     navBuildings: "Bâtiments & Recherches", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
@@ -89,11 +91,20 @@ const I18N_CHROME = {
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+    dataUpdated: "Données mises à jour le {date}",
+    estimatedNote: "Inclut une valeur estimée, pas encore confirmée — voir la note ci-dessus.",
   },
 };
 
 const LANG_KEY = "resource-calc-lang";
 let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
+
+// Bump this by hand whenever any route's game data (costs, requires) changes
+// — shown in the footer so visitors can tell how fresh the numbers are.
+const DATA_UPDATED = "2026-08-20";
+function formattedDataUpdated(){
+  return new Date(DATA_UPDATED+"T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { year:"numeric", month:"long", day:"numeric" });
+}
 
 function t(key, vars){
   const dict = I18N[lang] || {};
@@ -258,15 +269,18 @@ function computeCascade(){
     const reqIdx = required[t.id];
     if(reqIdx > t.currentLevelIndex){
       const rowCost = zeroResources();
+      let estimated = false;
       for(let i=t.currentLevelIndex+1;i<=reqIdx;i++){
         const lvl = t.levels[i];
         if(!lvl) continue;
         RESOURCES.forEach(r=> rowCost[r]+= (lvl.cost[r]||0));
+        if(lvl.estimated) estimated = true;
       }
       RESOURCES.forEach(r=> totals[r]+=rowCost[r]);
       breakdown.push({
         track:t, from:t.currentLevelIndex, to:reqIdx, cost:rowCost,
-        auto: autoBumped[t.id] && reqIdx > (t.targetLevelIndex||0)
+        auto: autoBumped[t.id] && reqIdx > (t.targetLevelIndex||0),
+        estimated
       });
     }
   });
@@ -285,7 +299,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").textContent = t("footer");
+  document.getElementById("footerText").innerHTML = `${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
@@ -316,8 +330,8 @@ function renderStock(){
   const grid = document.getElementById("stockGrid");
   grid.innerHTML = RESOURCES.map(r=>`
     <div class="stock-item">
-      <label style="color:${RES_ACCENT[r]}">${resourceLabel(r)}</label>
-      <input type="text" inputmode="numeric" data-stock="${r}" value="${state.stock[r]}">
+      <label for="stock-${r}" style="color:${RES_ACCENT[r]}">${resourceLabel(r)}</label>
+      <input type="text" inputmode="numeric" id="stock-${r}" data-stock="${r}" value="${state.stock[r]}">
     </div>`).join("");
   // type="text" (not "number") is deliberate: number inputs silently discard
   // whatever's typed while it's mid-invalid (e.g. just "-"), which fights
@@ -362,7 +376,7 @@ function renderBreakdown(breakdown){
       <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
       <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
       <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
-      <td class="cost-cell">${cost}</td>
+      <td class="cost-cell">${cost} ${b.estimated?`<span class="estimated-tag" title="${t("estimatedNote")}">≈</span>`:''}</td>
     </tr>`;
     }).join("")}
   </tbody></table>`;
@@ -500,14 +514,14 @@ function trackHtml(tr){
       <span class="track-name">${trackShortName(tr)}</span>
       <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>
       <div class="track-controls">
-        <span class="field">${t("current")}: <select data-cur="${tr.id}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
-        <span class="field">${t("target")}: <select data-tgt="${tr.id}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
+        <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
+        <span class="field">${t("target")}: <select data-tgt="${tr.id}" aria-label="${t("target")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
       </div>
       ${paired ? `
       <div class="track-controls paired-controls">
         <span class="paired-label">${t(tr.pairedLabelKey)}</span>
-        <span class="field">${t("current")}: <select data-cur="${paired.id}">${optionsWithSelected(paired,paired.currentLevelIndex)}</select></span>
-        <span class="field">${t("target")}: <select data-tgt="${paired.id}">${optionsWithSelected(paired,paired.targetLevelIndex)}</select></span>
+        <span class="field">${t("current")}: <select data-cur="${paired.id}" aria-label="${t("current")} — ${trackShortName(tr)} (${t(tr.pairedLabelKey)})">${optionsWithSelected(paired,paired.currentLevelIndex)}</select></span>
+        <span class="field">${t("target")}: <select data-tgt="${paired.id}" aria-label="${t("target")} — ${trackShortName(tr)} (${t(tr.pairedLabelKey)})">${optionsWithSelected(paired,paired.targetLevelIndex)}</select></span>
       </div>` : ""}
     </div>
   </div>`;

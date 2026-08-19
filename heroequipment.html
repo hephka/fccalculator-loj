@@ -137,7 +137,7 @@ const I18N = {
 // backward. Flagged in introNote, not verified.
 const EQUIPMENT_TIERS = [
   { key:"common",       parts:0 },
-  { key:"uncommon",     parts:2620 /* incl. ~970 estimated */, magnet:20 },
+  { key:"uncommon",     parts:2620 /* incl. ~970 estimated */, magnet:20, estimated:true },
   { key:"rare",         parts:6980,   magnet:40 },
   { key:"epic",         parts:19220,  magnet:120 },
   { key:"legendary",    parts:41020,  magnet:200 },
@@ -157,7 +157,7 @@ function makeEquipmentTrack(troopKey, slotKey){
     cost.Magnet = tier.magnet || 0;
     cost.PotentialCoil = tier.coil || 0;
     const requires = tier.masteryReq ? [{trackId:`mastery_${troopKey}_${slotKey}`, levelId:String(tier.masteryReq)}] : [];
-    levels.push({ id:tier.key, cost, requires });
+    levels.push({ id:tier.key, cost, requires, estimated:!!tier.estimated });
   });
   return {
     id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
