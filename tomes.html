@@ -39,10 +39,6 @@
     <p class="intro-note" id="introNote"></p>
   </div>
 
-  <div class="toolbar">
-    <button id="btnReset" class="danger"></button>
-  </div>
-
   <div class="card">
     <h2 id="stockHeading">Current stock</h2>
     <div class="stock-grid" id="stockGrid"></div>
@@ -55,6 +51,10 @@
   </div>
 
   <div id="categories"></div>
+
+  <div class="toolbar">
+    <button id="btnReset" class="danger"></button>
+  </div>
 
   <footer id="footerText"></footer>
 </div>
@@ -219,9 +219,6 @@ function defaultData(){
   };
 }
 
-function summaryResourceKeys(totals){
-  return RESOURCES.filter(resource => totals[resource] > 0);
-}
 </script>
 <script src="shared.js"></script>
 <script>initApp();</script>

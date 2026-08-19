@@ -352,15 +352,19 @@ function renderStock(){
 
 function renderSummary(totals, breakdown){
   const grid = document.getElementById("summaryGrid");
+  // A route can define its own summaryResourceKeys(totals, breakdown) to
+  // override which resources appear; every route that hasn't gets the
+  // sensible default of "only resources actually needed" instead of a
+  // fixed-column list padded with "0 needed" cards.
   const visibleResources = typeof summaryResourceKeys === "function"
     ? summaryResourceKeys(totals, breakdown)
-    : RESOURCES;
+    : RESOURCES.filter(r=> totals[r] > 0);
   grid.innerHTML = visibleResources.map(r=>{
     const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
     return `<div class="res-card" style="--accent-color:${RES_ACCENT[r]}">
       <div class="name"><span class="res-dot" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</div>
       <div class="need">${fmt(need)} ${t("needed")}</div>
-      <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? t("missing")+" "+fmt(missing) : t("okSurplus",{n:fmt(-missing)})}</div>
+      <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? t("missing")+" "+fmt(missing) : t("okSurplus",{n:fmt(Math.abs(missing))})}</div>
     </div>`;
   }).join("");
 }

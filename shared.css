@@ -31,7 +31,7 @@ body{
 .wrap{max-width:960px;margin:0 auto;padding:24px 16px 90px}
 
 .nav-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.nav-link{border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:border-color .15s,color .15s,background .15s}
+.nav-link{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:border-color .15s,color .15s,background .15s}
 .nav-link:hover{border-color:var(--accent);color:var(--text)}
 .nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
@@ -40,7 +40,7 @@ body{
 h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
 .sub{color:var(--muted);font-size:.92rem;margin:0;max-width:520px;line-height:1.5}
 .lang-switch{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
-.lang-btn{border:none;padding:8px 14px;background:var(--panel);color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
+.lang-btn{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:none;padding:8px 14px;background:var(--panel);color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
 .lang-btn.active{background:var(--accent);color:#fff}
 .lang-btn:not(.active):hover{background:var(--panel-2);color:var(--text)}
 
@@ -127,7 +127,7 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
 .auto-tag{color:var(--warn);font-size:.72rem}
 .estimated-tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);border-radius:4px;
   font-size:.68rem;line-height:1;padding:2px 4px;margin-left:4px;cursor:help}
-footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px;opacity:.8}
+footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
 
 /* Fixed bar mirroring "what's missing" so the numbers stay on screen while
    scrolling through tracks far below the summary card — see renderStickyBar
