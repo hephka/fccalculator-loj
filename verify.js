@@ -42,7 +42,7 @@ function loadPage(file) {
   // pull out what we need via one more run in the *same* context, where
   // those bindings are still visible.
   const exported = vm.runInContext(
-    `({ RESOURCES, RES_ACCENT, I18N, CATEGORIES, PARTS: (typeof PARTS!=="undefined"?PARTS:null), defaultData, STORAGE_KEY, SCHEMA_VERSION })`,
+    `({ RESOURCES, RES_ACCENT, I18N, I18N_CHROME, CATEGORIES, PARTS: (typeof PARTS!=="undefined"?PARTS:null), defaultData, STORAGE_KEY, SCHEMA_VERSION })`,
     sandbox
   );
   return exported;
@@ -211,23 +211,42 @@ for (const file of ROUTE_FILES) {
 // ---------------------------------------------------------------------------
 // Cross-page checks: every page's nav should offer the same routes, and
 // storage keys must never collide (or one route's saved progress silently
-// clobbers another's).
+// clobbers another's). Nav labels themselves live once in shared.js's
+// I18N_CHROME (not per-page) — so consistency across pages is structural,
+// but each page must still actually resolve every nav key to a real string
+// (I18N page override, or falling back to I18N_CHROME) rather than silently
+// rendering the bare key name.
 console.log("\x1b[1mCross-page consistency\x1b[0m");
-const navKeyPattern = /navHeroStars|navHeroEquipment|navRobots|navTomes|navBuildings/g;
-const navKeySets = ROUTE_FILES.map((f) => {
+const NAV_KEYS = ["navBuildings", "navTomes", "navRobots", "navHeroEquipment", "navHeroStars"];
+let chromeMissing = [];
+NAV_KEYS.forEach((k) => {
+  ["en", "fr"].forEach((lang) => {
+    const sb = Object.values(sandboxes)[0];
+    if (sb && sb.I18N_CHROME && !(k in sb.I18N_CHROME[lang])) chromeMissing.push(`${lang}.${k}`);
+  });
+});
+if (chromeMissing.length) {
+  fail(`I18N_CHROME missing nav keys: ${chromeMissing.join(", ")}`);
+} else {
+  pass("I18N_CHROME defines all 5 nav keys in both languages");
+}
+
+let navResolveIssues = [];
+ROUTE_FILES.forEach((f) => {
   const sb = sandboxes[f];
-  if (!sb) return null;
-  return new Set(Object.keys(sb.I18N.en).filter((k) => k.startsWith("nav")));
+  if (!sb) return;
+  NAV_KEYS.forEach((k) => {
+    ["en", "fr"].forEach((lang) => {
+      const resolved = (sb.I18N[lang] && sb.I18N[lang][k]) || (sb.I18N_CHROME[lang] && sb.I18N_CHROME[lang][k]);
+      if (!resolved) navResolveIssues.push(`${f}: ${lang}.${k} does not resolve to any value`);
+    });
+  });
 });
-const firstNavSet = navKeySets.find(Boolean);
-let navMismatch = false;
-ROUTE_FILES.forEach((f, i) => {
-  if (!navKeySets[i] || !firstNavSet) return;
-  const a = [...navKeySets[i]].sort().join(",");
-  const b = [...firstNavSet].sort().join(",");
-  if (a !== b) { fail(`${f} has a different nav key set than the others`); navMismatch = true; }
-});
-if (!navMismatch) pass("every page defines the same set of nav keys");
+if (navResolveIssues.length) {
+  navResolveIssues.forEach((m) => fail(m));
+} else {
+  pass("every page resolves all 5 nav keys in both languages");
+}
 
 const storageKeys = ROUTE_FILES.map((f) => sandboxes[f] && sandboxes[f].STORAGE_KEY).filter(Boolean);
 const uniqueStorageKeys = new Set(storageKeys);

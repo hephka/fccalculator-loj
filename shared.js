@@ -52,11 +52,53 @@
 // pageTitle  - this route's own name shown in the h1 (e.g. "Robots & Satellites"),
 //              without the "- LoJ" suffix
 
+// Chrome text that's word-for-word identical across every route (nav links,
+// generic buttons, table headers, ...) lives here once instead of being
+// retyped in each page's own I18N block. A page's I18N always wins when a
+// key exists in both (see t() below), so a route can still override any of
+// these — e.g. Tomes overrides noTargetHint with wording specific to tomes.
+const I18N_CHROME = {
+  en: {
+    navBuildings: "Buildings & Research", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
+    navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars",
+    appBrand: "Resource Calculator - LoJ",
+    introTitle: "What this does",
+    introFeature3: "See exactly what you're missing, resource by resource",
+    resetButton: "↺ Reset to default values", resetConfirm: "Click again to confirm ↺",
+    currentStock: "Current stock", whatMissing: "What you're missing",
+    needed: "needed", missing: "Missing", okSurplus: "OK (surplus {n})",
+    colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
+    autoAdded: "(auto-added — prerequisite)",
+    targetSet: "target set", noTarget: "no target",
+    current: "Current", target: "Target",
+    stageWord: "stage", levelWord: "Level",
+    footer: "Data is stored only in your browser (localStorage).",
+  },
+  fr: {
+    navBuildings: "Bâtiments & Recherches", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
+    navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros",
+    appBrand: "Calculateur de ressources - LoJ",
+    introTitle: "Ce que fait l'outil",
+    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
+    resetButton: "↺ Réinitialiser aux valeurs par défaut", resetConfirm: "Clique à nouveau pour confirmer ↺",
+    currentStock: "Stock actuel", whatMissing: "Ce qu'il te manque",
+    needed: "nécessaire", missing: "Manque", okSurplus: "OK (surplus {n})",
+    colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
+    autoAdded: "(ajouté auto. — prérequis)",
+    targetSet: "objectif défini", noTarget: "aucun objectif",
+    current: "Actuel", target: "Cible",
+    stageWord: "palier", levelWord: "Niveau",
+    footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
+  },
+};
+
 const LANG_KEY = "resource-calc-lang";
 let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
 
 function t(key, vars){
-  let s = (I18N[lang] && I18N[lang][key]) || key;
+  const dict = I18N[lang] || {};
+  const chrome = I18N_CHROME[lang] || {};
+  let s = key in dict ? dict[key] : (key in chrome ? chrome[key] : key);
   if(vars) Object.keys(vars).forEach(k=> s = s.replace(`{${k}}`, vars[k]));
   return s;
 }
