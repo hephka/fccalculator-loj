@@ -61,7 +61,7 @@
 <script>
 const RESOURCES = ["EquipmentParts","PrecisionEquipment","Magnet","PotentialCoil"];
 const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const RES_ACCENT = {
   EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#ff5c72", PrecisionEquipment:"#ffb648",
 };
@@ -85,7 +85,7 @@ const I18N = {
     introFeature1: "Each piece has two linked progressions: Rarity (Equipment EXP) and Mastery (Precision Equipment)",
     introFeature2: "Prerequisites are resolved automatically — promoting past Legendary needs Mastery at a specific level",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all troops and equipment slots. Rarity and Mastery are independent through Legendary — no prerequisite either way. Beyond that, each promotion (Legendary T1, T2, Exotic, T1, T2, T3) requires Mastery at Level 10/11/12/13/14/15 respectively. Part of the Common tier's total Equipment EXP cost is estimated (≈ 970 out of 2,620), pending confirmed data.",
+    introNote: "Cost is identical across all troops and equipment slots. Rarity and Mastery are independent through Legendary — no prerequisite either way. Common itself is free (every piece starts there); each tier's cost is what it takes to reach the next one. Beyond Legendary, each promotion (Legendary T1, T2, Exotic, T1, T2, T3) requires Mastery at Level 10/11/12/13/14/15 respectively. Part of the Uncommon step's total Equipment EXP cost is estimated (≈ 970 out of 2,620), pending confirmed data.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -110,7 +110,6 @@ const I18N = {
     troop_shooter: "Shooter",
     equip_gloves: "Gloves", equip_helmet: "Helm", equip_chest: "Outerwear", equip_boots: "Boots",
     pairedMasteryLabel: "Mastery",
-    equiptier_start: "Not started",
     equiptier_common: "Common", equiptier_uncommon: "Uncommon", equiptier_rare: "Rare", equiptier_epic: "Epic",
     equiptier_legendary: "Legendary", equiptier_legendary_t1: "Legendary T1", equiptier_legendary_t2: "Legendary T2",
     equiptier_exotic: "Exotic", equiptier_exotic_t1: "Exotic T1", equiptier_exotic_t2: "Exotic T2", equiptier_exotic_t3: "Exotic T3",
@@ -129,7 +128,7 @@ const I18N = {
     introFeature1: "Chaque pièce a deux progressions liées : la Rareté (EXP d'équipement) et la Maîtrise (Équipement de précision)",
     introFeature2: "Les prérequis sont résolus automatiquement — promouvoir au-delà de Légendaire nécessite une Maîtrise à un niveau précis",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements. Rareté et Maîtrise sont indépendantes jusqu'à Légendaire — aucun prérequis dans un sens ou l'autre. Au-delà, chaque promotion (Légendaire T1, T2, Exotique, T1, T2, T3) nécessite la Maîtrise au Niveau 10/11/12/13/14/15 respectivement. Une partie du coût total en EXP d'équipement du palier Commun est estimée (≈ 970 sur 2 620), en attendant les données confirmées.",
+    introNote: "Le coût est identique pour toutes les troupes et tous les emplacements. Rareté et Maîtrise sont indépendantes jusqu'à Légendaire — aucun prérequis dans un sens ou l'autre. Le palier Commun lui-même est gratuit (chaque pièce y démarre) ; le coût de chaque palier correspond à ce qu'il faut pour atteindre le suivant. Au-delà de Légendaire, chaque promotion (Légendaire T1, T2, Exotique, T1, T2, T3) nécessite la Maîtrise au Niveau 10/11/12/13/14/15 respectivement. Une partie du coût total en EXP d'équipement du palier Peu Commun est estimée (≈ 970 sur 2 620), en attendant les données confirmées.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -154,33 +153,34 @@ const I18N = {
     troop_shooter: "Tireurs",
     equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Veste", equip_boots: "Bottes",
     pairedMasteryLabel: "Maîtrise",
-    equiptier_start: "Non commencé",
     equiptier_common: "Commun", equiptier_uncommon: "Peu Commun", equiptier_rare: "Rare", equiptier_epic: "Épique",
     equiptier_legendary: "Légendaire", equiptier_legendary_t1: "Légendaire T1", equiptier_legendary_t2: "Légendaire T2",
     equiptier_exotic: "Exotique", equiptier_exotic_t1: "Exotique T1", equiptier_exotic_t2: "Exotique T2", equiptier_exotic_t3: "Exotique T3",
   },
 };
 
-// One entry per rarity tier (not per raw level — the underlying level ranges
-// are Common 0-20, Uncommon 20-40, Rare 40-60, Epic 60-80, Legendary 80-100,
-// then single-level promotions at 101/120/140/160/180/200). Each tier's cost
-// is the sum of its individual level-up brackets from the source table.
-// Common's total includes an estimated ~970 for the untracked Level 0->10
-// portion (only 11-15 and 16-20 were given) — fit from a geometric growth
-// curve across the 6 known Common/Uncommon brackets (within 5% on every
-// point) and extrapolated backward. Flagged in introNote, not verified.
-//
-// Legendary T1 itself costs nothing (it's the promotion at Level 101, gated
-// only by Mastery — the actual climb to Level 120 is what Legendary T2
-// costs). Each promotion beyond Legendary needs its own Mastery threshold,
-// confirmed directly from in-game observation (10/11/12/13/14/15).
+// One entry per rarity tier, where a tier's cost is what it takes to LEAVE
+// that tier and arrive at the next one (confirmed in-game: Epic->Legendary
+// costs 200 Magnets, which is the amount the source table lists under the
+// EPIC heading — not the 400 listed under LEGENDARY, which actually belongs
+// to the Legendary->Legendary T1 climb). So every tier's own listed cost is
+// shifted one slot forward from its heading: "Common" pays for entering
+// Uncommon, "Uncommon" for entering Rare, ... "Legendary" for entering
+// Legendary T1 (on top of that promotion's existing Mastery Lv10 gate).
+// Common itself is free — hero equipment starts at Common rarity the moment
+// it exists, nothing is ever spent to "unlock" it.
+// Common's shifted total (attached to "uncommon" below) includes an
+// estimated ~970 for the untracked Level 0->10 portion (only 11-15 and
+// 16-20 were given) — fit from a geometric growth curve across the 6 known
+// Common/Uncommon brackets (within 5% on every point) and extrapolated
+// backward. Flagged in introNote, not verified.
 const EQUIPMENT_TIERS = [
-  { key:"common",       parts:2620 /* incl. ~970 estimated */, magnet:20 },
-  { key:"uncommon",     parts:6980,   magnet:40 },
-  { key:"rare",         parts:19220,  magnet:120 },
-  { key:"epic",         parts:41020,  magnet:200 },
-  { key:"legendary",    parts:77000,  magnet:400 },
-  { key:"legendary_t1", parts:0,                             masteryReq:10 },
+  { key:"common",       parts:0 },
+  { key:"uncommon",     parts:2620 /* incl. ~970 estimated */, magnet:20 },
+  { key:"rare",         parts:6980,   magnet:40 },
+  { key:"epic",         parts:19220,  magnet:120 },
+  { key:"legendary",    parts:41020,  magnet:200 },
+  { key:"legendary_t1", parts:77000,  magnet:400,  masteryReq:10 },
   { key:"legendary_t2", parts:117000, magnet:600,  coil:20,  masteryReq:11 },
   { key:"exotic",       parts:157000, magnet:1000, coil:40,  masteryReq:12 },
   { key:"exotic_t1",    parts:197000, magnet:1000, coil:60,  masteryReq:13 },
@@ -189,7 +189,7 @@ const EQUIPMENT_TIERS = [
 ];
 
 function makeEquipmentTrack(troopKey, slotKey){
-  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
+  const levels = [];
   EQUIPMENT_TIERS.forEach(tier=>{
     const cost = zeroResources();
     cost.EquipmentParts = tier.parts || 0;
@@ -203,13 +203,9 @@ function makeEquipmentTrack(troopKey, slotKey){
     nameParts:["troop_"+troopKey, "equip_"+slotKey],
     levelStyle:"keyed", levelKeyPrefix:"equiptier_",
     pairedTrackId:`mastery_${troopKey}_${slotKey}`, pairedLabelKey:"pairedMasteryLabel",
-    // Every piece of hero equipment starts at Common rarity the moment it
-    // exists — "start" (index 0, pre-Common) stays selectable for edge cases,
-    // but the real baseline is "common" (index 1), so both current and
-    // target default there. Defaulting to "start" would make the calculator
-    // silently add the whole Common tier's cost on top of every target,
-    // since it's not a state any tracked equipment piece actually has.
-    currentLevelIndex:1, targetLevelIndex:1, levels
+    // "common" (index 0, free) is the real baseline — no separate
+    // "not started" placeholder before it.
+    currentLevelIndex:0, targetLevelIndex:0, levels
   };
 }
 
