@@ -33,6 +33,10 @@
 //                                The paired track needs no CATEGORIES entry
 //                                of its own — it still lives in state.tracks
 //                                and participates in cascade/breakdown.
+//   level.targetCheckpoint:false - hides this level from the "Cible" select
+//                                (still selectable in "Actuel") — for fine
+//                                intermediate levels that only matter when
+//                                setting real, already-in-progress state.
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -455,7 +459,7 @@ function trackHtml(tr){
       <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>
       <div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
-        <span class="field">${t("target")}: <select data-tgt="${tr.id}">${optionsWithSelected(tr,tr.targetLevelIndex)}</select></span>
+        <span class="field">${t("target")}: <select data-tgt="${tr.id}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
       </div>
       ${paired ? `
       <div class="track-controls paired-controls">
@@ -466,8 +470,19 @@ function trackHtml(tr){
     </div>
   </div>`;
 }
-function optionsWithSelected(track, idx){
-  return track.levels.map((l,i)=>`<option value="${i}" ${i===idx?"selected":""}>${levelLabel(track,l)}</option>`).join("");
+// `targetOnly` restricts the option list to levels where `targetCheckpoint`
+// isn't explicitly false — for tracks with fine-grained intermediate levels
+// that only matter for "Actuel" (e.g. Hero Star's 5 in-between paliers per
+// star): "Cible" only offers the meaningful whole-star checkpoints, while
+// "Actuel" still shows every level so real, already-in-progress state can
+// be set precisely. `value` stays the level's real index either way, so
+// cascade math is unaffected — only the choices shown differ.
+function optionsWithSelected(track, idx, targetOnly){
+  return track.levels
+    .map((l,i)=>({l,i}))
+    .filter(({l})=> !targetOnly || l.targetCheckpoint!==false)
+    .map(({l,i})=>`<option value="${i}" ${i===idx?"selected":""}>${levelLabel(track,l)}</option>`)
+    .join("");
 }
 
 // Built-in double-click confirmation (instead of native confirm(), not reliable everywhere).

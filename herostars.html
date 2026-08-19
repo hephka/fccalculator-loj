@@ -62,22 +62,22 @@
 <script>
 const RESOURCES = ["HeroFragment","ExclusiveEquipPart"];
 const STORAGE_KEY = "resource-calc-herostars-state-v1";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const RES_ACCENT = {
-  HeroFragment:"#ffd60a", ExclusiveEquipPart:"#5b8cff",
+  HeroFragment:"#ffd60a", ExclusiveEquipPart:"#ffd60a",
 };
 const PARTS = [
   { key:"stars", labelKey:"partStars", icon:"⭐" },
   { key:"equipment", labelKey:"partEquipment", icon:"⚔️" },
 ];
-// One "+ Add Hero" press grows both categories together (countKey:"Hero"),
-// since every hero has exactly one Star-progress track and one Exclusive
-// Equipment track.
+// Each "+ Add Hero" button is independent (its own counter, no countKey) —
+// you can track more heroes for Stars than for Exclusive Equipment, or the
+// other way around.
 const CATEGORIES = [
   { key:"HeroStar", labelKey:"catHeroStar", icon:"⭐", grouped:false, part:"stars",
-    dynamic:{addLabelKey:"addHero", makeTrack:makeHeroStarTrack, max:6, countKey:"Hero"} },
+    dynamic:{addLabelKey:"addHero", makeTrack:makeHeroStarTrack, max:6} },
   { key:"ExclusiveEquip", labelKey:"catExclusiveEquip", icon:"⚔️", grouped:false, part:"equipment",
-    dynamic:{addLabelKey:"addHero", makeTrack:makeExclusiveEquipTrack, max:6, countKey:"Hero"} },
+    dynamic:{addLabelKey:"addHero", makeTrack:makeExclusiveEquipTrack, max:6} },
 ];
 
 const I18N = {
@@ -96,7 +96,7 @@ const I18N = {
     introFeature1: "Track each hero individually, then set its current level and target",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
     introFeature3: "See exactly what you're missing, resource by resource",
-    introNote: "Cost is identical across all heroes. Recruiting costs 10 Hero Fragments, then each star (1 through 5) costs its own bundle of Fragments (10/40/115/300/600) — 1,075 total to fully max a hero. Exclusive Equipment goes from Level 0 to 10 (550 Exclusive Equipment Parts total). Adding a hero adds one of each to track together.",
+    introNote: "Cost is identical across all heroes. Recruiting costs 10 Hero Fragments, then each star (1 through 5) costs its own bundle of Fragments (10/40/115/300/600) — 1,075 total to fully max a hero. Exclusive Equipment goes from Level 0 to 10 (550 Exclusive Equipment Parts total). The two add buttons are independent. \"Actuel\" breaks each star down palier by palier to reflect progress already in motion; \"Cible\" only offers whole completed stars.",
     resetButton: "↺ Reset to default values",
     resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock",
@@ -136,7 +136,7 @@ const I18N = {
     introFeature1: "Suis chaque héros individuellement, puis fixe son niveau actuel et sa cible",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
-    introNote: "Le coût est identique pour tous les héros. Le recrutement coûte 10 Fragments de héros, puis chaque étoile (1 à 5) coûte son propre lot de Fragments (10/40/115/300/600) — 1 075 au total pour un héros à fond. L'Équipement Exclusif va du Niveau 0 à 10 (550 Pièces d'Équipement Exclusif au total). Ajouter un héros ajoute une instance de chaque à suivre ensemble.",
+    introNote: "Le coût est identique pour tous les héros. Le recrutement coûte 10 Fragments de héros, puis chaque étoile (1 à 5) coûte son propre lot de Fragments (10/40/115/300/600) — 1 075 au total pour un héros à fond. L'Équipement Exclusif va du Niveau 0 à 10 (550 Pièces d'Équipement Exclusif au total). Les deux boutons d'ajout sont indépendants. Dans « Actuel », chaque étoile est détaillée palier par palier pour refléter une progression déjà en cours ; dans « Cible », seules les étoiles complètes sont proposées.",
     resetButton: "↺ Réinitialiser aux valeurs par défaut",
     resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel",
@@ -153,7 +153,7 @@ const I18N = {
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
-    res_HeroFragment: "Fragment de héros légendaire", res_ExclusiveEquipPart: "Pièce d'équipement exclusif",
+    res_HeroFragment: "Fragment de héros", res_ExclusiveEquipPart: "Pièce d'équipement exclusif",
     addHero: "+ Ajouter un Héros",
     heroLabel: "Héros {n}",
     herostartier_start: "Non recruté",
@@ -163,27 +163,37 @@ const I18N = {
   },
 };
 
-// Recruiting (10 Fragments) unlocks the hero at 0 stars, then each star
-// (1-5) is its own bundle of 6 internal steps, collapsed into one selectable
-// checkpoint per star (matching how the source guide totals them):
+// Recruiting (10 Fragments) unlocks the hero at 0 stars. Each star (1-5) has
+// 6 internal paliers — the first 5 are kept as fine-grained, "Actuel"-only
+// levels (a real hero's progress may already be mid-star before a target is
+// even set), and the 6th is that star's own completion, which doubles as
+// the only checkpoint offered in "Cible" (targets are always a whole star).
+// Per-star totals match the source guide exactly:
 //   Star 1: 1+1+2+2+2+2  = 10   Star 4: 40x5+100      = 300
 //   Star 2: 5x5+15       = 40   Star 5: 100x6          = 600
 //   Star 3: 15x5+40      = 115
-const HERO_STAR_COSTS = [
-  { key:"recruited", fragments:10 },
-  { key:"star1", fragments:10 },
-  { key:"star2", fragments:40 },
-  { key:"star3", fragments:115 },
-  { key:"star4", fragments:300 },
-  { key:"star5", fragments:600 },
+const HERO_STAR_TIERS = [
+  { key:"star1", paliers:[1,1,2,2,2],     final:2 },
+  { key:"star2", paliers:[5,5,5,5,5],     final:15 },
+  { key:"star3", paliers:[15,15,15,15,15], final:40 },
+  { key:"star4", paliers:[40,40,40,40,40], final:100 },
+  { key:"star5", paliers:[100,100,100,100,100], final:100 },
 ];
 
 function makeHeroStarTrack(idx){
-  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
-  HERO_STAR_COSTS.forEach(c=>{
-    const cost = zeroResources();
-    cost.HeroFragment = c.fragments;
-    levels.push({ id:c.key, cost, requires:[] });
+  const levels = [{ id:"start", cost:zeroResources(), requires:[], targetCheckpoint:false }];
+  const recruitCost = zeroResources();
+  recruitCost.HeroFragment = 10;
+  levels.push({ id:"recruited", cost:recruitCost, requires:[] });
+  HERO_STAR_TIERS.forEach(tier=>{
+    tier.paliers.forEach((fragments,i)=>{
+      const cost = zeroResources();
+      cost.HeroFragment = fragments;
+      levels.push({ id:`${tier.key}_s${i+1}`, cost, requires:[], targetCheckpoint:false });
+    });
+    const finalCost = zeroResources();
+    finalCost.HeroFragment = tier.final;
+    levels.push({ id:tier.key, cost:finalCost, requires:[] });
   });
   return {
     id:`herostar_${idx}`, category:"HeroStar", qtyIndex:idx,
