@@ -23,6 +23,10 @@ Every route works the same way: set a current level and a target level for each 
 - Responsive layout: same code works on desktop and mobile.
 - Bump the page's `SCHEMA_VERSION` whenever you change that route's track data shape (added/removed levels, renamed fields) — mismatched saved state is discarded automatically instead of rendering broken.
 
+## Verifying
+
+`node verify.js` checks every route in one pass: syntax, EN/FR translation parity (keys and `{placeholder}` variables), that every resource has a color and a label in both languages, that every `requires` reference resolves to a real track/level, nav consistency across pages, unique `STORAGE_KEY`s, and known-good total costs for the routes with a confirmed source (regression protection — a silently wrong number in `defaultData()` fails the run instead of shipping). No dependencies; run it before pushing whenever route data changes.
+
 ## Running locally
 
 No install needed — these are static files. Either open `index.html` directly, or serve them (recommended, avoids some browser `file://` quirks):
