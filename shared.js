@@ -140,28 +140,45 @@ function refreshSummary(){
 function trackById(id){ return state.tracks.find(t=>t.id===id); }
 function levelIndexOf(track, levelId){ return track.levels.findIndex(l=>l.id===levelId); }
 
-// If a track's `requires` chain gates some of its levels behind its paired
-// track (see trackHtml/pairedTrackId), reaching one of those levels implies
-// the paired track's own current level must already be at least that high —
-// e.g. being at "Legendary T2" already implies Mastery >= 11, since that
-// promotion required it. Called whenever a track's own current level
-// changes, so the paired track's current level is floored accordingly
-// (never lowered — the user may have leveled it further already).
-function applyImpliedPairedCurrent(tr){
-  if(!tr.pairedTrackId) return;
-  const paired = trackById(tr.pairedTrackId);
-  if(!paired) return;
-  let impliedMin = 0;
-  for(let i=0;i<=tr.currentLevelIndex;i++){
-    const lvl = tr.levels[i];
-    if(!lvl) continue;
-    (lvl.requires||[]).forEach(r=>{
-      if(r.trackId!==paired.id) return;
-      const idx = levelIndexOf(paired, r.levelId);
-      if(idx>impliedMin) impliedMin = idx;
-    });
+// Any track's `requires` chain can gate some of its levels behind another
+// track being at a certain level — e.g. an equipment piece's "Legendary T2"
+// needs Mastery Lv11, or Warden Office's FC5 needs Bomber Barrack and
+// Communication Center at FC4. Being AT a gated level already implies the
+// referenced track's own current level must be at least that high too —
+// but currentLevelIndex is set independently per track, so nothing enforced
+// that on its own. Without this, setting one track's "Actuel" past a gate
+// (without also manually raising every track it depends on) left those
+// dependencies at their default, and any later cascade calculation would
+// wrongly count the full climb from scratch instead of from where they
+// implicitly already are.
+//
+// This scans every track's requires up to its own current level and floors
+// the referenced track's current level accordingly (never lowers it — the
+// user may have leveled it further already), repeating to a fixed point
+// since one floor can itself imply another (mirrors computeCascade()'s own
+// propagation, but for "current" instead of "target"). Called whenever any
+// track's "Actuel" changes, and once at load to repair state saved before
+// this existed.
+function propagateImpliedCurrent(){
+  let changed = true, guard = 0;
+  while(changed && guard++ < 200){
+    changed = false;
+    for(const t of state.tracks){
+      for(let i=0;i<=t.currentLevelIndex;i++){
+        const lvl = t.levels[i];
+        if(!lvl) continue;
+        (lvl.requires||[]).forEach(r=>{
+          const other = trackById(r.trackId);
+          if(!other) return;
+          const idx = levelIndexOf(other, r.levelId);
+          if(idx > other.currentLevelIndex){
+            other.currentLevelIndex = idx;
+            changed = true;
+          }
+        });
+      }
+    }
   }
-  if(impliedMin > paired.currentLevelIndex) paired.currentLevelIndex = impliedMin;
 }
 
 function computeCascade(){
@@ -403,9 +420,8 @@ function renderCategories(){
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
-    const tr = trackById(s.dataset.cur);
-    tr.currentLevelIndex = Number(e.target.value);
-    applyImpliedPairedCurrent(tr);
+    trackById(s.dataset.cur).currentLevelIndex = Number(e.target.value);
+    propagateImpliedCurrent();
     save();
   }));
   cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
@@ -484,10 +500,10 @@ function initApp(){
     }
   });
   document.documentElement.lang = lang;
-  // Repairs saved state from before applyImpliedPairedCurrent existed (or
+  // Repairs saved state from before propagateImpliedCurrent existed (or
   // from any direct state edit): a track's current level may imply a higher
-  // paired-track current level than what's actually stored.
-  state.tracks.forEach(applyImpliedPairedCurrent);
+  // current level on another track than what's actually stored.
+  propagateImpliedCurrent();
   persist();
   renderChrome();
   render();
