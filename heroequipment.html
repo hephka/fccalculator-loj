@@ -59,7 +59,7 @@
 
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-const RESOURCES = ["EquipmentParts","Magnet","PotentialCoil","PrecisionEquipment"];
+const RESOURCES = ["EquipmentParts","PrecisionEquipment","Magnet","PotentialCoil"];
 const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
 const SCHEMA_VERSION = 3;
 const RES_ACCENT = {
@@ -104,7 +104,7 @@ const I18N = {
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
     res_EquipmentParts: "Equipment EXP", res_Magnet: "Magnet",
-    res_PotentialCoil: "Potential Gear", res_PrecisionEquipment: "Precision Equipment",
+    res_PotentialCoil: "Potential Coil", res_PrecisionEquipment: "Precision Equipment",
     troop_shieldbearer: "Shieldbearer",
     troop_bomber: "Bomber",
     troop_shooter: "Shooter",
@@ -147,8 +147,8 @@ const I18N = {
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
-    res_EquipmentParts: "EXP d'Équipement", res_Magnet: "Aimant",
-    res_PotentialCoil: "Engrenage Potentiel", res_PrecisionEquipment: "Équipement de Précision",
+    res_EquipmentParts: "Partie d'équipement", res_Magnet: "Aimant",
+    res_PotentialCoil: "Bobine potentielle", res_PrecisionEquipment: "Équipement de Précision",
     troop_shieldbearer: "Déflecteurs",
     troop_bomber: "Bombardiers",
     troop_shooter: "Tireurs",
@@ -203,7 +203,13 @@ function makeEquipmentTrack(troopKey, slotKey){
     nameParts:["troop_"+troopKey, "equip_"+slotKey],
     levelStyle:"keyed", levelKeyPrefix:"equiptier_",
     pairedTrackId:`mastery_${troopKey}_${slotKey}`, pairedLabelKey:"pairedMasteryLabel",
-    currentLevelIndex:0, targetLevelIndex:0, levels
+    // Every piece of hero equipment starts at Common rarity the moment it
+    // exists — "start" (index 0, pre-Common) stays selectable for edge cases,
+    // but the real baseline is "common" (index 1), so both current and
+    // target default there. Defaulting to "start" would make the calculator
+    // silently add the whole Common tier's cost on top of every target,
+    // since it's not a state any tracked equipment piece actually has.
+    currentLevelIndex:1, targetLevelIndex:1, levels
   };
 }
 
