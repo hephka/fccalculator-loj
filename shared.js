@@ -192,6 +192,7 @@ function refreshSummary(){
   const { totals, breakdown } = computeCascade();
   renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
+  renderStickyBar(totals, breakdown);
 }
 
 function trackById(id){ return state.tracks.find(t=>t.id===id); }
@@ -323,6 +324,7 @@ function render(){
   const { totals, breakdown } = computeCascade();
   renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
+  renderStickyBar(totals, breakdown);
   renderCategories();
 }
 
@@ -363,20 +365,49 @@ function renderSummary(totals, breakdown){
   }).join("");
 }
 
+// A fixed bottom bar mirroring the missing totals, so they stay visible while
+// scrolling through tracks and adjusting targets far below the summary card
+// — the full breakdown lives below the fold on any route with more than a
+// couple of tracks, and re-scrolling up after every adjustment isn't a
+// reasonable workflow. Tapping it jumps back to the full summary.
+function renderStickyBar(totals, breakdown){
+  const bar = document.getElementById("stickyBar");
+  if(!bar) return;
+  const missingList = RESOURCES
+    .map(r=>({ r, missing: totals[r] - (state.stock[r]||0) }))
+    .filter(x=> x.missing > 0);
+  if(!breakdown.length || !missingList.length){
+    bar.hidden = true;
+    bar.innerHTML = "";
+    return;
+  }
+  bar.hidden = false;
+  bar.setAttribute("role","button");
+  bar.tabIndex = 0;
+  bar.setAttribute("aria-label", t("whatMissing"));
+  const jump = ()=> document.getElementById("missingHeading").scrollIntoView({ behavior:"smooth", block:"start" });
+  bar.onclick = jump;
+  bar.onkeydown = e=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); jump(); } };
+  bar.innerHTML = `<div class="sticky-bar-inner">
+    ${missingList.map(({r,missing})=>`<span class="sticky-chip" style="--accent-color:${RES_ACCENT[r]}"><span class="res-dot" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)} <b>${fmt(missing)}</b></span>`).join("")}
+  </div>`;
+}
+
 // Only lists resources this specific row actually costs (>0) instead of a
 // fixed column per RESOURCES entry — tomes and collections don't use the
 // same resources, so a shared fixed-column table would show a lot of zeros.
 function renderBreakdown(breakdown){
   const el = document.getElementById("breakdown");
   if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
-  el.innerHTML = `<table><thead><tr><th>${t("colTarget")}</th><th>${t("colFrom")}</th><th>${t("colTo")}</th><th>${t("colCost")}</th></tr></thead><tbody>
+  const colTarget = t("colTarget"), colFrom = t("colFrom"), colTo = t("colTo"), colCost = t("colCost");
+  el.innerHTML = `<table><thead><tr><th>${colTarget}</th><th>${colFrom}</th><th>${colTo}</th><th>${colCost}</th></tr></thead><tbody>
     ${breakdown.map(b=>{
       const cost = RESOURCES.filter(r=> b.cost[r] > 0).map(r=> `${fmt(b.cost[r])} ${resourceLabel(r)}`).join(", ");
       return `<tr>
-      <td>${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.from])}</td>
-      <td>${levelLabel(b.track, b.track.levels[b.to])}</td>
-      <td class="cost-cell">${cost} ${b.estimated?`<span class="estimated-tag" title="${t("estimatedNote")}">≈</span>`:''}</td>
+      <td data-label="${colTarget}">${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
+      <td data-label="${colFrom}">${levelLabel(b.track, b.track.levels[b.from])}</td>
+      <td data-label="${colTo}">${levelLabel(b.track, b.track.levels[b.to])}</td>
+      <td data-label="${colCost}" class="cost-cell">${cost} ${b.estimated?`<span class="estimated-tag" title="${t("estimatedNote")}">≈</span>`:''}</td>
     </tr>`;
     }).join("")}
   </tbody></table>`;
