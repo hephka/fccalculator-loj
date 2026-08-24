@@ -161,6 +161,6 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
   .breakdown td{display:block;border-bottom:none;padding:5px 0;white-space:normal;min-width:0}
   .breakdown td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
   .breakdown td:first-child{flex:0 0 100%;font-weight:700;font-size:.95rem}
-  .breakdown td:nth-child(2),.breakdown td:nth-child(3){flex:1 1 0}
+  .breakdown td:nth-child(2),.breakdown td:nth-child(3){flex:0 0 auto}
   .breakdown td.cost-cell{flex:0 0 100%;font-weight:700;color:var(--text);font-size:.92rem}
 }
