@@ -37,6 +37,11 @@
 //                                (still selectable in "Actuel") — for fine
 //                                intermediate levels that only matter when
 //                                setting real, already-in-progress state.
+//   accent: "#hexcolor" or "var(--token)" - colors this track's card left
+//                                border + name, to flag one specific track
+//                                among many in the same category (e.g. the
+//                                main building, or a research line's end goal)
+//                                without giving it its own CATEGORIES entry.
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -544,7 +549,7 @@ function trackHtml(tr){
   const active = tr.targetLevelIndex > tr.currentLevelIndex;
   const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
   const pairedActive = paired && paired.targetLevelIndex > paired.currentLevelIndex;
-  return `<div class="track">
+  return `<div class="track${tr.accent?' track-accent':''}" ${tr.accent?`style="--accent-color:${tr.accent}"`:''}>
     <div class="track-head">
       <span class="track-name">${trackShortName(tr)}</span>
       <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>

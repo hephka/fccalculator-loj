@@ -224,16 +224,20 @@ function defaultData(){
   setRequires("FC6", [{trackId:"shieldbearer_barrack",levelId:"FC5"},{trackId:"communication_center",levelId:"FC5"}]);
   setRequires("FC7", [{trackId:"shooter_barrack",levelId:"FC6"},{trackId:"communication_center",levelId:"FC6"}]);
   setRequires("FC8", [{trackId:"bomber_barrack",levelId:"FC7"},{trackId:"communication_center",levelId:"FC7"}]);
+  wardenOffice.accent = "var(--accent)"; // the main building (HQ)
+
+  const fcLab = makeFcLabTrack();
+  fcLab.accent = "var(--accent-2)"; // a special-mechanic building, not a regular tier climb
 
   const buildings = [
     wardenOffice,
-    makeFcLabTrack(),
     buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
     buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
     buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
     buildingTrack("communication_center", tierChain([50,60,80,110,130], [{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110}]), true),
     buildingTrack("command_center", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
     buildingTrack("medical_station", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
+    fcLab,
   ];
 
   // FC Lab level gate, shared by every troop's research tree below (it's one
@@ -285,6 +289,7 @@ function defaultData(){
       [4500],
       { 1: [{trackId:`fclab_${troopKey}_rally`,levelId:"12"}, ...fcLabGate(5)] }
     );
+    bastion.accent = "var(--accent)"; // the end goal of this research tree
     const set = [expedition, lethality, atk, def, hp, rally, bastion];
     set.forEach(tr=>{ tr.troopKey = troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
     return set;
