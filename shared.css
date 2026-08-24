@@ -153,11 +153,14 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
 @media (max-width:600px){
-  .breakdown table,.breakdown thead,.breakdown tbody,.breakdown tr,.breakdown td{display:block;width:100%}
+  .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
-  .breakdown tr{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;padding:10px 12px;background:var(--panel-2)}
-  .breakdown td{border-bottom:none;padding:5px 0;white-space:normal;min-width:0}
+  /* tr as a flex row (not block) so From/To can share one line while the
+     target name and cost each keep a full-width line of their own. */
+  .breakdown tr{display:flex;flex-wrap:wrap;column-gap:14px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;padding:10px 12px;background:var(--panel-2)}
+  .breakdown td{display:block;border-bottom:none;padding:5px 0;white-space:normal;min-width:0}
   .breakdown td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
-  .breakdown td:first-child{font-weight:700;font-size:.95rem}
-  .breakdown td.cost-cell{font-weight:700;color:var(--text);font-size:.92rem}
+  .breakdown td:first-child{flex:0 0 100%;font-weight:700;font-size:.95rem}
+  .breakdown td:nth-child(2),.breakdown td:nth-child(3){flex:1 1 0}
+  .breakdown td.cost-cell{flex:0 0 100%;font-weight:700;color:var(--text);font-size:.92rem}
 }
