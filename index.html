@@ -63,7 +63,7 @@
 <script>
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 const RES_ACCENT = { FC:"#ffb648", AFC:"#ffb648", Hyperalloy:"#ffb648" };
 const PARTS = [
   { key:"buildings", labelKey:"partBuildings", icon:"🏠" },
@@ -108,6 +108,8 @@ const I18N = {
     research_hp: "Increases HP",
     research_rally: "Increase Rally Troop Capacity",
     research_bastion: "Unlocks Troop Lv.11",
+    research_heal_lethality: "Reduce Resource Consumption for Healing and Increase Their Lethality",
+    research_train_hp: "Reduce Resource Consumption for Training and Increase Their HP",
   },
   fr: {
     title: "Calculateur de ressources - LoJ",
@@ -141,6 +143,8 @@ const I18N = {
     research_hp: "Augmente les PV",
     research_rally: "Augmente la Capacité de Ralliement",
     research_bastion: "Débloque les Troupes Niv.11",
+    research_heal_lethality: "Réduit la Consommation de Ressources pour Soigner et Augmente la Létalité",
+    research_train_hp: "Réduit la Consommation de Ressources pour Entraîner et Augmente les PV",
   },
 };
 
@@ -289,7 +293,17 @@ function defaultData(){
       { 1: [{trackId:`fclab_${troopKey}_rally`,levelId:"12"}, ...fcLabGate(5)] }
     );
     bastion.accent = "var(--accent)"; // the end goal of this research tree
-    const set = [expedition, lethality, atk, def, hp, rally, bastion];
+    // Two more researches, unlocked only once Bastion (T11) is done. Same
+    // cost curve for both (confirmed source table): 200,260,340,440,590,
+    // 800,1120,1570,2360,3530 Hyperalloy across 10 levels — 11,210 total
+    // to max either one.
+    const mkLv11Research = (id,statKey) => fclabTrack(id,statKey,
+      [200,260,340,440,590,800,1120,1570,2360,3530],
+      { 1: [{trackId:`fclab_${troopKey}_bastion`,levelId:"1"}] }
+    );
+    const healLethality = mkLv11Research(`fclab_${troopKey}_heal_lethality`, "heal_lethality");
+    const trainHp = mkLv11Research(`fclab_${troopKey}_train_hp`, "train_hp");
+    const set = [expedition, lethality, atk, def, hp, rally, bastion, healLethality, trainHp];
     set.forEach(tr=>{ tr.troopKey = troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
     return set;
   }
