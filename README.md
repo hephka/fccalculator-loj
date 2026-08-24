@@ -44,7 +44,6 @@ Connected to Vercel. Work happens on the `dev` branch and deploys to a private p
 ## Known gaps
 
 - FC Lab is modeled through Level 6 (confirmed source data); Levels 7-8 aren't modeled yet.
-- Per-troop-type research cost differences aren't confirmed — all three trees (Shooter/Bomber/Shieldbearer) currently share the same placeholder numbers.
 - Building/research/tome names shown in French are best-effort translations, not yet verified against in-game text.
 - The R Satellite's Level 40 → 50 Data Disk cost is an estimate (~11,230), not confirmed data — see the in-app note on that route.
 - Part of Hero Equipment's Uncommon step cost (~970 of its 2,620 total Equipment EXP, inherited from the untracked Common Level 0→10 range) is an estimate, not confirmed data — see the in-app note on that route.

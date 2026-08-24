@@ -248,7 +248,8 @@ function defaultData(){
   const fcLabGate = lvl => [{trackId:"fc_lab", levelId:String(lvl)}];
 
   // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent
-  // research tree leading to T11, gated by a mix of internal prerequisites
+  // research tree leading to T11, at identical cost across all three troop
+  // types (confirmed) — gated by a mix of internal prerequisites
   // (that type's own tracks) and FC Lab's building level (shared).
   function fcLabTree(troopKey){
     const expedition = fclabTrack(`fclab_${troopKey}_expedition`, "expedition",
