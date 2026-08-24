@@ -63,7 +63,7 @@
 <script>
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const RES_ACCENT = { FC:"#ffb648", AFC:"#ffb648", Hyperalloy:"#ffb648" };
 const PARTS = [
   { key:"buildings", labelKey:"partBuildings", icon:"🏠" },
@@ -97,6 +97,7 @@ const I18N = {
     building_communication_center: "Communication Center",
     building_command_center: "Command Center",
     building_medical_station: "Medical Station",
+    building_fc_lab: "FC Lab",
     troop_shieldbearer: "Shieldbearer",
     troop_bomber: "Bomber",
     troop_shooter: "Shooter",
@@ -129,6 +130,7 @@ const I18N = {
     building_communication_center: "Centre des Communications",
     building_command_center: "Centre de Commandement",
     building_medical_station: "Infirmerie",
+    building_fc_lab: "Laboratoire FC",
     troop_shieldbearer: "Déflecteurs",
     troop_bomber: "Bombardier",
     troop_shooter: "Tireur",
@@ -169,6 +171,29 @@ function buildingTrack(id, tiers, gateByWardenOffice){
   return { id, category:"Building", nameParts:["building_"+id], currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
+// FC Lab: 5 paliers per level (same sub-level pattern as every other
+// building), each level gated by Warden Office reaching the paired FC tier
+// (source table). Levels 7-8 aren't modeled yet — not confirmed.
+const FCLAB_BUILDING_LEVELS = [
+  { lvl:"1", fc:150, afc:0,  wardenTier:"FC1" },
+  { lvl:"2", fc:200, afc:0,  wardenTier:"FC2" },
+  { lvl:"3", fc:250, afc:0,  wardenTier:"FC3" },
+  { lvl:"4", fc:300, afc:0,  wardenTier:"FC4" },
+  { lvl:"5", fc:350, afc:0,  wardenTier:"FC5" },
+  { lvl:"6", fc:160, afc:10, wardenTier:"FC6" },
+];
+function makeFcLabTrack(){
+  const levels = [{ id:"0", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
+  FCLAB_BUILDING_LEVELS.forEach(c=>{
+    const gate = () => [{trackId:"warden_office", levelId:c.wardenTier}];
+    for(let i=1;i<=4;i++){
+      levels.push({ id:`${c.lvl}_s${i}`, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
+    }
+    levels.push({ id:c.lvl, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
+  });
+  return { id:"fc_lab", category:"Building", nameParts:["building_fc_lab"], levelStyle:"numeric", currentLevelIndex:0, targetLevelIndex:0, levels };
+}
+
 function fclabTrack(id, statKey, hyperCosts, requiresMap){
   const levels = [{ id:"0", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
   hyperCosts.forEach((h,i)=>{
@@ -202,6 +227,7 @@ function defaultData(){
 
   const buildings = [
     wardenOffice,
+    makeFcLabTrack(),
     buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
     buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
     buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
@@ -210,36 +236,54 @@ function defaultData(){
     buildingTrack("medical_station", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
   ];
 
-  // FC Lab itself is considered maxed out: no track or requirement for it.
-  // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent research
-  // tree leading to T11: internal requirements only concern that type.
+  // FC Lab level gate, shared by every troop's research tree below (it's one
+  // building, not per-troop). `lvl` is FC Lab's own level id ("1".."6").
+  const fcLabGate = lvl => [{trackId:"fc_lab", levelId:String(lvl)}];
+
+  // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent
+  // research tree leading to T11, gated by a mix of internal prerequisites
+  // (that type's own tracks) and FC Lab's building level (shared).
   function fcLabTree(troopKey){
     const expedition = fclabTrack(`fclab_${troopKey}_expedition`, "expedition",
-      [30,50,80,130,220]
+      [30,50,80,130,220],
+      { 4: fcLabGate(2) }
     );
     const mkCombat = (id,statKey) => fclabTrack(id,statKey,
       [80,100,140,180,240,300,380,480,600,800],
-      { 5:[{trackId:`fclab_${troopKey}_expedition`,levelId:"4"}] } // 4->5 needs "Stage 1 Lv.4"
+      {
+        4: fcLabGate(2),
+        5: [{trackId:`fclab_${troopKey}_expedition`,levelId:"4"}], // 4->5 needs "Stage 1 Lv.4"
+        8: fcLabGate(3),
+      }
     );
     const lethality = mkCombat(`fclab_${troopKey}_lethality`, "lethality");
     const atk = mkCombat(`fclab_${troopKey}_atk`, "atk");
     const def = mkCombat(`fclab_${troopKey}_def`, "def");
     const hp = mkCombat(`fclab_${troopKey}_hp`, "hp");
-    // Max Rally level requires all other stats to also be maxed out.
+    // Rally Lv.1 needs the 4 combat stats at Lv.5 + FC Lab Lv.4; Rally Lv.7
+    // needs those same 4 stats at Lv.10 (no further FC Lab gate above Lv.4).
     const rally = fclabTrack(`fclab_${troopKey}_rally`, "rally",
       [160,200,240,290,360,430,530,650,810,1010,1260,1580],
-      { 1:[
-        {trackId:`fclab_${troopKey}_expedition`,levelId:"5"},
-        {trackId:`fclab_${troopKey}_lethality`,levelId:"10"},
-        {trackId:`fclab_${troopKey}_atk`,levelId:"10"},
-        {trackId:`fclab_${troopKey}_def`,levelId:"10"},
-        {trackId:`fclab_${troopKey}_hp`,levelId:"10"},
-      ] }
+      {
+        1: [
+          {trackId:`fclab_${troopKey}_lethality`,levelId:"5"},
+          {trackId:`fclab_${troopKey}_atk`,levelId:"5"},
+          {trackId:`fclab_${troopKey}_def`,levelId:"5"},
+          {trackId:`fclab_${troopKey}_hp`,levelId:"5"},
+          ...fcLabGate(4),
+        ],
+        7: [
+          {trackId:`fclab_${troopKey}_lethality`,levelId:"10"},
+          {trackId:`fclab_${troopKey}_atk`,levelId:"10"},
+          {trackId:`fclab_${troopKey}_def`,levelId:"10"},
+          {trackId:`fclab_${troopKey}_hp`,levelId:"10"},
+        ],
+      }
     );
-    // Unlocking T11 requires Rally Troop Capacity at max level (12).
+    // Unlocking T11 needs Rally Troop Capacity maxed (Lv.12) + FC Lab Lv.5.
     const bastion = fclabTrack(`fclab_${troopKey}_bastion`, "bastion",
       [4500],
-      { 1:[{trackId:`fclab_${troopKey}_rally`,levelId:"12"}] }
+      { 1: [{trackId:`fclab_${troopKey}_rally`,levelId:"12"}, ...fcLabGate(5)] }
     );
     const set = [expedition, lethality, atk, def, hp, rally, bastion];
     set.forEach(tr=>{ tr.troopKey = troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
