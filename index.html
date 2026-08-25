@@ -32,6 +32,13 @@
       <button type="button" class="lang-btn" data-lang="en">EN</button>
       <button type="button" class="lang-btn" data-lang="fr">FR</button>
     </div>
+    <!-- PROTOTYPE: light/dark toggle for the Tactical Telemetry theme test, index.html only.
+         Deliberately NOT class="lang-btn" — shared.js wires a language-switch click
+         handler to every .lang-btn via dataset.lang, which these buttons don't have. -->
+    <div class="lang-switch" role="group" aria-label="Theme">
+      <button type="button" class="theme-toggle-btn" id="themeBtnDark">◑ Sombre</button>
+      <button type="button" class="theme-toggle-btn" id="themeBtnLight">◐ Clair</button>
+    </div>
   </div>
 
   <div class="card intro-card">
@@ -326,5 +333,22 @@ function defaultData(){
 </script>
 <script src="shared.js"></script>
 <script>initApp();</script>
+<script>
+// PROTOTYPE: light/dark toggle for the Tactical Telemetry theme test.
+// index.html-only, self-contained — doesn't touch shared.js.
+(function(){
+  const KEY = "resource-calc-tactical-theme";
+  const btnDark = document.getElementById("themeBtnDark");
+  const btnLight = document.getElementById("themeBtnLight");
+  function apply(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    btnDark.classList.toggle("active", theme === "dark");
+    btnLight.classList.toggle("active", theme === "light");
+  }
+  apply(localStorage.getItem(KEY) === "light" ? "light" : "dark");
+  btnDark.addEventListener("click", ()=>{ localStorage.setItem(KEY, "dark"); apply("dark"); });
+  btnLight.addEventListener("click", ()=>{ localStorage.setItem(KEY, "light"); apply("light"); });
+})();
+</script>
 </body>
 </html>
