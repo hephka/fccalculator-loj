@@ -1,0 +1,8 @@
+{
+  "redirects": [
+    { "source": "/tomes.html", "destination": "/tomes-collections.html", "permanent": true },
+    { "source": "/robots.html", "destination": "/robots-satellites.html", "permanent": true },
+    { "source": "/heroequipment.html", "destination": "/hero-equipment.html", "permanent": true },
+    { "source": "/herostars.html", "destination": "/hero-stars-exclusive-equipment.html", "permanent": true }
+  ]
+}

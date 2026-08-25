@@ -10,7 +10,7 @@ const path = require("path");
 const vm = require("vm");
 
 const DIR = __dirname;
-const ROUTE_FILES = ["index.html", "tomes.html", "robots.html", "heroequipment.html", "herostars.html"];
+const ROUTE_FILES = ["index.html", "tomes-collections.html", "robots-satellites.html", "hero-equipment.html", "hero-stars-exclusive-equipment.html"];
 
 let failures = 0;
 function fail(msg) { failures++; console.log(`  \x1b[31m✗\x1b[0m ${msg}`); }
@@ -66,28 +66,28 @@ const EXPECTED_TOTALS = {
   "index.html": {
     fc_lab: { FC: 7050, AFC: 50 },
   },
-  "robots.html": {
+  "robots-satellites.html": {
     equip_robot_1: { PrisonerArmorData: 141050, PowerModule: 1040, AdvancedPowerModule: 425 },
     equip_satR_1: { DataDisk: 27845, PlanetCoin: 210 },
     equip_satSR_1: { DataDisk: 72035, PlanetCoin: 830 },
     equip_satSSR_1: { DataDisk: 135040, PlanetCoin: 2140 },
   },
-  "heroequipment.html": {
+  "hero-equipment.html": {
     "equip_shieldbearer_gloves": { EquipmentParts: 1214040, Magnet: 7380, PotentialCoil: 300 },
     "mastery_shieldbearer_gloves": { PrecisionEquipment: 4260, Magnet: 11220 },
   },
-  "herostars.html": {
+  "hero-stars-exclusive-equipment.html": {
     herostar_1: { HeroFragment: 1075 },
     exclusiveequip_1: { ExclusiveEquipPart: 550 },
   },
 };
 
-// robots.html builds satellite ids as sat_r_laser etc, not equip_satR_1 — the
+// robots-satellites.html builds satellite ids as sat_r_laser etc, not equip_satR_1 — the
 // EXPECTED_TOTALS keys above are logical aliases resolved against real track
 // ids via this map, so the table above stays readable without needing every
 // route's exact internal id scheme memorized.
 const TRACK_ALIASES = {
-  "robots.html": {
+  "robots-satellites.html": {
     equip_robot_1: "robot_1",
     equip_satR_1: "sat_r_laser",
     equip_satSR_1: "sat_sr_arbitre",
