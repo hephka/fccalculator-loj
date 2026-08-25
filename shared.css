@@ -76,6 +76,38 @@ input[type=number]{-moz-appearance:textfield}
 
 .res-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle;background:currentColor}
 
+/* Original line-art resource icons (drawn from scratch, not derived from
+   any game asset — see each comment for what it's based on). Rendered via
+   CSS mask so every icon still picks up the resource's own color from the
+   existing inline style="color:..." on .res-dot, same as the plain dot.
+   Each icon's selector list below explicitly opts that resource in to the
+   18px sizing + masking — a resource with no entry here simply keeps the
+   plain small dot (safe fallback: data-res is set on every .res-dot
+   across all 5 routes, but only resources listed below get an icon). */
+.res-dot[data-res="FC"],
+.res-dot[data-res="AFC"],
+.res-dot[data-res="Hyperalloy"]{
+  width:18px; height:18px;
+  background-color:currentColor;
+  mask-repeat:no-repeat; mask-position:center; mask-size:contain;
+  -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; -webkit-mask-size:contain;
+}
+/* FC — mechanical module: hexagonal housing + a central gauge dial */
+.res-dot[data-res="FC"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
+}
+/* AFC — energy: a lightning bolt inside a circle */
+.res-dot[data-res="AFC"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+}
+/* Hyperalloy — material block: an isometric wireframe cube */
+.res-dot[data-res="Hyperalloy"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
+}
+
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .res-card{border:1px solid var(--border);border-left:3px solid var(--accent-color,var(--border));border-radius:var(--radius-sm);padding:14px 16px;background:var(--panel-2)}
 .res-card .name{font-size:.76rem;color:var(--accent-color,var(--muted));text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:flex;align-items:center}

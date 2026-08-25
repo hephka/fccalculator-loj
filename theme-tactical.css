@@ -60,31 +60,13 @@ body::after{
 .sticky-chip, .breakdown tr {
   border-radius:0;
 }
+/* Base dot shape override only — the actual per-resource icons now live in
+   shared.css (universal, all 5 routes), since they aren't specific to this
+   theme. Sizing here just keeps the square-corners doctrine: an icon that
+   IS defined for a resource still renders (shared.css sets its own
+   width/height on top of this), only the plain undefined-resource dot
+   stays square instead of round. */
 .res-dot{ border-radius:0; width:7px; height:7px; }
-
-/* Original line-art resource icons (not derived from any game asset —
-   drawn from scratch: a mechanical module/gauge, an energy discharge, an
-   isometric material cube). Rendered via CSS mask so each one still picks
-   up the resource's own accent color from the existing inline
-   `style="color:..."` on .res-dot, same as the plain square dot did. */
-.res-dot[data-res]{
-  width:18px; height:18px;
-  background-color:currentColor;
-  mask-repeat:no-repeat; mask-position:center; mask-size:contain;
-  -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; -webkit-mask-size:contain;
-}
-.res-dot[data-res="FC"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
-}
-.res-dot[data-res="AFC"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
-}
-.res-dot[data-res="Hyperalloy"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
-}
 
 /* Structural type: uppercase + tracking on headers, ASCII bracket framing
    on the two main card headings. */
