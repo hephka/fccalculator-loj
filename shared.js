@@ -1,4 +1,4 @@
-// Shared engine used by every route page (index.html, tomes.html, ...).
+// Shared engine used by every route page (index.html, tomes-collections.html, ...).
 // Each page must define, before loading this file:
 //   RESOURCES     - array of resource keys, e.g. ["FC","AFC","Hyperalloy"]
 //   RES_ACCENT    - {key: "#hexcolor"} per resource
