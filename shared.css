@@ -86,7 +86,8 @@ input[type=number]{-moz-appearance:textfield}
    across all 5 routes, but only resources listed below get an icon). */
 .res-dot[data-res="FC"],
 .res-dot[data-res="AFC"],
-.res-dot[data-res="Hyperalloy"]{
+.res-dot[data-res="Hyperalloy"],
+.res-dot[data-res="SealOfWisdom"]{
   width:18px; height:18px;
   background-color:currentColor;
   mask-repeat:no-repeat; mask-position:center; mask-size:contain;
@@ -101,6 +102,12 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="AFC"]{
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+}
+/* SealOfWisdom — a wax-seal stamp: grip on top, neck, flared stamping
+   base (the part that presses down) */
+.res-dot[data-res="SealOfWisdom"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='7' y='4' width='10' height='4'/%3E%3Cpath d='M9 8 V14 M15 8 V14'/%3E%3Cpath d='M7 20 H17 L15 14 H9 Z'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='7' y='4' width='10' height='4'/%3E%3Cpath d='M9 8 V14 M15 8 V14'/%3E%3Cpath d='M7 20 H17 L15 14 H9 Z'/%3E%3C/svg%3E");
 }
 /* Hyperalloy — material block: an isometric wireframe cube */
 .res-dot[data-res="Hyperalloy"]{
