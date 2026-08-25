@@ -1,0 +1,74 @@
+/* PROTOTYPE — Tactical Telemetry theme, loaded on index.html only, after
+   shared.css. Purely additive/override: no shared.css rule is edited, no
+   markup changed, so the other 4 routes are completely unaffected.
+   Direction: industrial-brutalist-ui skill, "Tactical Telemetry & CRT
+   Terminal" archetype — dark terminal, monospace-dominant, a single hazard-
+   red accent, hard 90° corners, no gradients/glassmorphism. Terminal green
+   is reserved for exactly one element (the paired "Maîtrise" label) per the
+   skill's "single specific indicator" rule. */
+
+:root{
+  --bg:#0a0a0a;
+  --panel:#121212;
+  --panel-2:#181818;
+  --border:#333333;
+  --text:#eaeaea;
+  --muted:#888888;
+  --accent:#ff2a2a;
+  --accent-2:#4af626;
+  --good:#4af626;
+  --good-bg:rgba(74,246,38,.12);
+  --bad:#ff2a2a;
+  --bad-bg:rgba(255,42,42,.12);
+  --warn:#ffb300;
+  --warn-bg:rgba(255,179,0,.1);
+  --radius:0;
+  --radius-sm:0;
+}
+
+body{
+  background:var(--bg);
+  font-family:'IBM Plex Mono','Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+/* CRT scanline texture — fixed overlay, no layout impact, no new markup */
+body::after{
+  content:"";
+  position:fixed; inset:0; z-index:100; pointer-events:none;
+  background:repeating-linear-gradient(0deg,
+    rgba(255,255,255,.025), rgba(255,255,255,.025) 1px,
+    transparent 1px, transparent 3px);
+  mix-blend-mode:overlay;
+}
+
+/* Hard corners everywhere shared.css hardcoded a radius (the --radius vars
+   above only cover the classes that already referenced them). */
+.nav-link, .lang-switch, button, input[type=number], input[type=text], select,
+.card, .intro-card, .res-card, .res-card .missing, .rarity-badge,
+.research-group, .group-badge, .track, .track-badge, .estimated-tag,
+.sticky-chip, .breakdown tr {
+  border-radius:0;
+}
+.res-dot{ border-radius:0; width:7px; height:7px; }
+
+/* Structural type: uppercase + tracking on headers, ASCII bracket framing
+   on the two main card headings. */
+h1, h2, .cat-title, .part-header, .brand-eyebrow, .intro-title{
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.card h2::before{ content:"[ "; color:var(--muted); }
+.card h2::after{ content:" ]"; color:var(--muted); }
+
+/* No glassmorphism on the sticky bar — solid panel + hard top border. */
+.sticky-bar{
+  background:var(--panel);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  border-top:2px solid var(--border);
+}
+
+/* White text on this red fails WCAG AA (3.74:1) — dark text passes (5.3:1)
+   and reads more like real hazard signage anyway (black-on-red tape). */
+.nav-link.active{ background:var(--accent); border-color:var(--accent); color:var(--bg); }
+.lang-btn.active{ background:var(--accent); color:var(--bg); }
