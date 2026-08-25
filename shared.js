@@ -416,7 +416,7 @@ function renderBreakdown(breakdown){
       <td data-label="${colTarget}">${trackDisplayName(b.track)} ${b.auto?'<span class="auto-tag">'+t("autoAdded")+'</span>':''}</td>
       <td data-label="${colFrom}">${levelLabel(b.track, b.track.levels[b.from])}</td>
       <td data-label="${colTo}">${levelLabel(b.track, b.track.levels[b.to])}</td>
-      <td data-label="${colCost}" class="cost-cell">${cost} ${b.estimated?`<span class="estimated-tag" title="${t("estimatedNote")}">≈</span>`:''}</td>
+      <td data-label="${colCost}" class="cost-cell">${cost} ${b.estimated?`<span class="estimated-wrap"><button type="button" class="estimated-tag" aria-expanded="false">≈</button><span class="estimated-note" hidden>${t("estimatedNote")}</span></span>`:''}</td>
     </tr>`;
     }).join("")}
   </tbody></table>`;
@@ -604,6 +604,22 @@ function armConfirm(btn, confirmLabel, action){
 }
 
 function initApp(){
+  // Tap/click toggle instead of the old title="" tooltip: title never
+  // shows on touch devices (no hover), so mobile users had no way to read
+  // the estimated-value note at all. Delegated on the container since
+  // renderBreakdown() replaces its innerHTML on every recalculation.
+  document.getElementById("breakdown").addEventListener("click", e=>{
+    const btn = e.target.closest(".estimated-tag");
+    if(!btn) return;
+    const note = btn.nextElementSibling;
+    const opening = note.hidden;
+    document.querySelectorAll(".estimated-tag[aria-expanded=true]").forEach(b=>{
+      b.setAttribute("aria-expanded", "false");
+      b.nextElementSibling.hidden = true;
+    });
+    note.hidden = !opening;
+    btn.setAttribute("aria-expanded", String(opening));
+  });
   document.getElementById("btnReset").addEventListener("click", ()=>{
     armConfirm(document.getElementById("btnReset"), t("resetConfirm"), ()=>{
       state = defaultData();

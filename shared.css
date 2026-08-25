@@ -272,8 +272,14 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
 .breakdown th,.breakdown td{white-space:nowrap}
 .breakdown td.cost-cell{white-space:normal;min-width:180px}
 .auto-tag{color:var(--warn);font-size:.72rem}
-.estimated-tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);border-radius:4px;
-  font-size:.68rem;line-height:1;padding:2px 4px;margin-left:4px;cursor:help}
+.estimated-wrap{display:inline-block;position:relative}
+.estimated-tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);background:none;
+  border-radius:4px;font-size:.68rem;line-height:1;padding:2px 4px;margin-left:4px;cursor:pointer;
+  font-family:inherit}
+.estimated-tag[aria-expanded=true]{background:var(--warn-bg)}
+.estimated-note{position:absolute;left:0;top:calc(100% + 4px);z-index:5;width:max-content;max-width:220px;
+  background:var(--panel-2);border:1px solid var(--warn);color:var(--text);font-size:.72rem;
+  line-height:1.35;padding:6px 8px;white-space:normal}
 footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
 
 /* Fixed bar mirroring "what's missing" so the numbers stay on screen while
