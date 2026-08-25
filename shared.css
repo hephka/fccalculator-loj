@@ -85,8 +85,11 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle;background:currentColor}
 
 /* Original line-art resource icons (drawn from scratch, not derived from
-   any game asset — see each comment for what it's based on). Rendered via
-   CSS mask so every icon still picks up the resource's own color from the
+   any game asset — see each comment for what it's based on). Each one is
+   a real file under icons/ (not an inline data: URI) so it can be viewed,
+   diffed and edited like any other SVG — no risk of the mask-image and
+   -webkit-mask-image copies silently drifting apart. Rendered via CSS
+   mask so every icon still picks up the resource's own color from the
    existing inline style="color:..." on .res-dot, same as the plain dot.
    Each icon's selector list below explicitly opts that resource in to the
    18px sizing + masking — a resource with no entry here simply keeps the
@@ -119,25 +122,25 @@ input[type=number]{-moz-appearance:textfield}
 }
 /* FC — mechanical module: hexagonal housing + a central gauge dial */
 .res-dot[data-res="FC"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Cpath d='M12 7.5 V9.5 M12 14.5 V16.5 M7.5 12 H9.5 M14.5 12 H16.5'/%3E%3C/svg%3E");
+  mask-image:url("icons/fc.svg");
+  -webkit-mask-image:url("icons/fc.svg");
 }
 /* AFC — energy: a lightning bolt inside a circle */
 .res-dot[data-res="AFC"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 5 L8 13 H11.5 L10.5 19 L16 10.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+  mask-image:url("icons/afc.svg");
+  -webkit-mask-image:url("icons/afc.svg");
 }
 /* SealOfWisdom — a wax-seal stamp: grip on top, neck, flared stamping
    base (the part that presses down) */
 .res-dot[data-res="SealOfWisdom"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='7' y='4' width='10' height='4'/%3E%3Cpath d='M9 8 V14 M15 8 V14'/%3E%3Cpath d='M7 20 H17 L15 14 H9 Z'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='7' y='4' width='10' height='4'/%3E%3Cpath d='M9 8 V14 M15 8 V14'/%3E%3Cpath d='M7 20 H17 L15 14 H9 Z'/%3E%3C/svg%3E");
+  mask-image:url("icons/seal-wisdom.svg");
+  -webkit-mask-image:url("icons/seal-wisdom.svg");
 }
 /* SealOfKnowledge — a pawn-shaped seal stamp: round head, narrow neck,
    wide oval base — a distinct silhouette from Wisdom's flared stamp */
 .res-dot[data-res="SealOfKnowledge"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='6' r='3'/%3E%3Cpath d='M10 9 V15 M14 9 V15'/%3E%3Cellipse cx='12' cy='18' rx='6' ry='2.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='6' r='3'/%3E%3Cpath d='M10 9 V15 M14 9 V15'/%3E%3Cellipse cx='12' cy='18' rx='6' ry='2.5'/%3E%3C/svg%3E");
+  mask-image:url("icons/seal-knowledge.svg");
+  -webkit-mask-image:url("icons/seal-knowledge.svg");
 }
 /* Trove Coins (Common/Rare/Precious/Legendary) — one shared icon (an open
    chest with a coin inside), since the 4 tiers are the same image in the
@@ -147,57 +150,57 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="RareCoin"],
 .res-dot[data-res="PreciousCoin"],
 .res-dot[data-res="LegendaryCoin"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 13 H19 V21 H5 Z'/%3E%3Cpath d='M4 13 C4 13 8 5 12 5 C16 5 20 13 20 13'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cpath d='M10.5 12 H13.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 13 H19 V21 H5 Z'/%3E%3Cpath d='M4 13 C4 13 8 5 12 5 C16 5 20 13 20 13'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cpath d='M10.5 12 H13.5'/%3E%3C/svg%3E");
+  mask-image:url("icons/trove-coin.svg");
+  -webkit-mask-image:url("icons/trove-coin.svg");
 }
 /* PrisonerArmorData — simplified: a rectangular data card with a lightning
    bolt directly on it (dropped the extra circle — simpler at small size) */
 .res-dot[data-res="PrisonerArmorData"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='4' y='5' width='16' height='14'/%3E%3Cpath d='M13 8 L9.5 13 H12 L11 16.5 L15 11.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='4' y='5' width='16' height='14'/%3E%3Cpath d='M13 8 L9.5 13 H12 L11 16.5 L15 11.5 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+  mask-image:url("icons/prisoner-armor-data.svg");
+  -webkit-mask-image:url("icons/prisoner-armor-data.svg");
 }
 /* PowerModule / AdvancedPowerModule — a battery with a lightning bolt; one
    shared shape, colors already differ (blue vs yellow) via RES_ACCENT */
 .res-dot[data-res="PowerModule"],
 .res-dot[data-res="AdvancedPowerModule"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='10' y='3' width='4' height='3'/%3E%3Crect x='5' y='6' width='14' height='15'/%3E%3Cpath d='M13.5 9 L9.5 14.5 H12 L11 19 L15.5 13 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='10' y='3' width='4' height='3'/%3E%3Crect x='5' y='6' width='14' height='15'/%3E%3Cpath d='M13.5 9 L9.5 14.5 H12 L11 19 L15.5 13 H12.5 Z' fill='black' stroke='none'/%3E%3C/svg%3E");
+  mask-image:url("icons/power-module.svg");
+  -webkit-mask-image:url("icons/power-module.svg");
 }
 /* DataDisk — a disc inside a square case */
 .res-dot[data-res="DataDisk"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='4' y='4' width='16' height='16'/%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3Ccircle cx='12' cy='12' r='1.3' fill='black' stroke='none'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Crect x='4' y='4' width='16' height='16'/%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3Ccircle cx='12' cy='12' r='1.3' fill='black' stroke='none'/%3E%3C/svg%3E");
+  mask-image:url("icons/data-disk.svg");
+  -webkit-mask-image:url("icons/data-disk.svg");
 }
 /* PlanetCoin — a coin with a ringed planet (Saturn-like) inside */
 .res-dot[data-res="PlanetCoin"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
+  mask-image:url("icons/planet-coin.svg");
+  -webkit-mask-image:url("icons/planet-coin.svg");
 }
 /* EquipmentParts — simplified: just a hex bolt head with a center socket,
    viewed top-down (dropped the shaft + thread lines — too busy small) */
 .res-dot[data-res="EquipmentParts"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 4 L19 8 V16 L12 20 L5 16 V8 Z'/%3E%3Ccircle cx='12' cy='12' r='2.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 4 L19 8 V16 L12 20 L5 16 V8 Z'/%3E%3Ccircle cx='12' cy='12' r='2.5'/%3E%3C/svg%3E");
+  mask-image:url("icons/equipment-parts.svg");
+  -webkit-mask-image:url("icons/equipment-parts.svg");
 }
 /* Magnet — a horseshoe magnet with striped pole caps */
 .res-dot[data-res="Magnet"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M6 4 V13 A6 6 0 0 0 18 13 V4'/%3E%3Cpath d='M6 4 H10 M6 8 H10 M14 4 H18 M14 8 H18'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M6 4 V13 A6 6 0 0 0 18 13 V4'/%3E%3Cpath d='M6 4 H10 M6 8 H10 M14 4 H18 M14 8 H18'/%3E%3C/svg%3E");
+  mask-image:url("icons/magnet.svg");
+  -webkit-mask-image:url("icons/magnet.svg");
 }
 /* PotentialCoil — a wound coil/inductor symbol */
 .res-dot[data-res="PotentialCoil"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M4 12 C4 8 8 8 8 12 C8 16 12 16 12 12 C12 8 16 8 16 12 C16 16 20 16 20 12'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M4 12 C4 8 8 8 8 12 C8 16 12 16 12 12 C12 8 16 8 16 12 C16 16 20 16 20 12'/%3E%3C/svg%3E");
+  mask-image:url("icons/potential-coil.svg");
+  -webkit-mask-image:url("icons/potential-coil.svg");
 }
 /* PrecisionEquipment — a gear */
 .res-dot[data-res="PrecisionEquipment"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='black' stroke='none'/%3E%3Cpath d='M12 3 V6 M12 18 V21 M3 12 H6 M18 12 H21 M5.8 5.8 L7.8 7.8 M16.2 16.2 L18.2 18.2 M5.8 18.2 L7.8 16.2 M16.2 7.8 L18.2 5.8'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='black' stroke='none'/%3E%3Cpath d='M12 3 V6 M12 18 V21 M3 12 H6 M18 12 H21 M5.8 5.8 L7.8 7.8 M16.2 16.2 L18.2 18.2 M5.8 18.2 L7.8 16.2 M16.2 7.8 L18.2 5.8'/%3E%3C/svg%3E");
+  mask-image:url("icons/precision-equipment.svg");
+  -webkit-mask-image:url("icons/precision-equipment.svg");
 }
 /* HeroFragment — a single jigsaw puzzle piece */
 .res-dot[data-res="HeroFragment"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H9 A3 3 0 0 0 15 5 H19 V9 A3 3 0 0 0 19 15 V19 H5 Z'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H9 A3 3 0 0 0 15 5 H19 V9 A3 3 0 0 0 19 15 V19 H5 Z'/%3E%3C/svg%3E");
+  mask-image:url("icons/hero-fragment.svg");
+  -webkit-mask-image:url("icons/hero-fragment.svg");
 }
 /* ExclusiveEquipPart — a generic weapon (a sabre): blade, crossguard, grip.
    User's call: the real resource covers many weapon types (sabre, hook,
@@ -205,13 +208,13 @@ input[type=number]{-moz-appearance:textfield}
    deliberately the simplest generic "weapon" glyph rather than any specific
    one of them. */
 .res-dot[data-res="ExclusiveEquipPart"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L14.5 4.5 V15 L12 17.5 L9.5 15 V4.5 Z'/%3E%3Cpath d='M6 15 H18'/%3E%3Crect x='10.5' y='17.5' width='3' height='4.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 2 L14.5 4.5 V15 L12 17.5 L9.5 15 V4.5 Z'/%3E%3Cpath d='M6 15 H18'/%3E%3Crect x='10.5' y='17.5' width='3' height='4.5'/%3E%3C/svg%3E");
+  mask-image:url("icons/exclusive-equip-part.svg");
+  -webkit-mask-image:url("icons/exclusive-equip-part.svg");
 }
 /* Hyperalloy — material block: an isometric wireframe cube */
 .res-dot[data-res="Hyperalloy"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 8 H17 V20 H5 Z'/%3E%3Cpath d='M9 4 H21 V16 H9'/%3E%3Cpath d='M5 8 L9 4 M17 8 L21 4 M17 20 L21 16'/%3E%3C/svg%3E");
+  mask-image:url("icons/hyperalloy.svg");
+  -webkit-mask-image:url("icons/hyperalloy.svg");
 }
 
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
