@@ -64,7 +64,7 @@
 // these — e.g. Tomes overrides noTargetHint with wording specific to tomes.
 const I18N_CHROME = {
   en: {
-    navBuildings: "Buildings & Research", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
+    navBuildings: "FC Buildings & T11 Research", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
     navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars & Exclusive Equipment",
     appBrand: "Resource Calculator - Lands of Jail",
     introTitle: "What this does",
@@ -82,7 +82,7 @@ const I18N_CHROME = {
     estimatedNote: "Includes an estimated value, not yet confirmed — see the note above.",
   },
   fr: {
-    navBuildings: "Bâtiments & Recherches", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
+    navBuildings: "Bâtiments FC & Recherches T11", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
     navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros & Équipement Exclusif",
     appBrand: "Calculateur de ressources - Lands of Jail",
     introTitle: "Ce que fait l'outil",
