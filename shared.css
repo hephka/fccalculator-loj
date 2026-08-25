@@ -1,20 +1,28 @@
+/* Tactical Telemetry palette — this WAS overridden wholesale by
+   theme-tactical.css's own :root on every route; merged in directly here
+   now that the theme is permanent and site-wide, so there's one source of
+   truth instead of a full second copy that silently wins every time.
+   --border was raised from #333333 (1.4-1.6:1 against these panels — under
+   the WCAG 3:1 non-text minimum) to #656565 (~3-3.4:1) so card/input edges
+   stay visible on dim or low-quality screens instead of relying on the
+   ~1.06:1 gap between --bg/--panel/--panel-2 alone. */
 :root{
-  --bg:#0a0c11;
-  --panel:#151a24;
-  --panel-2:#1a2030;
-  --border:#262c3a;
-  --text:#eef1f8;
-  --muted:#8891a6;
-  --accent:#5b8cff;
-  --accent-2:#9b6bff;
-  --good:#3ecf8e;
-  --good-bg:rgba(62,207,142,.13);
-  --bad:#ff5c72;
-  --bad-bg:rgba(255,92,114,.13);
-  --warn:#ffb648;
-  --warn-bg:rgba(255,182,72,.1);
-  --radius:14px;
-  --radius-sm:10px;
+  --bg:#0a0a0a;
+  --panel:#121212;
+  --panel-2:#181818;
+  --border:#656565;
+  --text:#eaeaea;
+  --muted:#888888;
+  --accent:#ff2a2a;
+  --accent-2:#4af626;
+  --good:#4af626;
+  --good-bg:rgba(74,246,38,.12);
+  --bad:#ff2a2a;
+  --bad-bg:rgba(255,42,42,.12);
+  --warn:#ffb300;
+  --warn-bg:rgba(255,179,0,.1);
+  --radius:0;
+  --radius-sm:0;
 }
 *{box-sizing:border-box}
 body{

@@ -1,31 +1,16 @@
-/* Site-wide visual theme, loaded on all 5 routes after shared.css. Purely
-   additive/override: no shared.css rule is edited, no markup changed —
-   this file alone carries the entire look. Direction: industrial-
-   brutalist-ui skill, "Tactical Telemetry & CRT Terminal" archetype —
-   dark terminal, monospace-dominant, a single hazard-red accent, hard 90°
-   corners, no gradients/glassmorphism. Terminal green is reserved for
-   exactly one element (the paired "Maîtrise" label) per the skill's
-   "single specific indicator" rule. Prototyped on index.html alone first,
-   then rolled out everywhere once approved. */
-
-:root{
-  --bg:#0a0a0a;
-  --panel:#121212;
-  --panel-2:#181818;
-  --border:#333333;
-  --text:#eaeaea;
-  --muted:#888888;
-  --accent:#ff2a2a;
-  --accent-2:#4af626;
-  --good:#4af626;
-  --good-bg:rgba(74,246,38,.12);
-  --bad:#ff2a2a;
-  --bad-bg:rgba(255,42,42,.12);
-  --warn:#ffb300;
-  --warn-bg:rgba(255,179,0,.1);
-  --radius:0;
-  --radius-sm:0;
-}
+/* Site-wide visual theme, loaded on all 5 routes after shared.css.
+   Direction: industrial-brutalist-ui skill, "Tactical Telemetry & CRT
+   Terminal" archetype — dark terminal, monospace-dominant, a single
+   hazard-red accent, hard 90° corners, no gradients/glassmorphism.
+   Terminal green is reserved for exactly one element (the paired
+   "Maîtrise" label) per the skill's "single specific indicator" rule.
+   Prototyped on index.html alone first, then rolled out everywhere once
+   approved. The palette itself (colors + --radius) now lives directly in
+   shared.css's own :root — merged there once the theme became permanent,
+   so it isn't duplicated in two places with this file always winning.
+   What's left here is everything that isn't a simple variable swap:
+   textures, font, ASCII framing, and the handful of shared.css rules that
+   hardcode a radius/color instead of referencing a variable. */
 
 /* Blueprint grid: a fine 8px mesh plus a bolder 40px mesh, both very low
    opacity — reads as engineering-drawing graph paper rather than a busy
