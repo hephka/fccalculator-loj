@@ -165,10 +165,11 @@ input[type=number]{-moz-appearance:textfield}
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
 }
-/* EquipmentParts — a hex-head bolt with a threaded shaft */
+/* EquipmentParts — simplified: just a hex bolt head with a center socket,
+   viewed top-down (dropped the shaft + thread lines — too busy small) */
 .res-dot[data-res="EquipmentParts"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 3 L17 6 V12 L12 15 L7 12 V6 Z'/%3E%3Cpath d='M12 15 V21 M9.5 17 H14.5 M9.5 19 H14.5'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 3 L17 6 V12 L12 15 L7 12 V6 Z'/%3E%3Cpath d='M12 15 V21 M9.5 17 H14.5 M9.5 19 H14.5'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 4 L19 8 V16 L12 20 L5 16 V8 Z'/%3E%3Ccircle cx='12' cy='12' r='2.5'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 4 L19 8 V16 L12 20 L5 16 V8 Z'/%3E%3Ccircle cx='12' cy='12' r='2.5'/%3E%3C/svg%3E");
 }
 /* Magnet — a horseshoe magnet with striped pole caps */
 .res-dot[data-res="Magnet"]{
