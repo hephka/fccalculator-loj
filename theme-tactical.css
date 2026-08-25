@@ -1,11 +1,12 @@
-/* PROTOTYPE — Tactical Telemetry theme, loaded on index.html only, after
-   shared.css. Purely additive/override: no shared.css rule is edited, no
-   markup changed, so the other 4 routes are completely unaffected.
-   Direction: industrial-brutalist-ui skill, "Tactical Telemetry & CRT
-   Terminal" archetype — dark terminal, monospace-dominant, a single hazard-
-   red accent, hard 90° corners, no gradients/glassmorphism. Terminal green
-   is reserved for exactly one element (the paired "Maîtrise" label) per the
-   skill's "single specific indicator" rule. */
+/* Site-wide visual theme, loaded on all 5 routes after shared.css. Purely
+   additive/override: no shared.css rule is edited, no markup changed —
+   this file alone carries the entire look. Direction: industrial-
+   brutalist-ui skill, "Tactical Telemetry & CRT Terminal" archetype —
+   dark terminal, monospace-dominant, a single hazard-red accent, hard 90°
+   corners, no gradients/glassmorphism. Terminal green is reserved for
+   exactly one element (the paired "Maîtrise" label) per the skill's
+   "single specific indicator" rule. Prototyped on index.html alone first,
+   then rolled out everywhere once approved. */
 
 :root{
   --bg:#0a0a0a;
