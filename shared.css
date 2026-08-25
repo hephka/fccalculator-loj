@@ -245,8 +245,15 @@ input[type=number]{-moz-appearance:textfield}
 .group-body.open{display:block}
 
 .track{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;background:var(--panel-2);overflow:hidden}
+/* Border-only, not colored text: this and .missing.bad below both used
+   the same --accent red, so a flagged track's *name* (e.g. "Bureau du
+   Directeur") read identically to a "Manque X" deficit badge — two
+   unrelated meanings sharing one color. A vivid-enough red to pass 4.5:1
+   on these dark panels has very little room to also look distinct from
+   --bad (checked: darkening it enough to look different drops it under
+   AA), so the fix is structural instead of a second red — the flagged
+   track keeps its red edge marker, but the name goes back to plain text. */
 .track.track-accent{border-left-width:3px;border-left-color:var(--accent-color)}
-.track.track-accent .track-name{color:var(--accent-color)}
 .track-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:13px 16px}
 .track-name{font-weight:600;flex:1;min-width:160px}
 .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
