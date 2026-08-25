@@ -367,7 +367,7 @@ function renderSummary(totals, breakdown){
   grid.innerHTML = visibleResources.map(r=>{
     const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
     return `<div class="res-card" style="--accent-color:${RES_ACCENT[r]}">
-      <div class="name"><span class="res-dot" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</div>
+      <div class="name"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</div>
       <div class="need">${fmt(need)} ${t("needed")}</div>
       <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? t("missing")+" "+fmt(missing) : t("okSurplus",{n:fmt(Math.abs(missing))})}</div>
     </div>`;
@@ -398,7 +398,7 @@ function renderStickyBar(totals, breakdown){
   bar.onclick = jump;
   bar.onkeydown = e=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); jump(); } };
   bar.innerHTML = `<div class="sticky-bar-inner">
-    ${missingList.map(({r,missing})=>`<span class="sticky-chip" style="--accent-color:${RES_ACCENT[r]}"><span class="res-dot" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)} <b>${fmt(missing)}</b></span>`).join("")}
+    ${missingList.map(({r,missing})=>`<span class="sticky-chip" style="--accent-color:${RES_ACCENT[r]}"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)} <b>${fmt(missing)}</b></span>`).join("")}
   </div>`;
 }
 
