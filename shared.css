@@ -88,7 +88,11 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="AFC"],
 .res-dot[data-res="Hyperalloy"],
 .res-dot[data-res="SealOfWisdom"],
-.res-dot[data-res="SealOfKnowledge"]{
+.res-dot[data-res="SealOfKnowledge"],
+.res-dot[data-res="CommonCoin"],
+.res-dot[data-res="RareCoin"],
+.res-dot[data-res="PreciousCoin"],
+.res-dot[data-res="LegendaryCoin"]{
   width:18px; height:18px;
   background-color:currentColor;
   mask-repeat:no-repeat; mask-position:center; mask-size:contain;
@@ -115,6 +119,17 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="SealOfKnowledge"]{
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='6' r='3'/%3E%3Cpath d='M10 9 V15 M14 9 V15'/%3E%3Cellipse cx='12' cy='18' rx='6' ry='2.5'/%3E%3C/svg%3E");
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='6' r='3'/%3E%3Cpath d='M10 9 V15 M14 9 V15'/%3E%3Cellipse cx='12' cy='18' rx='6' ry='2.5'/%3E%3C/svg%3E");
+}
+/* Trove Coins (Common/Rare/Precious/Legendary) — one shared icon (an open
+   chest with a coin inside), since the 4 tiers are the same image in the
+   reference, differing only by color — already handled automatically by
+   each tier's own RES_ACCENT, same as every other icon here. */
+.res-dot[data-res="CommonCoin"],
+.res-dot[data-res="RareCoin"],
+.res-dot[data-res="PreciousCoin"],
+.res-dot[data-res="LegendaryCoin"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 13 H19 V21 H5 Z'/%3E%3Cpath d='M4 13 C4 13 8 5 12 5 C16 5 20 13 20 13'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cpath d='M10.5 12 H13.5'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 13 H19 V21 H5 Z'/%3E%3Cpath d='M4 13 C4 13 8 5 12 5 C16 5 20 13 20 13'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cpath d='M10.5 12 H13.5'/%3E%3C/svg%3E");
 }
 /* Hyperalloy — material block: an isometric wireframe cube */
 .res-dot[data-res="Hyperalloy"]{
