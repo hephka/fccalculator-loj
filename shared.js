@@ -337,7 +337,7 @@ function renderStock(){
   const grid = document.getElementById("stockGrid");
   grid.innerHTML = RESOURCES.map(r=>`
     <div class="stock-item">
-      <label for="stock-${r}" style="color:${RES_ACCENT[r]}">${resourceLabel(r)}</label>
+      <label for="stock-${r}" style="color:${RES_ACCENT[r]}"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</label>
       <input type="text" inputmode="numeric" id="stock-${r}" data-stock="${r}" value="${state.stock[r]}">
     </div>`).join("");
   // type="text" (not "number") is deliberate: number inputs silently discard
