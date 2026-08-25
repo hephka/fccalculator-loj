@@ -97,7 +97,12 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="PowerModule"],
 .res-dot[data-res="AdvancedPowerModule"],
 .res-dot[data-res="DataDisk"],
-.res-dot[data-res="PlanetCoin"]{
+.res-dot[data-res="PlanetCoin"],
+.res-dot[data-res="EquipmentParts"],
+.res-dot[data-res="Magnet"],
+.res-dot[data-res="PotentialCoil"],
+.res-dot[data-res="PrecisionEquipment"],
+.res-dot[data-res="HeroFragment"]{
   width:18px; height:18px;
   background-color:currentColor;
   mask-repeat:no-repeat; mask-position:center; mask-size:contain;
@@ -158,6 +163,31 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="PlanetCoin"]{
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='3.5'/%3E%3Cellipse cx='12' cy='12' rx='7' ry='2.2' transform='rotate(-20 12 12)'/%3E%3C/svg%3E");
+}
+/* EquipmentParts — a hex-head bolt with a threaded shaft */
+.res-dot[data-res="EquipmentParts"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 3 L17 6 V12 L12 15 L7 12 V6 Z'/%3E%3Cpath d='M12 15 V21 M9.5 17 H14.5 M9.5 19 H14.5'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M12 3 L17 6 V12 L12 15 L7 12 V6 Z'/%3E%3Cpath d='M12 15 V21 M9.5 17 H14.5 M9.5 19 H14.5'/%3E%3C/svg%3E");
+}
+/* Magnet — a horseshoe magnet with striped pole caps */
+.res-dot[data-res="Magnet"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M6 4 V13 A6 6 0 0 0 18 13 V4'/%3E%3Cpath d='M6 4 H10 M6 8 H10 M14 4 H18 M14 8 H18'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M6 4 V13 A6 6 0 0 0 18 13 V4'/%3E%3Cpath d='M6 4 H10 M6 8 H10 M14 4 H18 M14 8 H18'/%3E%3C/svg%3E");
+}
+/* PotentialCoil — a wound coil/inductor symbol */
+.res-dot[data-res="PotentialCoil"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M4 12 C4 8 8 8 8 12 C8 16 12 16 12 12 C12 8 16 8 16 12 C16 16 20 16 20 12'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M4 12 C4 8 8 8 8 12 C8 16 12 16 12 12 C12 8 16 8 16 12 C16 16 20 16 20 12'/%3E%3C/svg%3E");
+}
+/* PrecisionEquipment — a gear */
+.res-dot[data-res="PrecisionEquipment"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='black' stroke='none'/%3E%3Cpath d='M12 3 V6 M12 18 V21 M3 12 H6 M18 12 H21 M5.8 5.8 L7.8 7.8 M16.2 16.2 L18.2 18.2 M5.8 18.2 L7.8 16.2 M16.2 7.8 L18.2 5.8'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='black' stroke='none'/%3E%3Cpath d='M12 3 V6 M12 18 V21 M3 12 H6 M18 12 H21 M5.8 5.8 L7.8 7.8 M16.2 16.2 L18.2 18.2 M5.8 18.2 L7.8 16.2 M16.2 7.8 L18.2 5.8'/%3E%3C/svg%3E");
+}
+/* HeroFragment — a single jigsaw puzzle piece */
+.res-dot[data-res="HeroFragment"]{
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H10 C10 3.5 13 3.5 13 5 H19 V11 C20.5 11 20.5 14 19 14 V19 H5 Z'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H10 C10 3.5 13 3.5 13 5 H19 V11 C20.5 11 20.5 14 19 14 V19 H5 Z'/%3E%3C/svg%3E");
 }
 /* Hyperalloy — material block: an isometric wireframe cube */
 .res-dot[data-res="Hyperalloy"]{
