@@ -65,7 +65,7 @@
 const I18N_CHROME = {
   en: {
     navBuildings: "Buildings & Research", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
-    navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars",
+    navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars & Exclusive Equipment",
     appBrand: "Resource Calculator - LoJ",
     introTitle: "What this does",
     introFeature3: "See exactly what you're missing, resource by resource",
@@ -83,7 +83,7 @@ const I18N_CHROME = {
   },
   fr: {
     navBuildings: "Bâtiments & Recherches", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
-    navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros",
+    navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros & Équipement Exclusif",
     appBrand: "Calculateur de ressources - LoJ",
     introTitle: "Ce que fait l'outil",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
