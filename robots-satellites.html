@@ -142,7 +142,10 @@ const ROBOT_COSTS = [
 ];
 
 function makeRobotTrack(idx){
-  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  // Starts at "1" (a robot already exists at its baseline) rather than "0" —
+  // "0" is reserved for the future unlock step (paying to bring a robot into
+  // existence at all), not yet modeled since its cost isn't confirmed.
+  const levels = [{ id:"1", cost:zeroResources(), requires:[] }];
   ROBOT_COSTS.forEach(c=>{
     const cost = zeroResources();
     cost.PrisonerArmorData = c.pad;
@@ -207,7 +210,8 @@ const SAT_SSR_COSTS = Object.keys(SSR_BREAKTHROUGH_PLANETCOIN).map(lvl=>{
 // you own"), so every satellite gets its own fixed track instead of a
 // dynamic add-up-to-N list.
 function makeSatelliteTrack(id, category, nameKey, costs){
-  const levels = [{ id:"0", cost:zeroResources(), requires:[] }];
+  // Same reasoning as makeRobotTrack: starts at "1", not "0" — see comment there.
+  const levels = [{ id:"1", cost:zeroResources(), requires:[] }];
   costs.forEach(c=>{
     const cost = zeroResources();
     cost.DataDisk = c.dd;
