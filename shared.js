@@ -51,11 +51,11 @@
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
 //
-// title      - browser tab title (route name + " - LoJ"), also used as document.title
+// title      - browser tab title (route name + " - Lands of Jail"), also used as document.title
 // appBrand   - the app-wide brand line shown above the h1 on every page, identical
-//              text across all routes ("Resource Calculator - LoJ")
+//              text across all routes ("Resource Calculator - Lands of Jail")
 // pageTitle  - this route's own name shown in the h1 (e.g. "Robots & Satellites"),
-//              without the "- LoJ" suffix
+//              without the "- Lands of Jail" suffix
 
 // Chrome text that's word-for-word identical across every route (nav links,
 // generic buttons, table headers, ...) lives here once instead of being
@@ -66,7 +66,7 @@ const I18N_CHROME = {
   en: {
     navBuildings: "Buildings & Research", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
     navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars & Exclusive Equipment",
-    appBrand: "Resource Calculator - LoJ",
+    appBrand: "Resource Calculator - Lands of Jail",
     introTitle: "What this does",
     introFeature3: "See exactly what you're missing, resource by resource",
     resetButton: "↺ Reset to default values", resetConfirm: "Click again to confirm ↺",
@@ -84,7 +84,7 @@ const I18N_CHROME = {
   fr: {
     navBuildings: "Bâtiments & Recherches", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
     navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros & Équipement Exclusif",
-    appBrand: "Calculateur de ressources - LoJ",
+    appBrand: "Calculateur de ressources - Lands of Jail",
     introTitle: "Ce que fait l'outil",
     introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
     resetButton: "↺ Réinitialiser aux valeurs par défaut", resetConfirm: "Clique à nouveau pour confirmer ↺",
