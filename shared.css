@@ -187,8 +187,8 @@ input[type=number]{-moz-appearance:textfield}
 }
 /* HeroFragment — a single jigsaw puzzle piece */
 .res-dot[data-res="HeroFragment"]{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H10 C10 3.5 13 3.5 13 5 H19 V11 C20.5 11 20.5 14 19 14 V19 H5 Z'/%3E%3C/svg%3E");
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H10 C10 3.5 13 3.5 13 5 H19 V11 C20.5 11 20.5 14 19 14 V19 H5 Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H9 A3 3 0 0 0 15 5 H19 V9 A3 3 0 0 0 19 15 V19 H5 Z'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='miter' stroke-linecap='square'%3E%3Cpath d='M5 5 H9 A3 3 0 0 0 15 5 H19 V9 A3 3 0 0 0 19 15 V19 H5 Z'/%3E%3C/svg%3E");
 }
 /* ExclusiveEquipPart — a generic weapon (a sabre): blade, crossguard, grip.
    User's call: the real resource covers many weapon types (sabre, hook,
