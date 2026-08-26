@@ -305,7 +305,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").innerHTML = `${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}`;
+  document.getElementById("footerText").innerHTML = `${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<br>By S241[AoW]`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
