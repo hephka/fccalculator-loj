@@ -46,19 +46,6 @@ body{
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
 .brand-eyebrow{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}
 h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-/* Eyebrow/h1/subtitle stack beside the logo, both top-aligned (not
-   center) so the gap from the eyebrow down to the logo matches the gap
-   from the eyebrow down to the title — centering the shorter column
-   would otherwise push its top down by half the height difference. The
-   logo holds one fixed size (no vw-scaling) all the way down to the
-   644px breakpoint below, covering roughly the same vertical span as
-   the eyebrow+h1+subtitle stack beside it, instead of gradually
-   shrinking with viewport width. */
-.topbar-title{display:flex;align-items:flex-start;gap:16px}
-.brand-logo{height:110px;width:auto;object-fit:contain;flex-shrink:0}
-/* The 4 routes not yet migrated to .topbar-title still place the logo
-   inline inside <h1> — keep those at the original small icon size. */
-h1 .brand-logo{height:2.4rem}
 .sub{color:var(--muted);font-size:.92rem;margin:0;max-width:520px;line-height:1.5}
 .lang-switch{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
 .lang-btn{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:none;padding:8px 14px;background:var(--panel);color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
@@ -319,14 +306,6 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    horizontal scroll clipping the Cost column — the whole point of the app.
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
-/* Below 644px the logo doesn't have a good place to go — beside the
-   title there's no room, and standing alone above it read as taking
-   over the header — so it's simply not shown on small screens. Its own
-   breakpoint, distinct from the 600px one below, since it's unrelated
-   to the breakdown table reflow. */
-@media (max-width:644px){
-  .brand-logo{display:none}
-}
 @media (max-width:600px){
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
