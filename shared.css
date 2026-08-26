@@ -46,7 +46,11 @@ body{
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
 .brand-eyebrow{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}
 h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-.brand-logo{height:2.4rem;width:auto;flex-shrink:0}
+/* Logo sits beside the eyebrow/h1/subtitle stack, stretched (align-items:
+   stretch) to match that stack's full height rather than a fixed size —
+   so it scales with the title block instead of needing separate tuning. */
+.topbar-title{display:flex;align-items:stretch;gap:16px}
+.brand-logo{height:auto;width:auto;object-fit:contain;flex-shrink:0}
 .sub{color:var(--muted);font-size:.92rem;margin:0;max-width:520px;line-height:1.5}
 .lang-switch{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
 .lang-btn{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:none;padding:8px 14px;background:var(--panel);color:var(--muted);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
@@ -308,6 +312,11 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
 @media (max-width:600px){
+  /* Stretched-to-text-height sizing only makes sense in a side-by-side row;
+     below 600px the title text alone can fill the width, so the logo drops
+     to its own centered line instead of squeezing next to it. */
+  .topbar-title{flex-direction:column;align-items:flex-start}
+  .brand-logo{align-self:center;width:60%;max-width:220px;height:auto;margin-top:10px}
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
   /* tr as a flex row (not block) so From/To can share one line while the
