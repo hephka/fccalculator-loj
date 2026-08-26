@@ -38,7 +38,20 @@ body{
 }
 .wrap{max-width:960px;margin:0 auto;padding:24px 16px 90px}
 
-.nav-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+/* .nav-bar-wrap only exists when JS (initApp in shared.js) wraps .nav-bar
+   to add the scroll-edge fade below — position:relative anchor for
+   .nav-fade, margin lives here instead of on .nav-bar so it still applies
+   even before that wrapping runs (progressive enhancement, not required
+   for the nav itself to work). */
+.nav-bar-wrap{position:relative;margin-bottom:18px}
+.nav-bar{display:flex;flex-wrap:wrap;gap:8px}
+/* Signals there's more to scroll to on the right — only visible when
+   .nav-bar actually overflows (mobile's single scrollable row); on
+   desktop, where it wraps instead of scrolling, updateNavFade() in
+   shared.js finds no overflow and this just stays hidden. */
+.nav-fade{position:absolute;top:0;right:0;bottom:0;width:36px;pointer-events:none;
+  background:linear-gradient(to right, transparent, var(--bg));opacity:0;transition:opacity .15s}
+.nav-fade.visible{opacity:1}
 .nav-link{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:border-color .15s,color .15s,background .15s}
 .nav-link:hover{border-color:var(--accent);color:var(--text)}
 .nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}

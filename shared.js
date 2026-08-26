@@ -605,7 +605,35 @@ function armConfirm(btn, confirmLabel, action){
   btn.dataset.armTimer = String(timerId);
 }
 
+// Wraps .nav-bar in a positioned container and adds a right-edge fade that
+// only shows while there's more to scroll to — on mobile the nav is a
+// single scrollable row (see shared.css) instead of wrapping onto 2-3
+// lines, and the fade is the visual cue that it's scrollable at all (the
+// last button is otherwise just cut off at the screen edge with no other
+// hint). Self-regulating: on desktop .nav-bar wraps instead of
+// overflowing, so there's nothing to scroll to and the fade just stays
+// hidden — no separate breakpoint check needed here.
+function initNavFade(){
+  const navBar = document.querySelector(".nav-bar");
+  if(!navBar) return;
+  const wrap = document.createElement("div");
+  wrap.className = "nav-bar-wrap";
+  navBar.parentNode.insertBefore(wrap, navBar);
+  wrap.appendChild(navBar);
+  const fade = document.createElement("div");
+  fade.className = "nav-fade";
+  wrap.appendChild(fade);
+  const update = () => {
+    const hasMore = navBar.scrollWidth - navBar.clientWidth - navBar.scrollLeft > 4;
+    fade.classList.toggle("visible", hasMore);
+  };
+  navBar.addEventListener("scroll", update);
+  window.addEventListener("resize", update);
+  update();
+}
+
 function initApp(){
+  initNavFade();
   // Tap/click toggle instead of the old title="" tooltip: title never
   // shows on touch devices (no hover), so mobile users had no way to read
   // the estimated-value note at all. Delegated on the container since
