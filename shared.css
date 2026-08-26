@@ -253,8 +253,14 @@ input[type=number]{-moz-appearance:textfield}
 .add-item:hover{background:rgba(91,140,255,.16)}
 .add-item:disabled{cursor:not-allowed;opacity:.45}
 .research-group{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;background:var(--panel);overflow:hidden}
-.group-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;transition:background .15s}
+/* A real <button> now (was a <div>, keyboard-inaccessible) — reset the
+   generic button{} chip styling below so it still reads as a plain
+   header row, not a bordered button. */
+.group-head{display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;
+  border:none;border-radius:0;background:none;color:inherit;font:inherit;text-align:left;
+  cursor:pointer;transition:background .15s}
 .group-head:hover{background:var(--panel-2)}
+.group-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .group-icon{font-size:1.15rem}
 .group-name{font-weight:700;flex:1}
 .group-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}

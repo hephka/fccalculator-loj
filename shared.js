@@ -307,7 +307,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<img src="images/logo-loj.png" alt="S241 [AoW]" class="footer-logo">`;
+  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<img src="images/logo-loj.png" alt="S241 [AoW]" width="600" height="337" class="footer-logo">`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
@@ -436,12 +436,12 @@ function groupedTracksHtml(tracks){
     const icon = (GROUP_ICONS && GROUP_ICONS[troopKey]) || "🧬";
     const badgeText = activeCount ? t("groupTargetsSet",{n:activeCount}) : t("groupNoTargets");
     return `<div class="research-group">
-      <div class="group-head" data-group="${troopKey}">
+      <button type="button" class="group-head" data-group="${troopKey}" aria-expanded="${isOpen}">
         <span class="group-icon">${icon}</span>
         <span class="group-name">${t("troop_"+troopKey)}</span>
         <span class="group-badge ${activeCount?'active':''}">${badgeText}</span>
         <span class="group-chevron ${isOpen?'open':''}">▸</span>
-      </div>
+      </button>
       <div class="group-body ${isOpen?'open':''}">
         ${gTracks.map(tr=> trackHtml(tr)).join("")}
       </div>
@@ -512,6 +512,7 @@ function renderCategories(){
       const nowOpen = !body.classList.contains("open");
       body.classList.toggle("open", nowOpen);
       chevron.classList.toggle("open", nowOpen);
+      h.setAttribute("aria-expanded", String(nowOpen));
       if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
     });
   });
