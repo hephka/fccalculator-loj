@@ -46,17 +46,15 @@ body{
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
 .brand-eyebrow{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}
 h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-/* Eyebrow stays outside the row below so it's always the first line,
-   regardless of how the row beneath it lays out (see .topbar-row). */
-.topbar-title .brand-eyebrow{margin-bottom:10px}
-/* The logo holds one fixed size (no vw-scaling, no organic wrap) all the
-   way down to the 600px breakpoint below — an earlier vw-based clamp()
-   shrank it gradually starting around 1200px, which read as "shrinking
-   too soon" for a size the user specifically wanted to keep as long as
-   possible. Below 600px it switches, in one step, to being the only
-   thing on its line (.topbar-row goes column) instead of gradually
-   losing space to the h1/subtitle column. */
-.topbar-row{display:flex;align-items:center;gap:16px}
+/* Eyebrow/h1/subtitle stack beside the logo, both top-aligned (not
+   center) so the gap from the eyebrow down to the logo matches the gap
+   from the eyebrow down to the title — centering the shorter column
+   would otherwise push its top down by half the height difference. The
+   logo holds one fixed size (no vw-scaling) all the way down to the
+   644px breakpoint below, covering roughly the same vertical span as
+   the eyebrow+h1+subtitle stack beside it, instead of gradually
+   shrinking with viewport width. */
+.topbar-title{display:flex;align-items:flex-start;gap:16px}
 .brand-logo{height:110px;width:auto;object-fit:contain;flex-shrink:0}
 /* The 4 routes not yet migrated to .topbar-title still place the logo
    inline inside <h1> — keep those at the original small icon size. */
