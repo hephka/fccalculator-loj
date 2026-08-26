@@ -322,11 +322,10 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
 @media (max-width:600px){
-  /* Logo goes above the title instead of beside it — right after the
-     eyebrow, before the h1/subtitle — and drops to a size meant to stand
-     alone rather than the large side-by-side size held above 600px. */
-  .topbar-row{flex-direction:column;align-items:flex-start}
-  .brand-logo{order:-1;height:64px}
+  /* Below 600px the logo doesn't have a good place to go — beside the
+     title there's no room, and standing alone above it read as taking
+     over the header — so it's simply not shown on small screens. */
+  .brand-logo{display:none}
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
   /* tr as a flex row (not block) so From/To can share one line while the
