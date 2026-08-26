@@ -79,7 +79,6 @@ const I18N_CHROME = {
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
     dataUpdated: "Data last updated: {date}",
-    footerCredit: "Tool maintained by the S241 [AoW] alliance",
     estimatedNote: "Includes an estimated value, not yet confirmed — see the note above.",
   },
   fr: {
@@ -98,7 +97,6 @@ const I18N_CHROME = {
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
     dataUpdated: "Données mises à jour le {date}",
-    footerCredit: "Outil maintenu par l'alliance S241 [AoW]",
     estimatedNote: "Inclut une valeur estimée, pas encore confirmée — voir la note ci-dessus.",
   },
 };
@@ -307,7 +305,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").innerHTML = `${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<br>${t("footerCredit")}<img src="images/logo-loj.png" alt="S241 [AoW]" class="footer-logo">`;
+  document.getElementById("footerText").innerHTML = `${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<img src="images/logo-loj.png" alt="S241 [AoW]" class="footer-logo">`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
