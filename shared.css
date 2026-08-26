@@ -284,7 +284,7 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
   background:var(--panel-2);border:1px solid var(--warn);color:var(--text);font-size:.72rem;
   line-height:1.35;padding:6px 8px;white-space:normal}
 footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
-.footer-logo{display:block;height:56px;width:auto;margin:12px auto 0}
+.footer-logo{display:block;height:110px;width:auto;margin:12px auto 0}
 
 /* Fixed bar mirroring "what's missing" so the numbers stay on screen while
    scrolling through tracks far below the summary card — see renderStickyBar
