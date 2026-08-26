@@ -2,7 +2,7 @@
 
 A multi-page tool to calculate how many resources you're missing to reach a target — buildings, research, tomes, collections, and more routes to come.
 
-🔗 **Live:** https://resource-calculator-sigma.vercel.app
+🔗 **Live:** https://www.lojcalc.com
 
 ## Routes
 
