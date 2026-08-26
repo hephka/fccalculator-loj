@@ -308,6 +308,13 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
 @media (max-width:600px){
+  /* One scrollable row instead of wrapping onto 2-3 lines — on a phone the
+     5 nav buttons otherwise push the actual page content well below the
+     fold before a visitor sees anything. Same one-tap access as before
+     (no hamburger/collapsed menu), just reclaiming vertical space. */
+  .nav-bar{flex-wrap:nowrap;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+  .nav-bar::-webkit-scrollbar{display:none}
+  .nav-link{flex-shrink:0}
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
   /* tr as a flex row (not block) so From/To can share one line while the
