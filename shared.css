@@ -45,13 +45,17 @@ body{
    for the nav itself to work). */
 .nav-bar-wrap{position:relative;margin-bottom:18px}
 .nav-bar{display:flex;flex-wrap:wrap;gap:8px}
-/* Signals there's more to scroll to on the right — only visible when
-   .nav-bar actually overflows (mobile's single scrollable row); on
-   desktop, where it wraps instead of scrolling, updateNavFade() in
-   shared.js finds no overflow and this just stays hidden. */
+/* Signal more content past each edge — only visible while .nav-bar
+   actually overflows in that direction (mobile's single scrollable row;
+   the active tab can land scrolled toward either side, see initNavFade
+   in shared.js). On desktop, where it wraps instead of scrolling, both
+   stay hidden since there's nothing to scroll to on either side. */
 .nav-fade{position:absolute;top:0;right:0;bottom:0;width:36px;pointer-events:none;
   background:linear-gradient(to right, transparent, var(--bg));opacity:0;transition:opacity .15s}
 .nav-fade.visible{opacity:1}
+.nav-fade-left{position:absolute;top:0;left:0;bottom:0;width:36px;pointer-events:none;
+  background:linear-gradient(to left, transparent, var(--bg));opacity:0;transition:opacity .15s}
+.nav-fade-left.visible{opacity:1}
 .nav-link{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:border-color .15s,color .15s,background .15s}
 .nav-link:hover{border-color:var(--accent);color:var(--text)}
 .nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}

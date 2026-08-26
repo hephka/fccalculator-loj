@@ -605,14 +605,17 @@ function armConfirm(btn, confirmLabel, action){
   btn.dataset.armTimer = String(timerId);
 }
 
-// Wraps .nav-bar in a positioned container and adds a right-edge fade that
-// only shows while there's more to scroll to — on mobile the nav is a
-// single scrollable row (see shared.css) instead of wrapping onto 2-3
-// lines, and the fade is the visual cue that it's scrollable at all (the
-// last button is otherwise just cut off at the screen edge with no other
-// hint). Self-regulating: on desktop .nav-bar wraps instead of
-// overflowing, so there's nothing to scroll to and the fade just stays
-// hidden — no separate breakpoint check needed here.
+// Wraps .nav-bar in a positioned container and adds fades on either edge
+// that only show while there's more to scroll to in that direction — on
+// mobile the nav is a single scrollable row (see shared.css) instead of
+// wrapping onto 2-3 lines, and the fades are the visual cue that it's
+// scrollable at all (a cut-off button otherwise looks the same whether
+// it's the truncated last one or a rendering glitch). The active tab can
+// land scrolled toward either side (see the scrollIntoView call below),
+// so both edges need their own indicator, not just the trailing one.
+// Self-regulating: on desktop .nav-bar wraps instead of overflowing, so
+// there's nothing to scroll to and both fades just stay hidden — no
+// separate breakpoint check needed here.
 function initNavFade(){
   const navBar = document.querySelector(".nav-bar");
   if(!navBar) return;
@@ -620,12 +623,15 @@ function initNavFade(){
   wrap.className = "nav-bar-wrap";
   navBar.parentNode.insertBefore(wrap, navBar);
   wrap.appendChild(navBar);
-  const fade = document.createElement("div");
-  fade.className = "nav-fade";
-  wrap.appendChild(fade);
+  const fadeRight = document.createElement("div");
+  fadeRight.className = "nav-fade";
+  wrap.appendChild(fadeRight);
+  const fadeLeft = document.createElement("div");
+  fadeLeft.className = "nav-fade-left";
+  wrap.appendChild(fadeLeft);
   const update = () => {
-    const hasMore = navBar.scrollWidth - navBar.clientWidth - navBar.scrollLeft > 4;
-    fade.classList.toggle("visible", hasMore);
+    fadeRight.classList.toggle("visible", navBar.scrollWidth - navBar.clientWidth - navBar.scrollLeft > 4);
+    fadeLeft.classList.toggle("visible", navBar.scrollLeft > 4);
   };
   navBar.addEventListener("scroll", update);
   window.addEventListener("resize", update);
@@ -664,6 +670,12 @@ function initApp(){
       a.classList.add("active");
     }
   });
+  // On the scrollable mobile nav (see initNavFade), landing directly on one
+  // of the later routes would otherwise leave the active tab scrolled out
+  // of view — the bar starts at scrollLeft 0 regardless of which page you
+  // opened. block:"nearest" keeps this from also scrolling the page itself.
+  const activeLink = document.querySelector(".nav-link.active");
+  if(activeLink) activeLink.scrollIntoView({inline:"center", block:"nearest"});
   document.documentElement.lang = lang;
   // Repairs saved state from before propagateImpliedCurrent existed (or
   // from any direct state edit): a track's current level may imply a higher
