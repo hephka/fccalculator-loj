@@ -46,17 +46,19 @@ body{
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
 .brand-eyebrow{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}
 h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-/* Logo sits beside the eyebrow/h1/subtitle stack, matched to that stack's
-   rendered height so it scales with the title block instead of a fixed
-   size. CSS align-items:stretch can't do this on its own: stretch only
-   grows shorter items up to the tallest one's natural size, and since the
-   image's own unconstrained natural height (375px) is far taller than the
-   text block's content, stretch would grow the whole row to fit the image
-   instead of shrinking the image to fit the text. So the height is set in
-   JS instead (syncBrandLogoHeight in shared.js), measured from the text
-   block and re-applied on render and on resize. */
-.topbar-title{display:flex;align-items:center;gap:16px}
-.brand-logo{width:auto;object-fit:contain;flex-shrink:0}
+/* Logo sits beside the eyebrow/h1/subtitle stack. Sized with clamp() —
+   scales continuously with viewport width instead of jumping between a
+   couple of fixed breakpoint states — and flex-wrap lets it drop to its
+   own line at ANY width where it no longer fits next to the text, not
+   just below one hardcoded breakpoint. A JS approach (measuring the text
+   block's rendered height and applying it to the logo) was tried first
+   and reverted: on mid-width screens where the title wraps to 2-3 lines,
+   the text getting taller made the logo taller, which made it wider,
+   which squeezed the text into wrapping even more — a feedback loop that
+   left the logo oversized and dominating the header instead of framing
+   it. clamp() has no such loop since it never reads the text's size. */
+.topbar-title{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand-logo{height:clamp(44px,9vw,110px);width:auto;object-fit:contain;flex-shrink:0}
 /* The 4 routes not yet migrated to .topbar-title still place the logo
    inline inside <h1> — keep those at the original small icon size. */
 h1 .brand-logo{height:2.4rem}
@@ -321,14 +323,6 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
 @media (max-width:600px){
-  /* Matching the text block's height only makes sense in a side-by-side
-     row; below 600px the title text alone can fill the width, so the logo
-     drops to its own centered line instead of squeezing next to it.
-     height:auto here also wins over any inline height set by
-     syncBrandLogoHeight — that function clears its own inline style at
-     this breakpoint specifically so this rule can take over cleanly. */
-  .topbar-title{flex-direction:column;align-items:flex-start}
-  .brand-logo{align-self:center;width:60%;max-width:220px;height:auto;margin-top:10px}
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
   /* tr as a flex row (not block) so From/To can share one line while the

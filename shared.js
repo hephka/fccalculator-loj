@@ -293,24 +293,6 @@ function computeCascade(){
   return { totals, breakdown };
 }
 
-// Sizes the header logo (currently index.html only) to match the rendered
-// height of the eyebrow/h1/subtitle stack beside it — see the comment on
-// .topbar-title in shared.css for why this can't be done with CSS stretch
-// alone. No-ops on the 4 routes that don't have this markup yet. Cleared
-// (not just skipped) below the 600px breakpoint so the mobile CSS rule,
-// which stacks the logo on its own centered line, isn't fought by a
-// leftover inline height from a wider viewport.
-function syncBrandLogoHeight(){
-  const logo = document.querySelector(".topbar-title .brand-logo");
-  const text = document.querySelector(".topbar-text");
-  if(!logo || !text) return;
-  if(window.matchMedia("(max-width:600px)").matches){
-    logo.style.height = "";
-    return;
-  }
-  logo.style.height = text.getBoundingClientRect().height + "px";
-}
-
 function renderChrome(){
   document.title = t("title");
   document.getElementById("brandTitle").textContent = t("appBrand");
@@ -332,7 +314,6 @@ function renderChrome(){
   document.querySelectorAll(".nav-link[data-navkey]").forEach(a=>{
     a.textContent = t(a.dataset.navkey);
   });
-  syncBrandLogoHeight();
 }
 
 function setLang(l){
@@ -627,7 +608,6 @@ function initApp(){
   // shows on touch devices (no hover), so mobile users had no way to read
   // the estimated-value note at all. Delegated on the container since
   // renderBreakdown() replaces its innerHTML on every recalculation.
-  window.addEventListener("resize", syncBrandLogoHeight);
   document.getElementById("breakdown").addEventListener("click", e=>{
     const btn = e.target.closest(".estimated-tag");
     if(!btn) return;
