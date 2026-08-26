@@ -321,11 +321,15 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    horizontal scroll clipping the Cost column — the whole point of the app.
    Reflow each row into a stacked card instead; data-label (set in shared.js)
    supplies the per-cell caption via ::before since <th> is hidden here. */
-@media (max-width:600px){
-  /* Below 600px the logo doesn't have a good place to go — beside the
-     title there's no room, and standing alone above it read as taking
-     over the header — so it's simply not shown on small screens. */
+/* Below 644px the logo doesn't have a good place to go — beside the
+   title there's no room, and standing alone above it read as taking
+   over the header — so it's simply not shown on small screens. Its own
+   breakpoint, distinct from the 600px one below, since it's unrelated
+   to the breakdown table reflow. */
+@media (max-width:644px){
   .brand-logo{display:none}
+}
+@media (max-width:600px){
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}
   /* tr as a flex row (not block) so From/To can share one line while the
