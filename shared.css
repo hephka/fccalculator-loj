@@ -284,6 +284,10 @@ input[type=number]{-moz-appearance:textfield}
 .track-name{font-weight:600;flex:1;min-width:160px}
 .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
 .track-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
+/* Temporary callout for recently-added game data (see the newBadge doc
+   comment in shared.js) — remove the flag once regular visitors have had
+   time to notice, rather than leaving it on indefinitely. */
+.new-badge{font-size:.68rem;padding:3px 9px;border:1px solid var(--accent);color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .track-controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.8rem;color:var(--muted);width:100%}
 .track-controls .field{display:flex;align-items:center;gap:6px;flex:1 1 130px;font-weight:600}
 .track-controls select{flex:1;min-width:0;max-width:100%}

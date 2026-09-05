@@ -42,6 +42,11 @@
 //                                among many in the same category (e.g. the
 //                                main building, or a research line's end goal)
 //                                without giving it its own CATEGORIES entry.
+//   newBadge: true             - shows a small "New" pill next to the track
+//                                name, for calling out recently-added game
+//                                data. Meant to be temporary — remove the
+//                                flag once regular visitors have had time to
+//                                notice, rather than leaving it forever.
 //
 // Shared chrome i18n keys every page's I18N must provide:
 //   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
@@ -81,6 +86,7 @@ const I18N_CHROME = {
     dataUpdated: "Data last updated: {date}",
     unofficialNote: "Unofficial fan tool, not affiliated with or endorsed by the game's developer or publisher.",
     estimatedNote: "Includes an estimated value, not yet confirmed — see the note above.",
+    newBadge: "New",
   },
   fr: {
     navBuildings: "Bâtiments FC & Recherches T11", navTomes: "Tomes & Collections", navRobots: "Robots & Satellites",
@@ -100,6 +106,7 @@ const I18N_CHROME = {
     dataUpdated: "Données mises à jour le {date}",
     unofficialNote: "Outil non officiel, non affilié à l'éditeur ou au développeur du jeu.",
     estimatedNote: "Inclut une valeur estimée, pas encore confirmée — voir la note ci-dessus.",
+    newBadge: "Nouveau",
   },
 };
 
@@ -555,6 +562,7 @@ function trackHtml(tr){
   return `<div class="track${tr.accent?' track-accent':''}" ${tr.accent?`style="--accent-color:${tr.accent}"`:''}>
     <div class="track-head">
       <span class="track-name">${trackShortName(tr)}</span>
+      ${tr.newBadge ? `<span class="new-badge">${t("newBadge")}</span>` : ''}
       <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>
       <div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
