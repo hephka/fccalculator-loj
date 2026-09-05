@@ -1,4 +1,15 @@
 // Shared engine used by every route page (index.html, tomes-collections.html, ...).
+//
+// Cache-busting: every route loads this file (and shared.css, theme-tactical.css)
+// as `shared.js?v=1` etc. Vercel already sends max-age=0/must-revalidate, but
+// some browsers (Safari especially) still hang on to a stale copy regardless.
+// A `?v=N` query string is a different URL as far as the browser cache is
+// concerned, so bumping N guarantees every visitor gets the new file on their
+// very next load — no waiting on cache behavior we don't control. Whenever
+// you change shared.js, shared.css, or theme-tactical.css, bump `?v=N` for
+// that file in all 5 HTML pages (same pattern as SCHEMA_VERSION below, just
+// for delivery instead of saved state).
+//
 // Each page must define, before loading this file:
 //   RESOURCES     - array of resource keys, e.g. ["FC","AFC","Hyperalloy"]
 //   RES_ACCENT    - {key: "#hexcolor"} per resource
