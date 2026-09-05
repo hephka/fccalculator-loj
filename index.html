@@ -85,7 +85,7 @@ const I18N = {
     introLead: "Plan your next upgrade in seconds.",
     introFeature1: "Set a current level and a target for every building and research tree",
     introFeature2: "Prerequisites are resolved automatically — no manual math",
-    introNote: "Warden's Office progression is modeled from Level 30 all the way to FC8. Food, Wood, Steel, Gasoline and Gold Card aren't tracked — only FC, AFC and Hyperalloy.",
+    introNote: "Warden's Office progression is modeled from Level 30 all the way to FC10. Food, Wood, Steel, Gasoline and Gold Card aren't tracked — only FC, AFC and Hyperalloy.",
     noTargetHint: "No target set yet — pick a target level on a building or research below.",
     partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
@@ -120,7 +120,7 @@ const I18N = {
     introLead: "Planifie ta prochaine amélioration en quelques secondes.",
     introFeature1: "Fixe un niveau actuel et un objectif pour chaque bâtiment et arbre de recherche",
     introFeature2: "Les prérequis sont résolus automatiquement — plus de calcul à la main",
-    introNote: "La progression du Bureau du Directeur est modélisée du Niveau 30 jusqu'à FC8. Nourriture, Bois, Acier, Essence et Carte en Or ne sont pas suivis — seulement FC, AFC et Hyperalliage.",
+    introNote: "La progression du Bureau du Directeur est modélisée du Niveau 30 jusqu'à FC10. Nourriture, Bois, Acier, Essence et Carte en Or ne sont pas suivis — seulement FC, AFC et Hyperalliage.",
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un bâtiment ou une recherche ci-dessous.",
     partBuildings: "Bâtiments Forticlad", partResearch: "Recherches T11",
     catBuilding: "Bâtiments Forticlad", catResearch: "Recherches T11",
@@ -151,15 +151,23 @@ const I18N = {
 };
 
 // Builds the full chain of stage costs for a building, from its earliest known
-// tier up through FC8. Each entry in `earlyFC` is the per-stage FC cost for one
-// tier transition before AFC exists (30->FC1, FC1->FC2, ... FC4->FC5). `lateAfcFc`
-// is the 3 per-stage {afc,fc} costs for FC5->FC6, FC6->FC7, FC7->FC8 (AFC required
-// starting at FC5).
-function tierChain(earlyFC, lateAfcFc){
+// tier up through FC8 (optionally FC10 — see fc9Fc10 below). Each entry in
+// `earlyFC` is the per-stage FC cost for one tier transition before AFC exists
+// (30->FC1, FC1->FC2, ... FC4->FC5). `lateAfcFc` is the 3 per-stage {afc,fc}
+// costs for FC5->FC6, FC6->FC7, FC7->FC8 (AFC required starting at FC5).
+// `fc9Fc10`, when given, is [{afc,fc} for FC8->FC9, {afc,fc} for FC9->FC10] —
+// confirmed source table, no Hyperalloy on either tier (unlike some FC1-8
+// tiers on other tracks).
+function tierChain(earlyFC, lateAfcFc, fc9Fc10){
   const froms = ["30","FC1","FC2","FC3","FC4","FC5","FC6","FC7"];
   const tos   = ["FC1","FC2","FC3","FC4","FC5","FC6","FC7","FC8"];
   const stages = [...earlyFC.map(fc=>({afc:0,fc})), ...lateAfcFc];
-  return stages.map((s,i)=>({from:froms[i], to:tos[i], afc:s.afc, fc:s.fc}));
+  const chain = stages.map((s,i)=>({from:froms[i], to:tos[i], afc:s.afc, fc:s.fc}));
+  if(fc9Fc10){
+    chain.push({from:"FC8", to:"FC9", afc:fc9Fc10[0].afc, fc:fc9Fc10[0].fc});
+    chain.push({from:"FC9", to:"FC10", afc:fc9Fc10[1].afc, fc:fc9Fc10[1].fc});
+  }
+  return chain;
 }
 
 function buildingTrack(id, tiers, gateByWardenOffice){
@@ -216,7 +224,8 @@ function fclabTrack(id, statKey, hyperCosts, requiresMap){
 function defaultData(){
   const wardenOffice = buildingTrack("warden_office", tierChain(
     [250,320,490,600,720],
-    [{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460}]
+    [{afc:24,fc:360},{afc:36,fc:400},{afc:48,fc:460}],
+    [{afc:72,fc:510},{afc:168,fc:630}]
   ));
   // Warden Office = main building (HQ): moving to a new FC tier requires 2 support buildings
   // to have already reached the previous tier (requirements table). The very first
@@ -230,17 +239,19 @@ function defaultData(){
   setRequires("FC6", [{trackId:"shieldbearer_barrack",levelId:"FC5"},{trackId:"communication_center",levelId:"FC5"}]);
   setRequires("FC7", [{trackId:"shooter_barrack",levelId:"FC6"},{trackId:"communication_center",levelId:"FC6"}]);
   setRequires("FC8", [{trackId:"bomber_barrack",levelId:"FC7"},{trackId:"communication_center",levelId:"FC7"}]);
+  setRequires("FC9", [{trackId:"shieldbearer_barrack",levelId:"FC8"}]);
+  setRequires("FC10", [{trackId:"shooter_barrack",levelId:"FC9"}]);
   wardenOffice.accent = "var(--accent)"; // the main building (HQ)
 
   const fcLab = makeFcLabTrack();
 
   const buildings = [
     wardenOffice,
-    buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
-    buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
-    buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}]), true),
-    buildingTrack("communication_center", tierChain([50,60,80,110,130], [{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110}]), true),
-    buildingTrack("command_center", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
+    buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
+    buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
+    buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
+    buildingTrack("communication_center", tierChain([50,60,80,110,130], [{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110}], [{afc:17,fc:130},{afc:41,fc:160}]), true),
+    buildingTrack("command_center", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}], [{afc:14,fc:100},{afc:34,fc:130}]), true),
     buildingTrack("medical_station", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
     fcLab,
   ];
