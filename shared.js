@@ -549,7 +549,15 @@ function renderCategories(){
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
-    trackById(s.dataset.cur).currentLevelIndex = Number(e.target.value);
+    const track = trackById(s.dataset.cur);
+    track.currentLevelIndex = Number(e.target.value);
+    // Bring target along with current when it isn't ahead of it (no target
+    // set yet, or current just caught up to/passed an old target) — opening
+    // the target dropdown next then starts scrolled near current instead of
+    // always at the track's very first level, which matters a lot on long
+    // tracks like Warden's Office. A target the user already pushed further
+    // out is left alone.
+    if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = track.currentLevelIndex;
     propagateImpliedCurrent();
     save();
   }));

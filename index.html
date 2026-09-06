@@ -231,7 +231,18 @@ function defaultData(){
   // to have already reached the previous tier (requirements table). The very first
   // climb (30->FC1) needs Communication Center + Shooter Barracks at Lv.29, which is
   // outside our tracked range (tracks start at 30), so no gate is set for FC1.
-  const setRequires = (levelId, reqs) => { wardenOffice.levels.find(l=>l.id===levelId).requires = reqs; };
+  //
+  // The gate applies to the whole climb, not just its last mile: you can't even
+  // start spending on "FC7 palier 1" without the prerequisite already met, not
+  // only when reaching the FC8 checkpoint itself. So setRequires sets the same
+  // `reqs` on the checkpoint AND the 4 palier sub-levels leading up to it
+  // (`{prevTier}_s1`..`_s4`), not just the single level named `levelId`.
+  const TIER_FROM = {FC2:"FC1",FC3:"FC2",FC4:"FC3",FC5:"FC4",FC6:"FC5",FC7:"FC6",FC8:"FC7",FC9:"FC8",FC10:"FC9"};
+  const setRequires = (levelId, reqs) => {
+    const from = TIER_FROM[levelId];
+    const ids = from ? [`${from}_s1`,`${from}_s2`,`${from}_s3`,`${from}_s4`,levelId] : [levelId];
+    ids.forEach(id=>{ wardenOffice.levels.find(l=>l.id===id).requires = reqs; });
+  };
   setRequires("FC2", [{trackId:"bomber_barrack",levelId:"FC1"},{trackId:"communication_center",levelId:"FC1"}]);
   setRequires("FC3", [{trackId:"shieldbearer_barrack",levelId:"FC2"},{trackId:"communication_center",levelId:"FC2"}]);
   setRequires("FC4", [{trackId:"shooter_barrack",levelId:"FC3"},{trackId:"communication_center",levelId:"FC3"}]);
@@ -336,7 +347,7 @@ function defaultData(){
   };
 }
 </script>
-<script src="shared.js?v=1"></script>
+<script src="shared.js?v=2"></script>
 <script>initApp();</script>
 </body>
 </html>
