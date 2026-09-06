@@ -256,6 +256,12 @@ function propagateImpliedCurrent(){
           const idx = levelIndexOf(other, r.levelId);
           if(idx > other.currentLevelIndex){
             other.currentLevelIndex = idx;
+            // Same rule as the direct data-cur handler in initApp: bring
+            // target along when it isn't already ahead, so a track bumped
+            // only as someone else's prerequisite doesn't get left with its
+            // target select still parked at level 1 while current jumps far
+            // past it.
+            if(other.targetLevelIndex <= idx) other.targetLevelIndex = idx;
             changed = true;
           }
         });
