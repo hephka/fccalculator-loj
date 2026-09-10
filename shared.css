@@ -147,14 +147,14 @@ input[type=number]{-moz-appearance:textfield}
   mask-image:url("icons/afc.svg");
   -webkit-mask-image:url("icons/afc.svg");
 }
-/* SealOfWisdom — a wax-seal stamp: grip on top, neck, flared stamping
-   base (the part that presses down) */
+/* SealOfWisdom — a pawn-shaped seal stamp: round head, narrow neck,
+   wide oval base */
 .res-dot[data-res="SealOfWisdom"]{
   mask-image:url("icons/seal-wisdom.svg");
   -webkit-mask-image:url("icons/seal-wisdom.svg");
 }
-/* SealOfKnowledge — a pawn-shaped seal stamp: round head, narrow neck,
-   wide oval base — a distinct silhouette from Wisdom's flared stamp */
+/* SealOfKnowledge — a wax-seal stamp: grip on top, neck, flared stamping
+   base (the part that presses down) — a distinct silhouette from Wisdom's */
 .res-dot[data-res="SealOfKnowledge"]{
   mask-image:url("icons/seal-knowledge.svg");
   -webkit-mask-image:url("icons/seal-knowledge.svg");
