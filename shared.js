@@ -282,9 +282,15 @@ function adoptProgress(saved){
       return Number.isFinite(n) ? Math.max(0, Math.min(n, last)) : 0;
     };
     tr.currentLevelIndex = clamp(was.currentLevelIndex);
-    // Target below current is the one combination the UI never produces, and
-    // computeCascade would read it as "nothing to do" — pin the invariant here.
-    tr.targetLevelIndex = Math.max(clamp(was.targetLevelIndex), tr.currentLevelIndex);
+    // "Cible" only lists checkpoints, so a saved target sitting on a palier
+    // would match no option and the select would silently show the track's
+    // first level instead — state and screen disagreeing, which is worse than
+    // either being wrong. Snap it to the tier that target sits in, keeping the
+    // intent as close as the select can actually render.
+    const target = clamp(was.targetLevelIndex);
+    tr.targetLevelIndex = tr.levels[target].targetCheckpoint === false
+      ? tierStartFor(tr, target)
+      : target;
   });
   return fresh;
 }
@@ -904,12 +910,15 @@ function checkpointIndexes(track){
 // bar IS the promotion. Tapping the segment you already sit on steps back one,
 // so the bar winds down as well as up — otherwise nothing but the select could
 // take you back to the tier's own level.
-function tierStartIndex(track){
+// The checkpoint at or below `index` — the tier that level sits in, and the
+// nearest level "Cible" is able to display.
+function tierStartFor(track, index){
   const cps = checkpointIndexes(track);
   let start = cps[0];
-  cps.forEach(c=>{ if(c <= track.currentLevelIndex) start = c; });
+  cps.forEach(c=>{ if(c <= index) start = c; });
   return start;
 }
+function tierStartIndex(track){ return tierStartFor(track, track.currentLevelIndex); }
 
 function paliersBarHtml(tr){
   const cps = checkpointIndexes(tr);
