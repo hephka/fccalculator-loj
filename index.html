@@ -95,6 +95,8 @@ const I18N = {
     partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
     buildingGroupSupport: "Support buildings",
+    fclab_start: "Not built", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
+    fclab_FC4: "FC4", fclab_FC5: "FC5", fclab_FC6: "FC6",
     groupNoTargets: "no targets",
     groupTargetsSet: "{n} target(s) set",
     res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalloy",
@@ -131,6 +133,8 @@ const I18N = {
     partBuildings: "Bâtiments Forticlad", partResearch: "Recherches T11",
     catBuilding: "Bâtiments Forticlad", catResearch: "Recherches T11",
     buildingGroupSupport: "Bâtiments de soutien",
+    fclab_start: "Non construit", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
+    fclab_FC4: "FC4", fclab_FC5: "FC5", fclab_FC6: "FC6",
     groupNoTargets: "aucun objectif",
     groupTargetsSet: "{n} objectif(s) défini(s)",
     res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalliage",
@@ -194,27 +198,34 @@ function buildingTrack(id, tiers, gateByWardenOffice){
   return { id, category:"Building", nameParts:["building_"+id], currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
-// FC Lab: 5 paliers per level (same sub-level pattern as every other
-// building), each level gated by Warden Office reaching the paired FC tier
-// (source table). Levels 7-8 aren't modeled yet — not confirmed.
+// FC Lab: an FC building like any other, so it's named like one — FC1..FC6,
+// 4 paliers between each, each step gated by Warden Office reaching the same
+// FC tier. It was labelled "Level 1..6" before, which made the app speak a
+// vocabulary the game doesn't. Tiers 7-8 aren't modeled yet — not confirmed.
+//
+// `from`/`to` rather than a single level number, so a palier is named after
+// the tier you're standing in and points at the one you're climbing to, the
+// way every other building reads ("FC1 · palier 3" sits between FC1 and FC2).
+// The lab doesn't exist at all before FC1, hence "start" as the baseline.
 const FCLAB_BUILDING_LEVELS = [
-  { lvl:"1", fc:150, afc:0,  wardenTier:"FC1" },
-  { lvl:"2", fc:200, afc:0,  wardenTier:"FC2" },
-  { lvl:"3", fc:250, afc:0,  wardenTier:"FC3" },
-  { lvl:"4", fc:300, afc:0,  wardenTier:"FC4" },
-  { lvl:"5", fc:350, afc:0,  wardenTier:"FC5" },
-  { lvl:"6", fc:160, afc:10, wardenTier:"FC6" },
+  { from:"start", to:"FC1", fc:150, afc:0 },
+  { from:"FC1",   to:"FC2", fc:200, afc:0 },
+  { from:"FC2",   to:"FC3", fc:250, afc:0 },
+  { from:"FC3",   to:"FC4", fc:300, afc:0 },
+  { from:"FC4",   to:"FC5", fc:350, afc:0 },
+  { from:"FC5",   to:"FC6", fc:160, afc:10 },
 ];
 function makeFcLabTrack(){
-  const levels = [{ id:"0", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
+  const levels = [{ id:"start", cost:{FC:0,AFC:0,Hyperalloy:0}, requires:[] }];
   FCLAB_BUILDING_LEVELS.forEach(c=>{
-    const gate = () => [{trackId:"warden_office", levelId:c.wardenTier}];
+    const gate = () => [{trackId:"warden_office", levelId:c.to}];
     for(let i=1;i<=4;i++){
-      levels.push({ id:`${c.lvl}_s${i}`, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate(), targetCheckpoint:false });
+      levels.push({ id:`${c.from}_s${i}`, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate(), targetCheckpoint:false });
     }
-    levels.push({ id:c.lvl, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
+    levels.push({ id:c.to, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
   });
-  return { id:"fc_lab", category:"Building", nameParts:["building_fc_lab"], levelStyle:"numeric", currentLevelIndex:0, targetLevelIndex:0, levels };
+  return { id:"fc_lab", category:"Building", nameParts:["building_fc_lab"],
+    levelStyle:"keyed", levelKeyPrefix:"fclab_", currentLevelIndex:0, targetLevelIndex:0, levels };
 }
 
 function fclabTrack(id, statKey, hyperCosts, requiresMap){
@@ -286,7 +297,7 @@ function defaultData(){
 
   // FC Lab level gate, shared by every troop's research tree below (it's one
   // building, not per-troop). `lvl` is FC Lab's own level id ("1".."6").
-  const fcLabGate = lvl => [{trackId:"fc_lab", levelId:String(lvl)}];
+  const fcLabGate = lvl => [{trackId:"fc_lab", levelId:"FC"+lvl}];
 
   // Each troop type (Shooter, Bomber, Shieldbearer) has its own independent
   // research tree leading to T11, at identical cost across all three troop
@@ -386,7 +397,7 @@ function migrateState(old){
   return fresh;
 }
 </script>
-<script src="shared.js?v=19"></script>
+<script src="shared.js?v=20"></script>
 <script>initApp();</script>
 </body>
 </html>
