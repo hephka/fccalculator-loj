@@ -284,6 +284,10 @@ input[type=number]{-moz-appearance:textfield}
 .track-name{font-weight:600;flex:1;min-width:160px}
 .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
 .track-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
+/* Amber for a climb the cascade pulled in rather than one you asked for —
+   the same colour .auto-tag already uses on those rows in the breakdown. */
+.track-badge.auto,
+.group-badge.auto{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
 /* Temporary callout for recently-added game data (see the newBadge doc
    comment in shared.js) — remove the flag once regular visitors have had
    time to notice, rather than leaving it on indefinitely. */

@@ -72,7 +72,8 @@
 //   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
-//   targetSet, noTarget, groupNoTargets, groupTargetsSet, current, target,
+//   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
+//   groupAutoRequired, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
 //
@@ -100,6 +101,7 @@ const I18N_CHROME = {
     colTarget: "Target", colFrom: "From", colTo: "To", colCost: "Cost",
     autoAdded: "(auto-added — prerequisite)",
     targetSet: "target set", noTarget: "no target",
+    autoRequired: "required", groupAutoRequired: "{n} required",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
@@ -120,6 +122,7 @@ const I18N_CHROME = {
     colTarget: "Objectif", colFrom: "De", colTo: "À", colCost: "Coût",
     autoAdded: "(ajouté auto. — prérequis)",
     targetSet: "objectif défini", noTarget: "aucun objectif",
+    autoRequired: "requis", groupAutoRequired: "{n} requis",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
@@ -374,6 +377,8 @@ function render(){
   renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
   renderStickyBar(totals, breakdown);
+  cascadeAuto.clear();
+  breakdown.forEach(b=>{ if(b.auto) cascadeAuto.add(b.track.id); });
   renderCategories();
 }
 
@@ -468,6 +473,26 @@ function renderBreakdown(breakdown){
 
 const uiOpen = { groups:new Set() };
 
+// Ids of tracks the cascade is pulling up past whatever target their owner set
+// (or didn't set) — filled from the breakdown on every render, so a badge can
+// say "required" instead of "no target" on a climb nobody asked for directly.
+const cascadeAuto = new Set();
+
+// A track needs work when its own target is ahead of its current level, when
+// the cascade is pulling it up for someone else's prerequisite, or when its
+// paired track is in either state (Mastery, on a Hero Equipment card). The
+// card badge and its group's badge both go through these, so they agree.
+function trackNeedsWork(tr){
+  const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
+  const needs = x => x.targetLevelIndex > x.currentLevelIndex || cascadeAuto.has(x.id);
+  return needs(tr) || !!(paired && needs(paired));
+}
+function trackHasOwnTarget(tr){
+  const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
+  const set = x => x.targetLevelIndex > x.currentLevelIndex;
+  return set(tr) || !!(paired && set(paired));
+}
+
 // Tracks carrying a `groupKey` are folded into one collapsible group, named by
 // their `groupLabelKey`; tracks without one render flat, in place. That lets a
 // category keep a couple of headline tracks visible while the long tail folds
@@ -481,15 +506,18 @@ function groupedTracksHtml(tracks){
     if(seen.has(key)) return;
     seen.add(key);
     const gTracks = tracks.filter(x=>x.groupKey===key);
-    const activeCount = gTracks.filter(x=>x.targetLevelIndex>x.currentLevelIndex).length;
+    const needing = gTracks.filter(trackNeedsWork).length;
+    const anyOwnTarget = gTracks.some(trackHasOwnTarget);
     const isOpen = uiOpen.groups.has(key);
     const icon = (GROUP_ICONS && GROUP_ICONS[key]) || "🧬";
-    const badgeText = activeCount ? t("groupTargetsSet",{n:activeCount}) : t("groupNoTargets");
+    const badgeText = !needing ? t("groupNoTargets")
+      : anyOwnTarget ? t("groupTargetsSet",{n:needing})
+      : t("groupAutoRequired",{n:needing});
     out.push(`<div class="research-group">
       <button type="button" class="group-head" data-group="${key}" aria-expanded="${isOpen}">
         <span class="group-icon">${icon}</span>
         <span class="group-name">${t(gTracks[0].groupLabelKey)}</span>
-        <span class="group-badge ${activeCount?'active':''}">${badgeText}</span>
+        <span class="group-badge ${needing?(anyOwnTarget?'active':'auto'):''}">${badgeText}</span>
         <span class="group-chevron ${isOpen?'open':''}">▸</span>
       </button>
       <div class="group-body ${isOpen?'open':''}">
@@ -608,14 +636,15 @@ function renderCategories(){
 // participates in cascade/breakdown normally; it just isn't given its own
 // top-level category card.
 function trackHtml(tr){
-  const active = tr.targetLevelIndex > tr.currentLevelIndex;
   const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
-  const pairedActive = paired && paired.targetLevelIndex > paired.currentLevelIndex;
+  const needsWork = trackNeedsWork(tr);
+  const ownTarget = trackHasOwnTarget(tr);
+  const badgeText = ownTarget ? t("targetSet") : needsWork ? t("autoRequired") : t("noTarget");
   return `<div class="track${tr.accent?' track-accent':''}" ${tr.accent?`style="--accent-color:${tr.accent}"`:''}>
     <div class="track-head">
       <span class="track-name">${trackShortName(tr)}</span>
       ${tr.newBadge ? `<span class="new-badge">${t("newBadge")}</span>` : ''}
-      <span class="track-badge ${(active||pairedActive)?'active':''}">${(active||pairedActive)? t("targetSet") : t("noTarget")}</span>
+      <span class="track-badge ${needsWork?(ownTarget?'active':'auto'):''}">${badgeText}</span>
       <div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
         <span class="field">${t("target")}: <select data-tgt="${tr.id}" aria-label="${t("target")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
