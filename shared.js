@@ -148,6 +148,12 @@ function t(key, vars){
   if(vars) Object.keys(vars).forEach(k=> s = s.replace(`{${k}}`, vars[k]));
   return s;
 }
+// Read live rather than cached: the preference can be toggled in the OS while
+// the page stays open, and matchMedia may be missing in an odd environment.
+function prefersReducedMotion(){
+  return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
 function resourceLabel(r){ return t("res_"+r); }
 function fmt(n){ return Math.round(n).toLocaleString(lang === "fr" ? "fr-FR" : "en-US"); }
 function zeroResources(){ return Object.fromEntries(RESOURCES.map(r=>[r,0])); }
@@ -310,11 +316,30 @@ function save(){
   persist();
   render();
 }
+// What each resource was short by at the last render. The summary and the
+// sticky bar flash exactly the figures that moved, so after changing a target
+// the eye lands on the one that answers "what did that just cost me" instead
+// of hunting a column of numbers that all silently jumped at once. Null until
+// the first render, so opening the page doesn't light everything up.
+let lastMissing = null;
+function takeChangedResources(totals){
+  const now = {};
+  RESOURCES.forEach(r=> now[r] = (totals[r] || 0) - (state.stock[r] || 0));
+  const changed = new Set();
+  if(lastMissing) RESOURCES.forEach(r=>{ if(lastMissing[r] !== now[r]) changed.add(r); });
+  lastMissing = now;
+  return changed;
+}
+
 function refreshSummary(){
   const { totals, breakdown } = computeCascade();
-  renderSummary(totals, breakdown);
+  // Typing a stock figure moves these numbers on every keystroke, and the
+  // person typing already knows what they typed — take the reading to keep the
+  // baseline in step, but flash nothing.
+  takeChangedResources(totals);
+  renderSummary(totals, breakdown, new Set());
   renderBreakdown(breakdown);
-  renderStickyBar(totals, breakdown);
+  renderStickyBar(totals, breakdown, new Set());
 }
 
 // Both cascade loops cap their passes so they can't hang the tab. A cycle in
@@ -500,9 +525,10 @@ function refreshNavTargets(){
 function render(){
   renderStock();
   const { totals, breakdown } = computeCascade();
-  renderSummary(totals, breakdown);
+  const changed = takeChangedResources(totals);
+  renderSummary(totals, breakdown, changed);
   renderBreakdown(breakdown);
-  renderStickyBar(totals, breakdown);
+  renderStickyBar(totals, breakdown, changed);
   cascadeAuto.clear();
   breakdown.forEach(b=>{ if(b.auto) cascadeAuto.add(b.track.id); });
   renderCategories();
@@ -531,7 +557,7 @@ function renderStock(){
   });
 }
 
-function renderSummary(totals, breakdown){
+function renderSummary(totals, breakdown, changed){
   const grid = document.getElementById("summaryGrid");
   // A route can define its own summaryResourceKeys(totals, breakdown) to
   // override which resources appear; every route that hasn't gets the
@@ -542,7 +568,7 @@ function renderSummary(totals, breakdown){
     : RESOURCES.filter(r=> totals[r] > 0);
   grid.innerHTML = visibleResources.map(r=>{
     const need = totals[r], stock = state.stock[r]||0, missing = need - stock;
-    return `<div class="res-card" style="--accent-color:${RES_ACCENT[r]}">
+    return `<div class="res-card${changed && changed.has(r) ? " value-updated" : ""}" style="--accent-color:${RES_ACCENT[r]}">
       <div class="name"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)}</div>
       <div class="need">${fmt(need)} ${t("needed")}</div>
       <div class="missing ${missing>0?"bad":"good"}">${missing>0 ? t("missing")+" "+fmt(missing) : t("okSurplus",{n:fmt(Math.abs(missing))})}</div>
@@ -555,7 +581,7 @@ function renderSummary(totals, breakdown){
 // — the full breakdown lives below the fold on any route with more than a
 // couple of tracks, and re-scrolling up after every adjustment isn't a
 // reasonable workflow. Tapping it jumps back to the full summary.
-function renderStickyBar(totals, breakdown){
+function renderStickyBar(totals, breakdown, changed){
   const bar = document.getElementById("stickyBar");
   if(!bar) return;
   const missingList = RESOURCES
@@ -570,11 +596,16 @@ function renderStickyBar(totals, breakdown){
   bar.setAttribute("role","button");
   bar.tabIndex = 0;
   bar.setAttribute("aria-label", t("whatMissing"));
-  const jump = ()=> document.getElementById("missingHeading").scrollIntoView({ behavior:"smooth", block:"start" });
+  // scrollIntoView's own animation ignores the CSS reduced-motion block, so
+  // ask for the preference here rather than gliding the whole page anyway.
+  const jump = ()=> document.getElementById("missingHeading").scrollIntoView({
+    behavior: prefersReducedMotion() ? "auto" : "smooth",
+    block: "start",
+  });
   bar.onclick = jump;
   bar.onkeydown = e=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); jump(); } };
   bar.innerHTML = `<div class="sticky-bar-inner">
-    ${missingList.map(({r,missing})=>`<span class="sticky-chip" style="--accent-color:${RES_ACCENT[r]}"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)} <b>${fmt(missing)}</b></span>`).join("")}
+    ${missingList.map(({r,missing})=>`<span class="sticky-chip${changed && changed.has(r) ? " value-updated" : ""}" style="--accent-color:${RES_ACCENT[r]}"><span class="res-dot" data-res="${r}" style="color:${RES_ACCENT[r]}"></span>${resourceLabel(r)} <b>${fmt(missing)}</b></span>`).join("")}
   </div>`;
 }
 

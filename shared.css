@@ -257,6 +257,18 @@ input[type=number]{-moz-appearance:textfield}
 .res-card .missing{display:inline-flex;align-items:center;font-size:.82rem;font-weight:700;padding:3px 10px;border-radius:20px}
 .missing.bad{color:var(--bad);background:var(--bad-bg)}
 .missing.good{color:var(--good);background:var(--good-bg)}
+/* Flashes the one figure that moved after a target change, so the eye doesn't
+   have to hunt a column of numbers that all jumped at once. A ring rather than
+   a background, since these pills already colour their own; currentColor makes
+   it red while short and green once covered, at no extra cost. Set from
+   renderSummary/renderStickyBar, and only for resources whose shortfall
+   actually changed — see takeChangedResources in shared.js. */
+@keyframes figure-updated{
+  from{ box-shadow:0 0 0 2px currentColor }
+  to{ box-shadow:0 0 0 2px transparent }
+}
+.res-card.value-updated .missing,
+.sticky-chip.value-updated{ animation:figure-updated .9s ease-out }
 
 .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
 .route-part{margin-top:36px}
@@ -372,4 +384,18 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
   .breakdown td:first-child{flex:0 0 100%;font-weight:700;font-size:.95rem}
   .breakdown td:nth-child(2),.breakdown td:nth-child(3){flex:0 0 auto}
   .breakdown td.cost-cell{flex:0 0 100%;font-weight:700;color:var(--text);font-size:.92rem}
+}
+
+/* Someone who has asked their system for reduced motion is telling us that
+   movement makes them ill, not that they dislike it. Honour it for everything
+   at once, existing transitions included, rather than remembering to opt each
+   new animation out. The smooth scroll from the sticky bar is a JS call, so it
+   can't be reached from here — initApp checks the same preference itself. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
 }
