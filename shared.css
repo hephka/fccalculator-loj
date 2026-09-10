@@ -259,16 +259,23 @@ input[type=number]{-moz-appearance:textfield}
 .missing.good{color:var(--good);background:var(--good-bg)}
 /* Flashes the one figure that moved after a target change, so the eye doesn't
    have to hunt a column of numbers that all jumped at once. A ring rather than
-   a background, since these pills already colour their own; currentColor makes
-   it red while short and green once covered, at no extra cost. Set from
+   a background, since these pills already colour their own. The ring is pale
+   and the glow behind it takes the resource's colour: a ring in currentColor
+   alone sat red-on-red against the "Manque" pill and was nearly invisible,
+   which is the whole failure mode this is meant to avoid. Set from
    renderSummary/renderStickyBar, and only for resources whose shortfall
-   actually changed — see takeChangedResources in shared.js. */
+   actually changed — see takeChangedResources in shared.js.
+   Fading straight down from full would put the peak at 0ms and spend the rest
+   of the animation nearly invisible, which is easy to miss entirely. So rise
+   fast, hold long enough to be caught, then fade. */
 @keyframes figure-updated{
-  from{ box-shadow:0 0 0 2px currentColor }
-  to{ box-shadow:0 0 0 2px transparent }
+  0%{ box-shadow:0 0 0 2px transparent, 0 0 12px 2px transparent }
+  12%{ box-shadow:0 0 0 2px var(--text), 0 0 12px 2px currentColor }
+  45%{ box-shadow:0 0 0 2px var(--text), 0 0 12px 2px currentColor }
+  100%{ box-shadow:0 0 0 2px transparent, 0 0 12px 2px transparent }
 }
 .res-card.value-updated .missing,
-.sticky-chip.value-updated{ animation:figure-updated .9s ease-out }
+.sticky-chip.value-updated{ animation:figure-updated 1.2s ease-out }
 
 .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
 .route-part{margin-top:36px}
