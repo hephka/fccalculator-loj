@@ -180,7 +180,8 @@ function makeEquipmentTrack(troopKey, slotKey){
     levels.push({ id:tier.key, cost:promotion, requires });
   });
   return {
-    id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
+    id:`equip_${troopKey}_${slotKey}`, category:"Equipment",
+    groupKey:troopKey, groupLabelKey:"troop_"+troopKey,
     nameParts:["troop_"+troopKey, "equip_"+slotKey],
     levelStyle:"keyed", levelKeyPrefix:"equiptier_",
     pairedTrackId:`mastery_${troopKey}_${slotKey}`, pairedLabelKey:"pairedMasteryLabel",
@@ -210,7 +211,8 @@ function makeMasteryTrack(troopKey, slotKey){
     levels.push({ id:String(lvl), cost, requires:[] });
   });
   return {
-    id:`mastery_${troopKey}_${slotKey}`, category:"Mastery", troopKey,
+    id:`mastery_${troopKey}_${slotKey}`, category:"Mastery",
+    groupKey:troopKey, groupLabelKey:"troop_"+troopKey,
     nameParts:["troop_"+troopKey, "equip_"+slotKey], levelStyle:"numeric",
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
@@ -256,7 +258,7 @@ function migrateState(old){
   return fresh;
 }
 </script>
-<script src="shared.js?v=5"></script>
+<script src="shared.js?v=6"></script>
 <script>initApp();</script>
 </body>
 </html>

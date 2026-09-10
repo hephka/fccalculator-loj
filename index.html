@@ -65,17 +65,17 @@
 <script>
 const RESOURCES = ["FC","AFC","Hyperalloy"];
 const STORAGE_KEY = "resource-calc-state-v1";
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 const RES_ACCENT = { FC:"#ffb648", AFC:"#ffb648", Hyperalloy:"#ffb648" };
 const PARTS = [
   { key:"buildings", labelKey:"partBuildings", icon:"🏠" },
   { key:"research", labelKey:"partResearch", icon:"🔬" },
 ];
 const CATEGORIES = [
-  { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:false, part:"buildings" },
+  { key:"Building", labelKey:"catBuilding", icon:"🏠", grouped:true, part:"buildings" },
   { key:"Research", labelKey:"catResearch", icon:"🔬", grouped:true, part:"research" },
 ];
-const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹" };
+const GROUP_ICONS = { shieldbearer:"🛡️", bomber:"💣", shooter:"🏹", support:"🏗️" };
 
 const I18N = {
   en: {
@@ -89,6 +89,7 @@ const I18N = {
     noTargetHint: "No target set yet — pick a target level on a building or research below.",
     partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
+    buildingGroupSupport: "Support buildings",
     groupNoTargets: "no targets",
     groupTargetsSet: "{n} target(s) set",
     res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalloy",
@@ -124,6 +125,7 @@ const I18N = {
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur un bâtiment ou une recherche ci-dessous.",
     partBuildings: "Bâtiments Forticlad", partResearch: "Recherches T11",
     catBuilding: "Bâtiments Forticlad", catResearch: "Recherches T11",
+    buildingGroupSupport: "Bâtiments de soutien",
     groupNoTargets: "aucun objectif",
     groupTargetsSet: "{n} objectif(s) défini(s)",
     res_FC: "FC", res_AFC: "AFC", res_Hyperalloy: "Hyperalliage",
@@ -177,8 +179,10 @@ function buildingTrack(id, tiers, gateByWardenOffice){
   tiers.forEach(tier=>{
     // To progress beyond a tier, Warden Office must already have reached the next tier.
     const gate = () => gateByWardenOffice ? [{trackId:"warden_office",levelId:tier.to}] : [];
+    // Paliers track a climb already under way, so they belong in "Actuel"
+    // only — a goal is always a whole FC tier, never "FC6 · palier 3".
     for(let i=1;i<=4;i++){
-      levels.push({ id:`${tier.from}_s${i}`, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate() });
+      levels.push({ id:`${tier.from}_s${i}`, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate(), targetCheckpoint:false });
     }
     levels.push({ id:tier.to, cost:{FC:tier.fc,AFC:tier.afc,Hyperalloy:0}, requires:gate() });
   });
@@ -201,7 +205,7 @@ function makeFcLabTrack(){
   FCLAB_BUILDING_LEVELS.forEach(c=>{
     const gate = () => [{trackId:"warden_office", levelId:c.wardenTier}];
     for(let i=1;i<=4;i++){
-      levels.push({ id:`${c.lvl}_s${i}`, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
+      levels.push({ id:`${c.lvl}_s${i}`, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate(), targetCheckpoint:false });
     }
     levels.push({ id:c.lvl, cost:{FC:c.fc,AFC:c.afc,Hyperalloy:0}, requires:gate() });
   });
@@ -256,16 +260,21 @@ function defaultData(){
 
   const fcLab = makeFcLabTrack();
 
-  const buildings = [
-    wardenOffice,
+  // The 6 support buildings fold into one collapsible group: the cascade
+  // already works out how far each of them has to climb, so most visits never
+  // need to open it. Warden's Office and FC Lab stay flat and visible — they
+  // are the two you actually set by hand.
+  const support = [
     buildingTrack("shieldbearer_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
     buildingTrack("bomber_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
     buildingTrack("shooter_barrack", tierChain([130,150,230,250,300], [{afc:10,fc:160},{afc:15,fc:180},{afc:22,fc:210}], [{afc:32,fc:230},{afc:75,fc:290}]), true),
     buildingTrack("communication_center", tierChain([50,60,80,110,130], [{afc:5,fc:90},{afc:8,fc:100},{afc:12,fc:110}], [{afc:17,fc:130},{afc:41,fc:160}]), true),
     buildingTrack("command_center", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}], [{afc:14,fc:100},{afc:34,fc:130}]), true),
     buildingTrack("medical_station", tierChain([50,60,80,110,130], [{afc:5,fc:70},{afc:8,fc:80},{afc:12,fc:90}]), true),
-    fcLab,
   ];
+  support.forEach(tr=>{ tr.groupKey = "support"; tr.groupLabelKey = "buildingGroupSupport"; });
+
+  const buildings = [wardenOffice, ...support, fcLab];
 
   // FC Lab level gate, shared by every troop's research tree below (it's one
   // building, not per-troop). `lvl` is FC Lab's own level id ("1".."6").
@@ -329,7 +338,7 @@ function defaultData(){
     const healLethality = mkLv11Research(`fclab_${troopKey}_heal_lethality`, "heal_lethality");
     const trainHp = mkLv11Research(`fclab_${troopKey}_train_hp`, "train_hp");
     const set = [expedition, lethality, atk, def, hp, rally, bastion, healLethality, trainHp];
-    set.forEach(tr=>{ tr.troopKey = troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
+    set.forEach(tr=>{ tr.groupKey = troopKey; tr.groupLabelKey = "troop_"+troopKey; tr.nameParts = ["troop_"+troopKey, "research_"+tr.statKey]; });
     return set;
   }
 
@@ -345,8 +354,31 @@ function defaultData(){
     tracks: [...buildings, ...research]
   };
 }
+
+// Schema 6 -> 7 dropped the paliers from the "Cible" select. Level indices are
+// unchanged, so only a saved target that had landed on a palier needs moving,
+// forward to the tier it was climbing toward — leaving it put would select an
+// option that no longer exists.
+function migrateState(old){
+  if(old.schemaVersion !== 6 || !Array.isArray(old.tracks)) return null;
+  const fresh = defaultData();
+  RESOURCES.forEach(r=>{
+    if(typeof (old.stock||{})[r] === "number") fresh.stock[r] = old.stock[r];
+  });
+  old.tracks.forEach(saved=>{
+    const track = fresh.tracks.find(t=>t.id===saved.id);
+    if(!track) return;
+    const last = track.levels.length-1;
+    const clamp = v => Math.max(0, Math.min(Number(v)||0, last));
+    track.currentLevelIndex = clamp(saved.currentLevelIndex);
+    let target = clamp(saved.targetLevelIndex);
+    while(target < last && track.levels[target].targetCheckpoint === false) target++;
+    track.targetLevelIndex = Math.max(target, track.currentLevelIndex);
+  });
+  return fresh;
+}
 </script>
-<script src="shared.js?v=5"></script>
+<script src="shared.js?v=6"></script>
 <script>initApp();</script>
 </body>
 </html>

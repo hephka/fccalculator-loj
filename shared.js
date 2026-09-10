@@ -18,7 +18,9 @@
 //   I18N          - {en:{...}, fr:{...}} translation dictionaries (route-specific keys +
 //                   the shared chrome keys listed below)
 //   CATEGORIES    - [{key, labelKey, icon, grouped, dynamic, part, badge}] in display order.
-//                   grouped:true renders tracks grouped by track.troopKey.
+//                   grouped:true folds tracks sharing a track.groupKey into a
+//                   collapsible group (named by track.groupLabelKey); tracks
+//                   without a groupKey stay flat and always visible.
 //                   dynamic:{addLabelKey, makeTrack(index), max} starts with
 //                   a default item and adds one more item per button press.
 //                   Dynamic tracks need a numeric track.qtyIndex for ordering.
@@ -33,7 +35,7 @@
 //                   routes with multiple distinct areas (e.g. "Robots" vs
 //                   "Satellites"). Omit entirely for routes with only one
 //                   flat list of categories — they render exactly as before.
-//   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
+//   GROUP_ICONS   - {groupKey: "emoji"} used for each group of a grouped category
 //   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
 //                   only needed if the page has any dynamic categories.
 //   migrateState()- optional. Converts a saved state from an older
@@ -466,27 +468,36 @@ function renderBreakdown(breakdown){
 
 const uiOpen = { groups:new Set() };
 
+// Tracks carrying a `groupKey` are folded into one collapsible group, named by
+// their `groupLabelKey`; tracks without one render flat, in place. That lets a
+// category keep a couple of headline tracks visible while the long tail folds
+// away (see the Warden's Office and FC Lab sitting above the support group).
 function groupedTracksHtml(tracks){
-  const order = [];
-  tracks.forEach(tr=>{ if(!order.includes(tr.troopKey)) order.push(tr.troopKey); });
-  return order.map(troopKey=>{
-    const gTracks = tracks.filter(tr=>tr.troopKey===troopKey);
-    const activeCount = gTracks.filter(tr=>tr.targetLevelIndex>tr.currentLevelIndex).length;
-    const isOpen = uiOpen.groups.has(troopKey);
-    const icon = (GROUP_ICONS && GROUP_ICONS[troopKey]) || "🧬";
+  const out = [];
+  const seen = new Set();
+  tracks.forEach(tr=>{
+    const key = tr.groupKey;
+    if(!key){ out.push(trackHtml(tr)); return; }
+    if(seen.has(key)) return;
+    seen.add(key);
+    const gTracks = tracks.filter(x=>x.groupKey===key);
+    const activeCount = gTracks.filter(x=>x.targetLevelIndex>x.currentLevelIndex).length;
+    const isOpen = uiOpen.groups.has(key);
+    const icon = (GROUP_ICONS && GROUP_ICONS[key]) || "🧬";
     const badgeText = activeCount ? t("groupTargetsSet",{n:activeCount}) : t("groupNoTargets");
-    return `<div class="research-group">
-      <button type="button" class="group-head" data-group="${troopKey}" aria-expanded="${isOpen}">
+    out.push(`<div class="research-group">
+      <button type="button" class="group-head" data-group="${key}" aria-expanded="${isOpen}">
         <span class="group-icon">${icon}</span>
-        <span class="group-name">${t("troop_"+troopKey)}</span>
+        <span class="group-name">${t(gTracks[0].groupLabelKey)}</span>
         <span class="group-badge ${activeCount?'active':''}">${badgeText}</span>
         <span class="group-chevron ${isOpen?'open':''}">▸</span>
       </button>
       <div class="group-body ${isOpen?'open':''}">
-        ${gTracks.map(tr=> trackHtml(tr)).join("")}
+        ${gTracks.map(x=> trackHtml(x)).join("")}
       </div>
-    </div>`;
-  }).join("");
+    </div>`);
+  });
+  return out.join("");
 }
 
 // A "dynamic" category starts with one item and adds tracks on demand.
