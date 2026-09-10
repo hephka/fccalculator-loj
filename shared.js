@@ -728,8 +728,40 @@ function initNavFade(){
   update();
 }
 
+// The intro card is onboarding: worth reading once, then pure scroll cost for
+// someone who opens the page every day. It starts open on a first visit and
+// folds on later ones, unless the reader deliberately reopened it. Its own
+// localStorage key, not the page state blob — otherwise a SCHEMA_VERSION bump
+// or a "reset to defaults" would re-onboard everyone. Per route, since each
+// page's intro explains something different.
+const INTRO_KEY = STORAGE_KEY + "-intro-open";
+
+function initIntroToggle(){
+  const head = document.getElementById("introToggle");
+  const body = document.getElementById("introBody");
+  if(!head || !body) return;
+  let open = true;
+  try{
+    const saved = localStorage.getItem(INTRO_KEY);
+    if(saved === null) localStorage.setItem(INTRO_KEY, "0");
+    else open = saved === "1";
+  }catch(e){}
+  const apply = ()=>{
+    head.setAttribute("aria-expanded", String(open));
+    body.classList.toggle("open", open);
+    head.querySelector(".intro-chevron").classList.toggle("open", open);
+  };
+  apply();
+  head.addEventListener("click", ()=>{
+    open = !open;
+    try{ localStorage.setItem(INTRO_KEY, open ? "1" : "0"); }catch(e){}
+    apply();
+  });
+}
+
 function initApp(){
   initNavFade();
+  initIntroToggle();
   // Tap/click toggle instead of the old title="" tooltip: title never
   // shows on touch devices (no hover), so mobile users had no way to read
   // the estimated-value note at all. Delegated on the container since
