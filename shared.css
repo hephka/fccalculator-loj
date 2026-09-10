@@ -391,6 +391,14 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
   line-height:1.35;padding:6px 8px;white-space:normal}
 footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
 .footer-logo{display:block;height:200px;width:auto;margin:12px auto 0}
+/* Underlined so they read as links in a block of grey footer text, but left
+   in --muted rather than the accent: an ask for money that shouts would sit
+   badly in a tool whose whole promise is being free. 44px of tap height, like
+   every other control, without looking like a button. */
+.footer-links{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:0 10px;margin-top:2px}
+.footer-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);
+  text-decoration:underline;text-underline-offset:3px}
+.footer-links a:hover,.footer-links a:focus-visible{color:var(--text)}
 
 /* Fixed bar mirroring "what's missing" so the numbers stay on screen while
    scrolling through tracks far below the summary card — see renderStickyBar

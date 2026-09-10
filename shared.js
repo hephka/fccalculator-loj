@@ -79,7 +79,8 @@
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
-//   groupAutoRequired, savedHint, savedHintDismiss, loweredNote, current, target,
+//   groupAutoRequired, savedHint, savedHintDismiss, loweredNote,
+//   reportError, donate, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
 //
@@ -110,6 +111,7 @@ const I18N_CHROME = {
     savedHint: "Your levels and targets stay saved on this device — close the page and come back to them as you left them. They don't follow you to another device or browser.",
     savedHintDismiss: "Got it, hide this",
     loweredNote: "↓ Brought down with it, they can't sit above it: {names}",
+    reportError: "Report a wrong number", donate: "Buy me a coffee",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
@@ -133,6 +135,7 @@ const I18N_CHROME = {
     savedHint: "Tes niveaux et tes objectifs restent enregistrés sur cet appareil — tu peux fermer la page et les retrouver tels quels. Ils ne te suivent pas sur un autre appareil ou un autre navigateur.",
     savedHintDismiss: "Compris, masquer",
     loweredNote: "↓ Redescendus avec lui, ils ne peuvent pas être plus hauts : {names}",
+    reportError: "Signaler un chiffre erroné", donate: "Offrir un café",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
@@ -142,6 +145,26 @@ const I18N_CHROME = {
     newBadge: "Nouveau",
   },
 };
+
+// Paste a URL here to make that footer link appear; leave it empty and the
+// link isn't rendered at all, so the site can never ship a dead one. They sit
+// right under the "data last updated" line: that's the only place on the page
+// already talking about the data, which is what a report is about, and the
+// footer keeps the donation ask out of the way of someone doing their sums.
+//
+// The report link should point at a plain form (Tally, Google Forms). A link,
+// never an embedded widget — an embed would drop a third-party script into an
+// app that currently carries none, and drag a cookie banner along with it for
+// the French and German visitors.
+const REPORT_URL = "";
+const DONATE_URL = "";
+
+function footerLinksHtml(){
+  const links = [];
+  if(REPORT_URL) links.push(`<a href="${REPORT_URL}" target="_blank" rel="noopener noreferrer">${t("reportError")}</a>`);
+  if(DONATE_URL) links.push(`<a href="${DONATE_URL}" target="_blank" rel="noopener noreferrer">${t("donate")}</a>`);
+  return links.length ? `<br><span class="footer-links">${links.join(" · ")}</span>` : "";
+}
 
 const LANG_KEY = "resource-calc-lang";
 let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
@@ -491,7 +514,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}<img src="images/logo-loj.png" alt="S241 [AoW]" width="600" height="337" class="footer-logo">`;
+  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}${footerLinksHtml()}<img src="images/logo-loj.png" alt="S241 [AoW]" width="600" height="337" class="footer-logo">`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
