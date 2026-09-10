@@ -95,7 +95,10 @@ const I18N = {
     partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
     buildingGroupSupport: "Support buildings",
-    fclab_start: "Not built", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
+    // Four characters is the budget: past that the two selects no longer fit
+    // on one line at 375px and the paliers bar below them stops reading as
+    // belonging to "Actuel". "Not built" was clearer but cost that.
+    fclab_start: "None", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
     fclab_FC4: "FC4", fclab_FC5: "FC5", fclab_FC6: "FC6",
     groupNoTargets: "no targets",
     groupTargetsSet: "{n} target(s) set",
@@ -133,7 +136,7 @@ const I18N = {
     partBuildings: "Bâtiments Forticlad", partResearch: "Recherches T11",
     catBuilding: "Bâtiments Forticlad", catResearch: "Recherches T11",
     buildingGroupSupport: "Bâtiments de soutien",
-    fclab_start: "Non construit", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
+    fclab_start: "Rien", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
     fclab_FC4: "FC4", fclab_FC5: "FC5", fclab_FC6: "FC6",
     groupNoTargets: "aucun objectif",
     groupTargetsSet: "{n} objectif(s) défini(s)",
@@ -397,7 +400,7 @@ function migrateState(old){
   return fresh;
 }
 </script>
-<script src="shared.js?v=20"></script>
+<script src="shared.js?v=21"></script>
 <script>initApp();</script>
 </body>
 </html>
