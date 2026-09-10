@@ -277,6 +277,19 @@ input[type=number]{-moz-appearance:textfield}
 .res-card.value-updated .missing,
 .sticky-chip.value-updated{ animation:figure-updated 1.2s ease-out }
 
+/* Told once, next to the numbers the visitor just produced, then dismissed for
+   good (see renderSavedHint). Deliberately quiet: it's reassurance, not a call
+   to action, and it must never compete with the figures above it. */
+.saved-hint{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:14px 0 0;
+  padding-top:12px;border-top:1px solid var(--border);
+  font-size:.78rem;color:var(--muted);line-height:1.5}
+.saved-hint[hidden]{display:none}
+.saved-hint span{flex:1 1 240px}
+/* Small type, but the same 44px touch target the nav and language switch use:
+   a quiet control is still one a thumb has to hit on a phone. */
+.saved-hint-dismiss{flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;
+  padding:6px 14px;font-size:.75rem;font-weight:600}
+
 .cat-title{font-size:1.05rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
 .route-part{margin-top:36px}
 .route-part:first-child{margin-top:0}

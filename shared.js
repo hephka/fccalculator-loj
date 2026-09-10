@@ -73,7 +73,7 @@
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
-//   groupAutoRequired, current, target,
+//   groupAutoRequired, savedHint, savedHintDismiss, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
 //
@@ -101,6 +101,8 @@ const I18N_CHROME = {
     autoAdded: "(auto-added — prerequisite)",
     targetSet: "target set", noTarget: "no target",
     autoRequired: "required", groupAutoRequired: "{n} required",
+    savedHint: "Your levels and targets stay saved on this device — close the page and come back to them as you left them. They don't follow you to another device or browser.",
+    savedHintDismiss: "Got it, hide this",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
@@ -121,6 +123,8 @@ const I18N_CHROME = {
     autoAdded: "(ajouté auto. — prérequis)",
     targetSet: "objectif défini", noTarget: "aucun objectif",
     autoRequired: "requis", groupAutoRequired: "{n} requis",
+    savedHint: "Tes niveaux et tes objectifs restent enregistrés sur cet appareil — tu peux fermer la page et les retrouver tels quels. Ils ne te suivent pas sur un autre appareil ou un autre navigateur.",
+    savedHintDismiss: "Compris, masquer",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
@@ -614,6 +618,9 @@ function renderStickyBar(totals, breakdown, changed){
 // same resources, so a shared fixed-column table would show a lot of zeros.
 function renderBreakdown(breakdown){
   const el = document.getElementById("breakdown");
+  // Driven from here rather than from both render paths, since this is the one
+  // function that already knows whether there's anything to show.
+  renderSavedHint(breakdown.length > 0);
   if(!breakdown.length){ el.innerHTML = `<p class="empty-hint">${t("noTargetHint")}</p>`; return; }
   const colTarget = t("colTarget"), colFrom = t("colFrom"), colTo = t("colTo"), colCost = t("colCost");
   el.innerHTML = `<table><thead><tr><th>${colTarget}</th><th>${colFrom}</th><th>${colTo}</th><th>${colCost}</th></tr></thead><tbody>
@@ -627,6 +634,36 @@ function renderBreakdown(breakdown){
     </tr>`;
     }).join("")}
   </tbody></table>`;
+}
+
+// The strongest reason to come back is that everything is already filled in,
+// and nothing told a first-time visitor that. Only worth saying once there's a
+// result on screen: before any target is set, there is no progress to keep and
+// the sentence means nothing. It says "on this device" plainly, because a
+// vaguer promise would send someone to their phone expecting to find the setup
+// they just built on a laptop. Dismissed for good once read — a daily visitor
+// has no use for it, and this app's whole habit is not repeating itself.
+// One key for the whole site, not one per route like the intro card: that card
+// explains something different on each page, this sentence is the same one
+// everywhere, so dismissing it once has to silence it everywhere.
+const SAVED_HINT_KEY = "resource-calc-saved-hint-seen";
+
+function renderSavedHint(hasResults){
+  const el = document.getElementById("savedHint");
+  if(!el) return;
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(SAVED_HINT_KEY) === "1"; }catch(e){}
+  if(!hasResults || dismissed){ el.hidden = true; el.innerHTML = ""; return; }
+  // Rebuilt on every pass rather than only when first shown, so switching
+  // language redraws it in the new one like everything else on the page.
+  el.hidden = false;
+  el.innerHTML = `<span>💾 ${t("savedHint")}</span>
+    <button type="button" class="saved-hint-dismiss">${t("savedHintDismiss")}</button>`;
+  el.querySelector(".saved-hint-dismiss").addEventListener("click", ()=>{
+    try{ localStorage.setItem(SAVED_HINT_KEY, "1"); }catch(e){}
+    el.hidden = true;
+    el.innerHTML = "";
+  });
 }
 
 const uiOpen = { groups:new Set() };
