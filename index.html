@@ -396,14 +396,17 @@ function migrateState(old){
     const last = track.levels.length-1;
     const clamp = v => Math.max(0, Math.min(Number(v)||0, last));
     track.currentLevelIndex = clamp(saved.currentLevelIndex);
-    let target = clamp(saved.targetLevelIndex);
-    while(target < last && track.levels[target].targetCheckpoint === false) target++;
-    track.targetLevelIndex = Math.max(target, track.currentLevelIndex);
+    // Down to the tier the old target sat in, never up to the next one. A
+    // target on "FC6 · palier 2" is 2 steps past FC6 but 3 short of FC7, so
+    // FC6 is the nearer goal, and rounding up would silently hand someone
+    // three steps of work they never asked for. Same rule adoptProgress uses,
+    // which is the other way a palier target can reach this code.
+    track.targetLevelIndex = tierStartFor(track, clamp(saved.targetLevelIndex));
   });
   return fresh;
 }
 </script>
-<script src="shared.js?v=21"></script>
+<script src="shared.js?v=22"></script>
 <script>initApp();</script>
 </body>
 </html>
