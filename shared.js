@@ -407,7 +407,11 @@ function propagateImpliedCurrent(){
             // only as someone else's prerequisite doesn't get left with its
             // target select still parked at level 1 while current jumps far
             // past it.
-            if(other.targetLevelIndex <= idx) other.targetLevelIndex = idx;
+            // Same snapping rule as setCurrentLevel: land on a level "Cible"
+            // can actually display. Prerequisites happen to point at
+            // checkpoints today, so this changes nothing now and stops the
+            // day one points at a palier from breaking the select.
+            if(other.targetLevelIndex <= idx) other.targetLevelIndex = tierStartIndex(other);
             changed = true;
           }
         });
@@ -873,7 +877,13 @@ function setCurrentLevel(track, index){
   // target dropdown next then starts near current instead of at the track's
   // very first level, which matters a lot on long tracks like Warden's
   // Office. A target the user already pushed further out is left alone.
-  if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = track.currentLevelIndex;
+  //
+  // It lands on the tier current sits in, not on current itself: "Cible" only
+  // lists checkpoints, so a palier index would match no option and the select
+  // would silently fall back to displaying the track's first level. A target
+  // below current simply means no goal — computeCascade already takes the max
+  // of the two.
+  if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = tierStartIndex(track);
   propagateImpliedCurrent();
   save();
 }
