@@ -64,7 +64,7 @@
 <script>
 const RESOURCES = ["EquipmentParts","PrecisionEquipment","Magnet","PotentialCoil"];
 const STORAGE_KEY = "resource-calc-heroequipment-state-v1";
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const RES_ACCENT = {
   EquipmentParts:"#8ec7ff", Magnet:"#ffb648", PotentialCoil:"#ff5c72", PrecisionEquipment:"#ffb648",
 };
@@ -81,7 +81,7 @@ const I18N = {
     introLead: "Plan your Hero Equipment upgrades.",
     introFeature1: "Each piece has two linked progressions: Rarity (Equipment EXP) and Mastery (Precision Equipment)",
     introFeature2: "Prerequisites are resolved automatically — promoting past Legendary needs Mastery at a specific level",
-    introNote: "Rarity and Mastery level up independently until Legendary — past that, each promotion needs Mastery at a matching level, handled automatically. One value is still an estimate — look for the ≈ badge in the cost breakdown.",
+    introNote: "Rarity and Mastery level up independently until Legendary — past that, each promotion needs Mastery at a matching level, handled automatically. Levels already maxed in your current rarity? Pick the \"· levels maxed\" step so only the promotion is counted. One value is still an estimate — look for the ≈ badge in the cost breakdown.",
     noTargetHint: "No target set yet — pick a target level on an equipment piece below.",
     catEquipment: "Equipment",
     groupNoTargets: "no targets",
@@ -93,6 +93,7 @@ const I18N = {
     troop_shooter: "Shooter",
     equip_gloves: "Gloves", equip_helmet: "Helm", equip_chest: "Outerwear", equip_boots: "Boots",
     pairedMasteryLabel: "Mastery",
+    levelsMaxed: "levels maxed",
     equiptier_common: "Common", equiptier_uncommon: "Uncommon", equiptier_rare: "Rare", equiptier_epic: "Epic",
     equiptier_legendary: "Legendary", equiptier_legendary_t1: "Legendary T1", equiptier_legendary_t2: "Legendary T2",
     equiptier_exotic: "Exotic", equiptier_exotic_t1: "Exotic T1", equiptier_exotic_t2: "Exotic T2", equiptier_exotic_t3: "Exotic T3",
@@ -104,7 +105,7 @@ const I18N = {
     introLead: "Planifie les améliorations de ton Équipement de Héros.",
     introFeature1: "Chaque pièce a deux progressions liées : la Rareté (EXP d'équipement) et la Maîtrise (Équipement de précision)",
     introFeature2: "Les prérequis sont résolus automatiquement — promouvoir au-delà de Légendaire nécessite une Maîtrise à un niveau précis",
-    introNote: "Rareté et Maîtrise progressent indépendamment jusqu'à Légendaire — au-delà, chaque promotion exige un niveau de Maîtrise précis, géré automatiquement. Une valeur reste estimée — repère le badge ≈ dans le détail des coûts.",
+    introNote: "Rareté et Maîtrise progressent indépendamment jusqu'à Légendaire — au-delà, chaque promotion exige un niveau de Maîtrise précis, géré automatiquement. Niveaux déjà au max dans ta rareté actuelle ? Choisis le cran « · niveaux max » pour ne compter que la promotion. Une valeur reste estimée — repère le badge ≈ dans le détail des coûts.",
     noTargetHint: "Aucun objectif défini pour l'instant — choisis un niveau cible sur une pièce d'équipement ci-dessous.",
     catEquipment: "Équipement",
     groupNoTargets: "aucun objectif",
@@ -116,6 +117,7 @@ const I18N = {
     troop_shooter: "Tireur",
     equip_gloves: "Gants", equip_helmet: "Casque", equip_chest: "Veste", equip_boots: "Bottes",
     pairedMasteryLabel: "Maîtrise",
+    levelsMaxed: "niveaux max",
     equiptier_common: "Commun", equiptier_uncommon: "Peu Commun", equiptier_rare: "Rare", equiptier_epic: "Épique",
     equiptier_legendary: "Légendaire", equiptier_legendary_t1: "Légendaire T1", equiptier_legendary_t2: "Légendaire T2",
     equiptier_exotic: "Exotique", equiptier_exotic_t1: "Exotique T1", equiptier_exotic_t2: "Exotique T2", equiptier_exotic_t3: "Exotique T3",
@@ -151,15 +153,31 @@ const EQUIPMENT_TIERS = [
   { key:"exotic_t3",    parts:338200, magnet:2000, coil:100, masteryReq:15 },
 ];
 
+// Each tier transition bundles two separate in-game actions, so it's modelled
+// as two levels you can sit between: the Equipment EXP is the ~20 level-ups
+// ground out while still in the PREVIOUS tier ("Epic · levels maxed"), and the
+// Magnet/Coil is the promotion itself. Splitting them is what lets a piece
+// whose levels are already maxed be quoted the promotion alone, instead of
+// being re-charged EXP it has already spent. The Mastery gate belongs to the
+// promotion only — levelling with EXP is never gated in-game.
 function makeEquipmentTrack(troopKey, slotKey){
   const levels = [];
-  EQUIPMENT_TIERS.forEach(tier=>{
-    const cost = zeroResources();
-    cost.EquipmentParts = tier.parts || 0;
-    cost.Magnet = tier.magnet || 0;
-    cost.PotentialCoil = tier.coil || 0;
+  EQUIPMENT_TIERS.forEach((tier,i)=>{
+    if(i === 0){
+      levels.push({ id:tier.key, cost:zeroResources(), requires:[] });
+      return;
+    }
+    const grind = zeroResources();
+    grind.EquipmentParts = tier.parts || 0;
+    levels.push({
+      id:`${EQUIPMENT_TIERS[i-1].key}_s1`, cost:grind, requires:[],
+      estimated:!!tier.estimated, targetCheckpoint:false, labelSuffixKey:"levelsMaxed"
+    });
+    const promotion = zeroResources();
+    promotion.Magnet = tier.magnet || 0;
+    promotion.PotentialCoil = tier.coil || 0;
     const requires = tier.masteryReq ? [{trackId:`mastery_${troopKey}_${slotKey}`, levelId:String(tier.masteryReq)}] : [];
-    levels.push({ id:tier.key, cost, requires, estimated:!!tier.estimated });
+    levels.push({ id:tier.key, cost:promotion, requires });
   });
   return {
     id:`equip_${troopKey}_${slotKey}`, category:"Equipment", troopKey,
@@ -215,8 +233,30 @@ function defaultData(){
     tracks
   };
 }
+
+// Schema 4 -> 5 inserted a "· levels maxed" sub-level ahead of every rarity,
+// so each Equipment level sits at exactly twice its old index (old "Epic" 3 ->
+// new 6). Mastery tracks were not touched. An old level therefore maps onto
+// the promotion cran, never onto a "levels maxed" one — the conservative
+// reading, since a v4 state never claimed the inner levels were done.
+function migrateState(old){
+  if(old.schemaVersion !== 4 || !Array.isArray(old.tracks)) return null;
+  const fresh = defaultData();
+  RESOURCES.forEach(r=>{
+    if(typeof (old.stock||{})[r] === "number") fresh.stock[r] = old.stock[r];
+  });
+  old.tracks.forEach(saved=>{
+    const track = fresh.tracks.find(t=>t.id===saved.id);
+    if(!track) return;
+    const scale = track.category === "Equipment" ? 2 : 1;
+    const clamp = v => Math.max(0, Math.min(Number(v)*scale || 0, track.levels.length-1));
+    track.currentLevelIndex = clamp(saved.currentLevelIndex);
+    track.targetLevelIndex = Math.max(clamp(saved.targetLevelIndex), track.currentLevelIndex);
+  });
+  return fresh;
+}
 </script>
-<script src="shared.js?v=3"></script>
+<script src="shared.js?v=5"></script>
 <script>initApp();</script>
 </body>
 </html>

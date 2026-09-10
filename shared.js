@@ -36,6 +36,9 @@
 //   GROUP_ICONS   - {groupKey: "emoji"} used when a category has grouped:true
 //   defaultData() - returns {schemaVersion, stock, counts, tracks}. `counts` is
 //                   only needed if the page has any dynamic categories.
+//   migrateState()- optional. Converts a saved state from an older
+//                   SCHEMA_VERSION into the current shape, or returns null to
+//                   let it be discarded (see load()).
 //
 // Per-track optional flags:
 //   romanLevels: true         - numeric levelStyle renders as roman numerals (Level VII)
@@ -48,6 +51,10 @@
 //                                (still selectable in "Actuel") — for fine
 //                                intermediate levels that only matter when
 //                                setting real, already-in-progress state.
+//   level.labelSuffixKey       - on a "_s<N>" sub-level, replaces the default
+//                                "· palier N" suffix with t(key), for chains
+//                                where the sub-level isn't one of several
+//                                numbered stages (see Hero Equipment).
 //   accent: "#hexcolor" or "var(--token)" - colors this track's card left
 //                                border + name, to flag one specific track
 //                                among many in the same category (e.g. the
@@ -170,7 +177,8 @@ function toRoman(n){
 //   "numeric" - "<levelWord> <id>", e.g. "Level 7" (or "Level VII" if track.romanLevels)
 //   "keyed"   - the id looked up via t(track.levelKeyPrefix + id), e.g. tier names
 // Any id ending in "_s<N>" is a sub-level (stage/star/...): its base is styled
-// per the rules above, suffixed with "· <stageWordKey or stageWord> <N>".
+// per the rules above, suffixed with "· <stageWordKey or stageWord> <N>", or
+// with t(level.labelSuffixKey) when the level overrides it.
 function levelLabel(track, level){
   const id = level.id;
   const stageW = t(track.stageWordKey || "stageWord");
@@ -179,7 +187,8 @@ function levelLabel(track, level){
   const base = track.levelStyle === "keyed" ? t(track.levelKeyPrefix+baseId)
     : track.levelStyle === "numeric" ? `${t("levelWord")} ${track.romanLevels ? toRoman(baseId) : baseId}`
     : baseId;
-  return m ? `${base} · ${stageW} ${m[2]}` : base;
+  if(!m) return base;
+  return `${base} · ${level.labelSuffixKey ? t(level.labelSuffixKey) : `${stageW} ${m[2]}`}`;
 }
 
 // Every track carries `nameParts`: an array of i18n keys, or {key,vars} objects
@@ -195,13 +204,20 @@ let state = load();
 
 // Bump SCHEMA_VERSION whenever a route's track data shape changes (new/renamed
 // fields, new levels inserted mid-chain, etc). Saved states from an older
-// schema are discarded instead of loaded broken.
+// schema are discarded instead of loaded broken — unless the route defines
+// `migrateState(old)`, which gets a chance to convert it first and returns
+// null when it can't. Worth writing only when the old state maps onto the new
+// shape exactly; a guess would silently corrupt someone's saved progress.
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
       const parsed = JSON.parse(raw);
       if(parsed.schemaVersion === SCHEMA_VERSION) return parsed;
+      if(typeof migrateState === "function"){
+        const migrated = migrateState(parsed);
+        if(migrated) return migrated;
+      }
     }
   }catch(e){}
   return defaultData();
