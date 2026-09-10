@@ -289,6 +289,32 @@ if (uniqueStorageKeys.size !== storageKeys.length) {
   pass(`all ${storageKeys.length} routes have a unique STORAGE_KEY`);
 }
 
+// Every route has to request the same ?v= for each shared asset. A bump that
+// missed one page leaves that route pinned to whatever shared.js its visitors
+// already have cached, while the other four look perfectly fine — silent, and
+// exactly the stale-cache complaint the convention exists to prevent.
+const SHARED_ASSETS = ["shared.js", "shared.css", "theme-tactical.css"];
+const assetIssues = [];
+SHARED_ASSETS.forEach((asset) => {
+  const pattern = new RegExp(asset.replace(/\./g, "\\.") + "\\?v=(\\d+)");
+  const byVersion = {};
+  ROUTE_FILES.forEach((f) => {
+    const match = fs.readFileSync(path.join(DIR, f), "utf8").match(pattern);
+    if (!match) {
+      assetIssues.push(`${f} loads ${asset} without a ?v= cache-busting version`);
+      return;
+    }
+    (byVersion[match[1]] = byVersion[match[1]] || []).push(f);
+  });
+  const versions = Object.keys(byVersion);
+  if (versions.length > 1) {
+    const detail = versions.map((v) => `v=${v} (${byVersion[v].join(", ")})`).join(" vs ");
+    assetIssues.push(`${asset} is requested at different versions across routes: ${detail}`);
+  }
+});
+if (assetIssues.length) assetIssues.forEach((m) => fail(m));
+else pass(`all 5 routes request each shared asset at the same ?v= version`);
+
 // The nav's "unfinished target" dot needs shared.js to know every route's
 // storage key. Nothing at runtime would complain if one drifted — the dot
 // would just silently never light up for that page — so pin it here.

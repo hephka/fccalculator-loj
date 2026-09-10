@@ -211,15 +211,59 @@ let state = load();
 // `migrateState(old)`, which gets a chance to convert it first and returns
 // null when it can't. Worth writing only when the old state maps onto the new
 // shape exactly; a guess would silently corrupt someone's saved progress.
+//
+// Bump it for a corrected COST too, not just a changed shape: what's saved is
+// a whole copy of the route's tracks, levels and costs, and this returns that
+// copy as-is. The page's own defaultData() is therefore only consulted for a
+// visitor who has no saved state, so a corrected number never reaches anyone
+// who already used the route until the version forces the state out.
+// A saved state is JSON this app wrote itself, but it outlives the code that
+// wrote it: a botched migrateState, a half-finished write, a browser extension
+// touching storage. Every value in it is then read straight into arithmetic and
+// into innerHTML, where a non-number gives NaN totals and a string gives markup
+// nobody intended. So coerce the fields actually read, and hand back null when
+// the shape is past repairing, which makes load() fall back to a clean default
+// instead of rendering something broken. Not a security boundary: writing here
+// already requires running code on this origin.
+function sanitizeState(s){
+  if(!s || typeof s !== "object" || !Array.isArray(s.tracks) || !s.tracks.length) return null;
+  const stock = zeroResources();
+  RESOURCES.forEach(r=>{
+    const n = Math.floor(Number((s.stock || {})[r]));
+    stock[r] = Number.isFinite(n) && n > 0 ? Math.min(n, MAX_NUMBER_INPUT) : 0;
+  });
+  s.stock = stock;
+  if(!s.counts || typeof s.counts !== "object") s.counts = {};
+  Object.keys(s.counts).forEach(k=>{
+    const n = Math.floor(Number(s.counts[k]));
+    s.counts[k] = Number.isFinite(n) && n > 0 ? n : 0;
+  });
+  for(const tr of s.tracks){
+    if(!tr || typeof tr !== "object" || !Array.isArray(tr.levels) || !tr.levels.length) return null;
+    const last = tr.levels.length - 1;
+    const clamp = v=>{
+      const n = Math.floor(Number(v));
+      return Number.isFinite(n) ? Math.max(0, Math.min(n, last)) : 0;
+    };
+    tr.currentLevelIndex = clamp(tr.currentLevelIndex);
+    // Target below current is the one combination the UI never produces, and
+    // computeCascade would read it as "nothing to do" — pin the invariant here.
+    tr.targetLevelIndex = Math.max(clamp(tr.targetLevelIndex), tr.currentLevelIndex);
+  }
+  return s;
+}
+
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
       const parsed = JSON.parse(raw);
-      if(parsed.schemaVersion === SCHEMA_VERSION) return parsed;
+      if(parsed.schemaVersion === SCHEMA_VERSION) return sanitizeState(parsed) || defaultData();
       if(typeof migrateState === "function"){
         const migrated = migrateState(parsed);
-        if(migrated) return migrated;
+        // Sanitized too: a migration is new code walking old data, exactly
+        // where a bad index or a stray value is most likely to come from.
+        if(migrated) return sanitizeState(migrated) || defaultData();
       }
     }
   }catch(e){}
@@ -237,6 +281,20 @@ function refreshSummary(){
   renderSummary(totals, breakdown);
   renderBreakdown(breakdown);
   renderStickyBar(totals, breakdown);
+}
+
+// Both cascade loops cap their passes so they can't hang the tab. A cycle in
+// the data is NOT what trips this: the loops only ever raise indices, and
+// indices are capped by their track's level count, so they always settle —
+// even on A-needs-B-needs-A. What could trip it is a requires graph that needs
+// more passes than the cap, whose worst case (every pass advancing a single
+// step) is bounded by the total level count across tracks, well past 200 on a
+// page like index.html. Unreachable in practice, and a future change to how
+// the loops advance is the likeliest way it ever fires — which is exactly when
+// silence would cost the most, since everything downstream is then wrong.
+function warnIfGuardTripped(stillChanging, where){
+  if(!stillChanging) return;
+  console.warn(`[resource-calculator] ${where} stopped at its 200-pass guard before settling, so the costs shown are incomplete. Check for a requires chain that needs more passes than the cap allows.`);
 }
 
 function trackById(id){ return state.tracks.find(t=>t.id===id); }
@@ -287,6 +345,7 @@ function propagateImpliedCurrent(){
       }
     }
   }
+  warnIfGuardTripped(changed, "propagateImpliedCurrent");
 }
 
 function computeCascade(){
@@ -314,6 +373,7 @@ function computeCascade(){
       }
     }
   }
+  warnIfGuardTripped(changed, "computeCascade");
   const totals = zeroResources();
   const breakdown = [];
   state.tracks.forEach(t=>{
