@@ -79,7 +79,7 @@
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
-//   groupAutoRequired, savedHint, savedHintDismiss, current, target,
+//   groupAutoRequired, savedHint, savedHintDismiss, loweredNote, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
 //
@@ -109,6 +109,7 @@ const I18N_CHROME = {
     autoRequired: "required", groupAutoRequired: "{n} required",
     savedHint: "Your levels and targets stay saved on this device — close the page and come back to them as you left them. They don't follow you to another device or browser.",
     savedHintDismiss: "Got it, hide this",
+    loweredNote: "↓ Brought down with it, they can't sit above it: {names}",
     current: "Current", target: "Target",
     stageWord: "stage", levelWord: "Level",
     footer: "Data is stored only in your browser (localStorage).",
@@ -131,6 +132,7 @@ const I18N_CHROME = {
     autoRequired: "requis", groupAutoRequired: "{n} requis",
     savedHint: "Tes niveaux et tes objectifs restent enregistrés sur cet appareil — tu peux fermer la page et les retrouver tels quels. Ils ne te suivent pas sur un autre appareil ou un autre navigateur.",
     savedHintDismiss: "Compris, masquer",
+    loweredNote: "↓ Redescendus avec lui, ils ne peuvent pas être plus hauts : {names}",
     current: "Actuel", target: "Cible",
     stageWord: "palier", levelWord: "Niveau",
     footer: "Les données sont stockées uniquement dans ton navigateur (localStorage).",
@@ -863,6 +865,8 @@ function trackHtml(tr){
         <span class="field">${t("target")}: <select data-tgt="${tr.id}" aria-label="${t("target")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
       </div>
       ${tr.paliersBar ? paliersBarHtml(tr) : ""}
+      ${lastLowered && lastLowered.by === tr.id
+        ? `<p class="lowered-note">${t("loweredNote",{names:lastLowered.names.join(", ")})}</p>` : ""}
       ${paired ? `
       <div class="track-controls paired-controls">
         <span class="paired-label">${t(tr.pairedLabelKey)}</span>
@@ -874,6 +878,53 @@ function trackHtml(tr){
 }
 // Where a track's real tiers sit: the levels "Cible" offers, which are also
 // the two ends a paliers bar runs between.
+// The mirror of propagateImpliedCurrent, which only ever raises. Lowering a
+// track leaves anything gated behind it sitting at a level the game can't
+// produce — a support building above the Warden's Office it needs — and the
+// upward pass would then shove the track straight back up, so the user's
+// change appeared to do nothing at all.
+//
+// This isn't discarding someone's input: a level above what its prerequisite
+// allows is not a state that exists in game, so the only question is which
+// end of the contradiction gives. The answer is the one they didn't just
+// state. Returns what it moved so the card can say so.
+// `stated` is the track the user just set, and it is never clamped: its own
+// prerequisites are what propagateImpliedCurrent raises afterwards, so
+// clamping it here would walk it straight back down to whatever its
+// dependencies happen to be at and swallow the change entirely.
+function clampDependentsDown(stated){
+  const lowered = [];
+  let changed = true, guard = 0;
+  while(changed && guard++ < 200){
+    changed = false;
+    for(const t of state.tracks){
+      if(t === stated) continue;
+      let limit = t.currentLevelIndex;
+      for(let i=1; i<=t.currentLevelIndex; i++){
+        const lvl = t.levels[i];
+        if(!lvl) continue;
+        const met = (lvl.requires||[]).every(r=>{
+          const other = trackById(r.trackId);
+          return !other || other.currentLevelIndex >= levelIndexOf(other, r.levelId);
+        });
+        if(!met){ limit = i-1; break; }
+      }
+      if(limit < t.currentLevelIndex){
+        t.currentLevelIndex = limit;
+        if(!lowered.includes(t)) lowered.push(t);
+        changed = true;
+      }
+    }
+  }
+  warnIfGuardTripped(changed, "clampDependentsDown");
+  return lowered;
+}
+
+// What the last explicit change dragged down with it, so the card the user
+// touched can name it. The support group is usually collapsed, so otherwise
+// those buildings would move entirely out of sight.
+let lastLowered = null;
+
 // Single entry point for "the user just said where this track stands", shared
 // by the tier select and the paliers bar so the two can't drift apart.
 function setCurrentLevel(track, index){
@@ -890,6 +941,11 @@ function setCurrentLevel(track, index){
   // below current simply means no goal — computeCascade already takes the max
   // of the two.
   if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = tierStartIndex(track);
+  // Down first, then up: clamping settles every contradiction this change
+  // created, which leaves the upward pass nothing to undo. The other order
+  // would just restore the level the user asked to leave.
+  const lowered = clampDependentsDown(track);
+  lastLowered = lowered.length ? { by: track.id, names: lowered.map(trackDisplayName) } : null;
   propagateImpliedCurrent();
   save();
 }

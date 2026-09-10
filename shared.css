@@ -366,6 +366,11 @@ input[type=number]{-moz-appearance:textfield}
 .palier-seg:hover::before{border-color:var(--accent)}
 .palier-seg:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
 .palier-to{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
+/* Amber like every other "the app did this, not you" marker in the app (the
+   auto-added breakdown rows, the "required" badges). Shown on the card that
+   caused it, since the buildings it moved are usually inside a shut group. */
+.lowered-note{width:100%;margin:10px 0 0;padding-top:9px;border-top:1px dashed var(--border);
+  font-size:.74rem;line-height:1.45;color:var(--warn)}
 .paired-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);flex:1 1 100%}
 
 table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
