@@ -415,6 +415,13 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
      (no hamburger/collapsed menu), just reclaiming vertical space. */
   .nav-bar{flex-wrap:nowrap;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
   .nav-bar::-webkit-scrollbar{display:none}
+  /* Half the horizontal gap between "Actuel" and "Cible". Those two wrap onto
+     separate lines as soon as the widest level label gets long, which drops
+     the paliers bar underneath "Cible" and makes it read as if it set the
+     target. The 8px bought back is worth roughly one character of label, and
+     that was the whole difference between a card that holds together and one
+     that doesn't. Desktop has room to spare and keeps the wider gap. */
+  .track-controls{gap:8px 8px}
   .nav-link{flex-shrink:0}
   .breakdown table,.breakdown thead,.breakdown tbody{display:block;width:100%}
   .breakdown thead{display:none}

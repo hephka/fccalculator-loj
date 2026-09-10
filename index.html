@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css?v=11">
+<link rel="stylesheet" href="shared.css?v=12">
 <!-- Site-wide Tactical Telemetry visual theme — see theme-tactical.css -->
 <link rel="stylesheet" href="theme-tactical.css?v=1">
 </head>
@@ -95,9 +95,12 @@ const I18N = {
     partBuildings: "Buildings", partResearch: "Research T11",
     catBuilding: "Buildings", catResearch: "Research T11",
     buildingGroupSupport: "Support buildings",
-    // Four characters is the budget: past that the two selects no longer fit
-    // on one line at 375px and the paliers bar below them stops reading as
-    // belonging to "Actuel". "Not built" was clearer but cost that.
+    // Short on purpose: this is the widest option in both of the lab's
+    // selects, so it alone decides whether "Actuel" and "Cible" share a line.
+    // When they don't, the paliers bar lands under "Cible" and reads as
+    // setting the target. Measured against the real layout: four characters
+    // still hold at 372px, five ("Aucun", "Néant") already break there, and a
+    // spelled-out "Not built" breaks everywhere. Keep any replacement to four.
     fclab_start: "None", fclab_FC1: "FC1", fclab_FC2: "FC2", fclab_FC3: "FC3",
     fclab_FC4: "FC4", fclab_FC5: "FC5", fclab_FC6: "FC6",
     groupNoTargets: "no targets",
