@@ -188,13 +188,19 @@ function defaultData(){
   return {
     schemaVersion: SCHEMA_VERSION,
     stock: zeroResources(),
-    counts: { Hero:1 },
+    // One counter per category, keyed exactly as each category counts itself
+    // (neither declares a dynamic.countKey, so the key is the category key).
+    // A single "Hero" counter here instead meant both real counters started
+    // undefined while defaultData had already built one track each, so the
+    // first "+ Add Hero" click only caught the counter up to what was on
+    // screen and appeared to do nothing.
+    counts: { HeroStar:1, ExclusiveEquip:1 },
     tracks: [makeHeroStarTrack(1), makeExclusiveEquipTrack(1)]
   };
 }
 
 </script>
-<script src="shared.js?v=10"></script>
+<script src="shared.js?v=13"></script>
 <script>initApp();</script>
 </body>
 </html>

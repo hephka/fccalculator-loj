@@ -217,40 +217,60 @@ let state = load();
 // copy as-is. The page's own defaultData() is therefore only consulted for a
 // visitor who has no saved state, so a corrected number never reaches anyone
 // who already used the route until the version forces the state out.
-// A saved state is JSON this app wrote itself, but it outlives the code that
-// wrote it: a botched migrateState, a half-finished write, a browser extension
-// touching storage. Every value in it is then read straight into arithmetic and
-// into innerHTML, where a non-number gives NaN totals and a string gives markup
-// nobody intended. So coerce the fields actually read, and hand back null when
-// the shape is past repairing, which makes load() fall back to a clean default
-// instead of rendering something broken. Not a security boundary: writing here
-// already requires running code on this origin.
-function sanitizeState(s){
-  if(!s || typeof s !== "object" || !Array.isArray(s.tracks) || !s.tracks.length) return null;
-  const stock = zeroResources();
+// What a visitor owns is their progress: stock, how many dynamic items they
+// added, and where each track sits. The costs, levels and prerequisites are
+// the app's, and the page file is what should decide them. So the saved copy
+// of all that is dropped and rebuilt from defaultData(), keeping only the
+// progress, matched by track id.
+//
+// That makes the file the single source of truth again: a corrected cost
+// reaches everyone on their next load with no SCHEMA_VERSION bump, a track
+// that no longer exists disappears, and a newly added one arrives at its
+// defaults instead of being missing. SCHEMA_VERSION still matters when level
+// indices shift, because these two indices are what point at them.
+function adoptProgress(saved){
+  if(!saved || typeof saved !== "object" || !Array.isArray(saved.tracks)) return null;
+  const fresh = defaultData();
   RESOURCES.forEach(r=>{
-    const n = Math.floor(Number((s.stock || {})[r]));
-    stock[r] = Number.isFinite(n) && n > 0 ? Math.min(n, MAX_NUMBER_INPUT) : 0;
+    const n = Math.floor(Number((saved.stock || {})[r]));
+    fresh.stock[r] = Number.isFinite(n) && n > 0 ? Math.min(n, MAX_NUMBER_INPUT) : 0;
   });
-  s.stock = stock;
-  if(!s.counts || typeof s.counts !== "object") s.counts = {};
-  Object.keys(s.counts).forEach(k=>{
-    const n = Math.floor(Number(s.counts[k]));
-    s.counts[k] = Number.isFinite(n) && n > 0 ? n : 0;
-  });
-  for(const tr of s.tracks){
-    if(!tr || typeof tr !== "object" || !Array.isArray(tr.levels) || !tr.levels.length) return null;
+  // Dynamic routes have to grow back to the number of items the visitor added
+  // before their tracks can be matched — defaultData() only ever builds one.
+  // The counters that matter are the categories' own, which aren't necessarily
+  // the keys defaultData() puts in `counts` (Hero Stars declares "Hero" while
+  // its categories count "HeroStar" and "ExclusiveEquip"), so derive them from
+  // CATEGORIES. A counter the saved state doesn't carry falls back to however
+  // many tracks defaultData() just built, never to zero — otherwise the sync
+  // below would delete the very tracks it starts with.
+  const countKeys = new Set(CATEGORIES.filter(c=>c.dynamic).map(c=> c.dynamic.countKey || c.key));
+  if(countKeys.size){
+    fresh.counts = fresh.counts || {};
+    countKeys.forEach(k=>{
+      const defs = CATEGORIES.filter(c=> c.dynamic && (c.dynamic.countKey || c.key) === k);
+      const built = Math.max(...defs.map(c=> fresh.tracks.filter(tr=>tr.category===c.key).length));
+      const cap = Math.min(...defs.map(c=> c.dynamic.max || Infinity));
+      const n = Math.floor(Number((saved.counts || {})[k]));
+      fresh.counts[k] = Number.isFinite(n) && n > 0 ? Math.min(n, cap) : built;
+    });
+    CATEGORIES.forEach(c=> syncDynamicCategory(fresh, c));
+  }
+  const savedById = {};
+  saved.tracks.forEach(tr=>{ if(tr && typeof tr.id === "string") savedById[tr.id] = tr; });
+  fresh.tracks.forEach(tr=>{
+    const was = savedById[tr.id];
+    if(!was) return;
     const last = tr.levels.length - 1;
     const clamp = v=>{
       const n = Math.floor(Number(v));
       return Number.isFinite(n) ? Math.max(0, Math.min(n, last)) : 0;
     };
-    tr.currentLevelIndex = clamp(tr.currentLevelIndex);
+    tr.currentLevelIndex = clamp(was.currentLevelIndex);
     // Target below current is the one combination the UI never produces, and
     // computeCascade would read it as "nothing to do" — pin the invariant here.
-    tr.targetLevelIndex = Math.max(clamp(tr.targetLevelIndex), tr.currentLevelIndex);
-  }
-  return s;
+    tr.targetLevelIndex = Math.max(clamp(was.targetLevelIndex), tr.currentLevelIndex);
+  });
+  return fresh;
 }
 
 function load(){
@@ -258,19 +278,33 @@ function load(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
       const parsed = JSON.parse(raw);
-      if(parsed.schemaVersion === SCHEMA_VERSION) return sanitizeState(parsed) || defaultData();
+      if(parsed.schemaVersion === SCHEMA_VERSION) return adoptProgress(parsed) || defaultData();
       if(typeof migrateState === "function"){
+        // Migrated states go through the same path: a migration is new code
+        // walking old data, which is exactly where a bad index is most likely
+        // to come from, and it has no business deciding costs either.
         const migrated = migrateState(parsed);
-        // Sanitized too: a migration is new code walking old data, exactly
-        // where a bad index or a stray value is most likely to come from.
-        if(migrated) return sanitizeState(migrated) || defaultData();
+        if(migrated) return adoptProgress(migrated) || defaultData();
       }
     }
   }catch(e){}
   return defaultData();
 }
+// Writes back only what adoptProgress() reads. Serializing the whole state
+// would store another copy of every level and cost, which the next load throws
+// away anyway — 79 KB of stale duplicate on index.html. Older, fatter states
+// still load: the extra keys are simply ignored, so this needs no version bump.
 function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    schemaVersion: state.schemaVersion,
+    stock: state.stock,
+    counts: state.counts,
+    tracks: state.tracks.map(tr=>({
+      id: tr.id,
+      currentLevelIndex: tr.currentLevelIndex,
+      targetLevelIndex: tr.targetLevelIndex,
+    })),
+  }));
 }
 function save(){
   persist();
@@ -626,18 +660,20 @@ function groupedTracksHtml(tracks){
 // count driving both a Star-progress category and an Exclusive-Equipment
 // category in lockstep, one instance of each per hero) — defaults to the
 // category's own key when unset, so unrelated categories don't collide.
-function syncDynamicCategory(catDef){
+// Takes the state to operate on rather than reaching for the global, because
+// load() has to expand these before `state` itself exists.
+function syncDynamicCategory(st, catDef){
   if(!catDef || !catDef.dynamic) return;
   const countKey = catDef.dynamic.countKey || catDef.key;
-  const want = Math.max(0, state.counts[countKey] || 0);
-  let existing = state.tracks.filter(tr=>tr.category===catDef.key).sort((a,b)=>a.qtyIndex-b.qtyIndex);
+  const want = Math.max(0, (st.counts || {})[countKey] || 0);
+  let existing = st.tracks.filter(tr=>tr.category===catDef.key).sort((a,b)=>a.qtyIndex-b.qtyIndex);
   while(existing.length > want){
     const removed = existing.pop();
-    state.tracks = state.tracks.filter(tr=>tr!==removed);
+    st.tracks = st.tracks.filter(tr=>tr!==removed);
   }
   while(existing.length < want){
     const nt = catDef.dynamic.makeTrack(existing.length+1);
-    state.tracks.push(nt);
+    st.tracks.push(nt);
     existing.push(nt);
   }
 }
@@ -698,7 +734,7 @@ function renderCategories(){
       state.counts[countKey] = max ? Math.min(nextCount, max) : nextCount;
       // Sync every category sharing this counter, not just the one clicked —
       // keeps a "one instance per hero" pair of categories in lockstep.
-      CATEGORIES.filter(c=>c.dynamic && (c.dynamic.countKey||c.key)===countKey).forEach(syncDynamicCategory);
+      CATEGORIES.filter(c=>c.dynamic && (c.dynamic.countKey||c.key)===countKey).forEach(c=> syncDynamicCategory(state, c));
       save();
     });
   });
