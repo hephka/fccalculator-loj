@@ -59,6 +59,11 @@ body{
 .nav-link{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:border-color .15s,color .15s,background .15s}
 .nav-link:hover{border-color:var(--accent);color:var(--text)}
 .nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}
+/* Dot on a route that still has an unfinished target, so the page you're on
+   can tell you work is waiting on another one (see refreshNavTargets). */
+.nav-link.has-targets::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--accent);margin-left:7px;flex-shrink:0}
+.nav-link.active.has-targets::after{background:#fff}
 
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
 .brand-eyebrow{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 6px}

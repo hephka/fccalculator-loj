@@ -42,7 +42,7 @@ function loadPage(file) {
   // pull out what we need via one more run in the *same* context, where
   // those bindings are still visible.
   const exported = vm.runInContext(
-    `({ RESOURCES, RES_ACCENT, I18N, I18N_CHROME, CATEGORIES, PARTS: (typeof PARTS!=="undefined"?PARTS:null), defaultData, STORAGE_KEY, SCHEMA_VERSION })`,
+    `({ RESOURCES, RES_ACCENT, I18N, I18N_CHROME, CATEGORIES, PARTS: (typeof PARTS!=="undefined"?PARTS:null), defaultData, STORAGE_KEY, SCHEMA_VERSION, ROUTE_STORAGE_KEYS })`,
     sandbox
   );
   return exported;
@@ -288,6 +288,23 @@ if (uniqueStorageKeys.size !== storageKeys.length) {
 } else {
   pass(`all ${storageKeys.length} routes have a unique STORAGE_KEY`);
 }
+
+// The nav's "unfinished target" dot needs shared.js to know every route's
+// storage key. Nothing at runtime would complain if one drifted — the dot
+// would just silently never light up for that page — so pin it here.
+const navMap = (sandboxes[ROUTE_FILES[0]] || {}).ROUTE_STORAGE_KEYS || {};
+const navMapIssues = [];
+ROUTE_FILES.forEach((f) => {
+  const real = sandboxes[f] && sandboxes[f].STORAGE_KEY;
+  if (!real) return;
+  if (!(f in navMap)) navMapIssues.push(`${f} is missing from ROUTE_STORAGE_KEYS in shared.js`);
+  else if (navMap[f] !== real) navMapIssues.push(`ROUTE_STORAGE_KEYS["${f}"] is "${navMap[f]}" but the route uses "${real}"`);
+});
+Object.keys(navMap).forEach((f) => {
+  if (!ROUTE_FILES.includes(f)) navMapIssues.push(`ROUTE_STORAGE_KEYS has "${f}", which is not a route`);
+});
+if (navMapIssues.length) navMapIssues.forEach((m) => fail(m));
+else pass("ROUTE_STORAGE_KEYS matches every route's real STORAGE_KEY");
 
 console.log("");
 if (failures) {

@@ -69,7 +69,7 @@
 //                                notice, rather than leaving it forever.
 //
 // Shared chrome i18n keys every page's I18N must provide:
-//   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2/3, introNote,
+//   title, appBrand, pageTitle, subtitle, introTitle, introLead, introFeature1/2, introNote,
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
@@ -94,7 +94,6 @@ const I18N_CHROME = {
     navHeroEquipment: "Hero Equipment", navHeroStars: "Hero Stars & Exclusive Equipment",
     appBrand: "Resource Calculator - Lands of Jail",
     introTitle: "What this does",
-    introFeature3: "See exactly what you're missing, resource by resource",
     resetButton: "↺ Reset to default values", resetConfirm: "Click again to confirm ↺",
     currentStock: "Current stock", whatMissing: "What you're missing",
     needed: "needed", missing: "Missing", okSurplus: "OK (surplus {n})",
@@ -115,7 +114,6 @@ const I18N_CHROME = {
     navHeroEquipment: "Équipement de Héros", navHeroStars: "Étoiles de Héros & Équipement Exclusif",
     appBrand: "Calculateur de ressources - Lands of Jail",
     introTitle: "Ce que fait l'outil",
-    introFeature3: "Vois exactement ce qu'il te manque, ressource par ressource",
     resetButton: "↺ Réinitialiser aux valeurs par défaut", resetConfirm: "Clique à nouveau pour confirmer ↺",
     currentStock: "Stock actuel", whatMissing: "Ce qu'il te manque",
     needed: "nécessaire", missing: "Manque", okSurplus: "OK (surplus {n})",
@@ -347,8 +345,8 @@ function renderChrome(){
   document.getElementById("appSubtitle").textContent = t("subtitle");
   document.getElementById("introTitle").textContent = t("introTitle");
   document.getElementById("introLead").textContent = t("introLead");
-  document.getElementById("introFeatures").innerHTML = ["introFeature1","introFeature2","introFeature3"]
-    .map((key,i)=>`<div class="intro-feature"><span class="ico">${["🎯","🔗","📊"][i]}</span><span>${t(key)}</span></div>`).join("");
+  document.getElementById("introFeatures").innerHTML = ["introFeature1","introFeature2"]
+    .map((key,i)=>`<div class="intro-feature"><span class="ico">${["🎯","🔗"][i]}</span><span>${t(key)}</span></div>`).join("");
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
@@ -371,6 +369,40 @@ function setLang(l){
   render();
 }
 
+// Every route saves its progress under its own key, so a page has no way of
+// knowing from its own state that you left an unfinished target on another
+// one. They share an origin, so it can read theirs and put a dot on that nav
+// link. Only currentLevelIndex/targetLevelIndex are read, fields every route's
+// saved shape has, so this still answers correctly against a state written by
+// an older SCHEMA_VERSION. verify.js checks this map against the real keys.
+const ROUTE_STORAGE_KEYS = {
+  "index.html": "resource-calc-state-v1",
+  "tomes-collections.html": "resource-calc-tomes-state-v1",
+  "robots-satellites.html": "resource-calc-robots-state-v1",
+  "hero-equipment.html": "resource-calc-heroequipment-state-v1",
+  "hero-stars-exclusive-equipment.html": "resource-calc-herostars-state-v1",
+};
+
+function routeHasTargets(storageKey){
+  try{
+    const raw = localStorage.getItem(storageKey);
+    if(!raw) return false;
+    const tracks = JSON.parse(raw).tracks;
+    return Array.isArray(tracks) && tracks.some(tr=> tr.targetLevelIndex > tr.currentLevelIndex);
+  }catch(e){ return false; }
+}
+
+function refreshNavTargets(){
+  document.querySelectorAll(".nav-link[data-navkey]").forEach(a=>{
+    const key = ROUTE_STORAGE_KEYS[a.getAttribute("href")];
+    const marked = !!key && routeHasTargets(key);
+    a.classList.toggle("has-targets", marked);
+    // The dot is decorative, so spell the state out for screen readers too.
+    if(marked) a.setAttribute("aria-label", `${t(a.dataset.navkey)} — ${t("targetSet")}`);
+    else a.removeAttribute("aria-label");
+  });
+}
+
 function render(){
   renderStock();
   const { totals, breakdown } = computeCascade();
@@ -380,6 +412,7 @@ function render(){
   cascadeAuto.clear();
   breakdown.forEach(b=>{ if(b.auto) cascadeAuto.add(b.track.id); });
   renderCategories();
+  refreshNavTargets();
 }
 
 function renderStock(){
