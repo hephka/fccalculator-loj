@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css?v=9">
+<link rel="stylesheet" href="shared.css?v=10">
 <!-- Site-wide Tactical Telemetry visual theme — see theme-tactical.css -->
 <link rel="stylesheet" href="theme-tactical.css?v=1">
 </head>
@@ -280,6 +280,9 @@ function defaultData(){
   support.forEach(tr=>{ tr.groupKey = "support"; tr.groupLabelKey = "buildingGroupSupport"; });
 
   const buildings = [wardenOffice, ...support, fcLab];
+  // Buildings are the case the bar was built for: 4 paliers between two FC
+  // tiers, the 5th step being the tier itself, exactly what the game draws.
+  buildings.forEach(tr=>{ tr.paliersBar = true; });
 
   // FC Lab level gate, shared by every troop's research tree below (it's one
   // building, not per-troop). `lvl` is FC Lab's own level id ("1".."6").
@@ -383,7 +386,7 @@ function migrateState(old){
   return fresh;
 }
 </script>
-<script src="shared.js?v=16"></script>
+<script src="shared.js?v=17"></script>
 <script>initApp();</script>
 </body>
 </html>

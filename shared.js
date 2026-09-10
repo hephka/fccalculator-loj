@@ -62,6 +62,12 @@
 //                                among many in the same category (e.g. the
 //                                main building, or a research line's end goal)
 //                                without giving it its own CATEGORIES entry.
+//   paliersBar: true           - splits "Actuel" into a tier select plus a
+//                                segmented bar for the position inside that
+//                                tier. For tracks whose sub-levels are
+//                                fractional progress toward the next tier
+//                                (a building's paliers), not goals of their
+//                                own (a Collection's stars).
 //   newBadge: true             - shows a small "New" pill next to the track
 //                                name, for calling out recently-added game
 //                                data. Meant to be temporary — remove the
@@ -807,17 +813,11 @@ function renderCategories(){
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
-    const track = trackById(s.dataset.cur);
-    track.currentLevelIndex = Number(e.target.value);
-    // Bring target along with current when it isn't ahead of it (no target
-    // set yet, or current just caught up to/passed an old target) — opening
-    // the target dropdown next then starts scrolled near current instead of
-    // always at the track's very first level, which matters a lot on long
-    // tracks like Warden's Office. A target the user already pushed further
-    // out is left alone.
-    if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = track.currentLevelIndex;
-    propagateImpliedCurrent();
-    save();
+    setCurrentLevel(trackById(s.dataset.cur), Number(e.target.value));
+  }));
+  cont.querySelectorAll("button[data-palier]").forEach(b=> b.addEventListener("click", ()=>{
+    const idx = Number(b.dataset.level);
+    setCurrentLevel(trackById(b.dataset.palier), b.dataset.back === "1" ? idx - 1 : idx);
   }));
   cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
     trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
@@ -843,9 +843,16 @@ function trackHtml(tr){
       ${tr.newBadge ? `<span class="new-badge">${t("newBadge")}</span>` : ''}
       <span class="track-badge ${needsWork?(ownTarget?'active':'auto'):''}">${badgeText}</span>
       <div class="track-controls">
-        <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.currentLevelIndex)}</select></span>
+        <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${
+          // With a bar alongside, the select carries the tier alone and shows
+          // the one this track currently sits in, paliers included.
+          tr.paliersBar
+            ? optionsWithSelected(tr, tierStartIndex(tr), true)
+            : optionsWithSelected(tr, tr.currentLevelIndex)
+        }</select></span>
         <span class="field">${t("target")}: <select data-tgt="${tr.id}" aria-label="${t("target")} — ${trackShortName(tr)}">${optionsWithSelected(tr,tr.targetLevelIndex,true)}</select></span>
       </div>
+      ${tr.paliersBar ? paliersBarHtml(tr) : ""}
       ${paired ? `
       <div class="track-controls paired-controls">
         <span class="paired-label">${t(tr.pairedLabelKey)}</span>
@@ -855,6 +862,64 @@ function trackHtml(tr){
     </div>
   </div>`;
 }
+// Where a track's real tiers sit: the levels "Cible" offers, which are also
+// the two ends a paliers bar runs between.
+// Single entry point for "the user just said where this track stands", shared
+// by the tier select and the paliers bar so the two can't drift apart.
+function setCurrentLevel(track, index){
+  track.currentLevelIndex = index;
+  // Bring target along with current when it isn't ahead of it (no target set
+  // yet, or current just caught up to/passed an old target) — opening the
+  // target dropdown next then starts near current instead of at the track's
+  // very first level, which matters a lot on long tracks like Warden's
+  // Office. A target the user already pushed further out is left alone.
+  if(track.targetLevelIndex <= track.currentLevelIndex) track.targetLevelIndex = track.currentLevelIndex;
+  propagateImpliedCurrent();
+  save();
+}
+
+function checkpointIndexes(track){
+  const out = [];
+  track.levels.forEach((l,i)=>{ if(l.targetCheckpoint !== false) out.push(i); });
+  return out;
+}
+
+// Splits "Actuel" in two for tracks flagged `paliersBar`: a tier select, plus
+// a segmented bar for the position inside that tier. A building's "Actuel"
+// listed all 51 levels, so saying where you stand meant scrolling a native
+// picker most of the way down; this is an 11-entry list and one tap, and it
+// mirrors the bar the game itself draws between two FC levels.
+//
+// The last segment lands on the next tier, exactly like in game: filling the
+// bar IS the promotion. Tapping the segment you already sit on steps back one,
+// so the bar winds down as well as up — otherwise nothing but the select could
+// take you back to the tier's own level.
+function tierStartIndex(track){
+  const cps = checkpointIndexes(track);
+  let start = cps[0];
+  cps.forEach(c=>{ if(c <= track.currentLevelIndex) start = c; });
+  return start;
+}
+
+function paliersBarHtml(tr){
+  const cps = checkpointIndexes(tr);
+  const tierStart = tierStartIndex(tr);
+  const next = cps[cps.indexOf(tierStart) + 1];
+  if(next == null) return "";
+  const done = tr.currentLevelIndex - tierStart;
+  const segments = [];
+  for(let k=1; k<=next-tierStart; k++){
+    const idx = tierStart + k;
+    segments.push(`<button type="button" class="palier-seg${k<=done?" filled":""}"
+      data-palier="${tr.id}" data-level="${idx}" data-back="${k===done?"1":"0"}"
+      ${k===done?'aria-current="true" ':''}aria-label="${levelLabel(tr, tr.levels[idx])}"></button>`);
+  }
+  return `<div class="palier-bar">
+    <span class="palier-segs">${segments.join("")}</span>
+    <span class="palier-to">▸ ${levelLabel(tr, tr.levels[next])}</span>
+  </div>`;
+}
+
 // `targetOnly` restricts the option list to levels where `targetCheckpoint`
 // isn't explicitly false — for tracks with fine-grained intermediate levels
 // that only matter for "Actuel" (e.g. Hero Star's 5 in-between paliers per

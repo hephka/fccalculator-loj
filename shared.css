@@ -344,6 +344,24 @@ input[type=number]{-moz-appearance:textfield}
 .track-controls .field{display:flex;align-items:center;gap:6px;flex:1 1 130px;font-weight:600}
 .track-controls select{flex:1;min-width:0;max-width:100%}
 .track-controls.paired-controls{margin-top:8px;padding-top:10px;border-top:1px dashed var(--border)}
+
+/* Position inside the current tier, drawn like the bar the game itself puts
+   between two FC levels (see paliersBarHtml). The segment is deliberately thin
+   to the eye while the button around it keeps the app's 44px touch target, so
+   a card doesn't grow tall just to stay thumb-friendly — 74% of visits are on
+   a phone and the vertical budget there is what the whole page costs. */
+.palier-bar{display:flex;align-items:center;gap:10px;width:100%;margin-top:2px}
+.palier-segs{display:flex;gap:5px;flex:1;min-width:0}
+.palier-seg{flex:1;min-width:0;height:44px;padding:0;border:0;background:none;position:relative;
+  border-radius:0}
+.palier-seg::before{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  height:12px;border:1px solid var(--border);background:var(--panel-2)}
+.palier-seg.filled::before{background:var(--accent);border-color:var(--accent)}
+/* Hover is a desktop bonus only: the filled/empty contrast has to carry the
+   state on its own, since most visitors have no cursor at all. */
+.palier-seg:hover::before{border-color:var(--accent)}
+.palier-seg:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+.palier-to{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
 .paired-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);flex:1 1 100%}
 
 table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
