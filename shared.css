@@ -62,7 +62,7 @@ body{
 /* Dot on a route that still has an unfinished target, so the page you're on
    can tell you work is waiting on another one (see refreshNavTargets). */
 .nav-link.has-targets::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:var(--accent);margin-left:7px;flex-shrink:0}
+  background:var(--accent);margin-inline-start:7px;flex-shrink:0}
 .nav-link.active.has-targets::after{background:#fff}
 
 .topbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
@@ -81,9 +81,9 @@ h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-item
    is never collapsed. */
 .intro-head{font-weight:700;font-size:.95rem;margin:0 0 10px;display:flex;align-items:center;gap:7px;
   width:100%;padding:0;background:none;border:0;color:var(--text);font-family:inherit;
-  text-align:left;cursor:pointer}
+  text-align:start;cursor:pointer}
 .intro-head:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.intro-chevron{color:var(--muted);transition:transform .18s;font-size:.8rem;margin-left:auto}
+.intro-chevron{color:var(--muted);transition:transform .18s;font-size:.8rem;margin-inline-start:auto}
 .intro-chevron.open{transform:rotate(90deg)}
 .intro-body{display:none}
 .intro-body.open{display:block}
@@ -92,7 +92,7 @@ h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-item
 .intro-feature{display:flex;align-items:flex-start;gap:9px;font-size:.85rem;color:var(--muted);line-height:1.45}
 .intro-feature .ico{flex-shrink:0;font-size:1rem}
 .intro-note{margin:0;padding-top:12px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);line-height:1.5}
-.intro-note .warn-icon{color:var(--warn);margin-right:3px}
+.intro-note .warn-icon{color:var(--warn);margin-inline-end:3px}
 
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 button{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:9px;padding:10px 14px;font-size:.88rem;font-family:inherit;font-weight:600;transition:border-color .15s,background .15s}
@@ -115,7 +115,7 @@ input[type=number]{-moz-appearance:textfield}
 .stock-item label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:600}
 .stock-item input{width:100%;font-size:1.15rem;padding:10px 12px;font-weight:600}
 
-.res-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle;background:currentColor}
+.res-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:7px;vertical-align:middle;background:currentColor}
 
 /* Original line-art resource icons (drawn from scratch, not derived from
    any game asset — see each comment for what it's based on). Each one is
@@ -251,7 +251,7 @@ input[type=number]{-moz-appearance:textfield}
 }
 
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.res-card{border:1px solid var(--border);border-left:3px solid var(--accent-color,var(--border));border-radius:var(--radius-sm);padding:14px 16px;background:var(--panel-2)}
+.res-card{border:1px solid var(--border);border-inline-start:3px solid var(--accent-color,var(--border));border-radius:var(--radius-sm);padding:14px 16px;background:var(--panel-2)}
 .res-card .name{font-size:.76rem;color:var(--accent-color,var(--muted));text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:flex;align-items:center}
 .res-card .need{font-size:1.55rem;font-weight:800;margin:6px 0;letter-spacing:-.02em}
 .res-card .missing{display:inline-flex;align-items:center;font-size:.82rem;font-weight:700;padding:3px 10px;border-radius:20px}
@@ -305,7 +305,7 @@ input[type=number]{-moz-appearance:textfield}
    generic button{} chip styling below so it still reads as a plain
    header row, not a bordered button. */
 .group-head{display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;
-  border:none;border-radius:0;background:none;color:inherit;font:inherit;text-align:left;
+  border:none;border-radius:0;background:none;color:inherit;font:inherit;text-align:start;
   cursor:pointer;transition:background .15s}
 .group-head:hover{background:var(--panel-2)}
 .group-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -327,7 +327,7 @@ input[type=number]{-moz-appearance:textfield}
    --bad (checked: darkening it enough to look different drops it under
    AA), so the fix is structural instead of a second red — the flagged
    track keeps its red edge marker, but the name goes back to plain text. */
-.track.track-accent{border-left-width:3px;border-left-color:var(--accent-color)}
+.track.track-accent{border-inline-start-width:3px;border-inline-start-color:var(--accent-color)}
 .track-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:13px 16px}
 .track-name{font-weight:600;flex:1;min-width:160px}
 .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
@@ -385,7 +385,7 @@ input[type=number]{-moz-appearance:textfield}
 .paired-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);flex:1 1 100%}
 
 table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
-th,td{padding:8px 8px;text-align:left;border-bottom:1px solid var(--border)}
+th,td{padding:8px 8px;text-align:start;border-bottom:1px solid var(--border)}
 th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
 .empty-hint{color:var(--muted);font-size:.85rem;font-style:italic;margin:0}
 .breakdown{margin-top:4px;overflow-x:auto}
@@ -394,10 +394,10 @@ th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;l
 .auto-tag{color:var(--warn);font-size:.72rem}
 .estimated-wrap{display:inline-block;position:relative}
 .estimated-tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);background:none;
-  border-radius:4px;font-size:.68rem;line-height:1;padding:2px 4px;margin-left:4px;cursor:pointer;
+  border-radius:4px;font-size:.68rem;line-height:1;padding:2px 4px;margin-inline-start:4px;cursor:pointer;
   font-family:inherit}
 .estimated-tag[aria-expanded=true]{background:var(--warn-bg)}
-.estimated-note{position:absolute;left:0;top:calc(100% + 4px);z-index:5;width:max-content;max-width:220px;
+.estimated-note{position:absolute;inset-inline-start:0;top:calc(100% + 4px);z-index:5;width:max-content;max-width:220px;
   background:var(--panel-2);border:1px solid var(--warn);color:var(--text);font-size:.72rem;
   line-height:1.35;padding:6px 8px;white-space:normal}
 footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
@@ -477,3 +477,29 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
     scroll-behavior:auto !important;
   }
 }
+
+/* Right-to-left. Everything that can flip on its own already does: the layout
+   uses logical properties (margin-inline-*, border-inline-start, text-align:
+   start, inset-inline-start), which follow `dir` without being asked. What's
+   left here are the things CSS has no logical equivalent for — shapes and
+   glyphs that carry a direction in their geometry rather than in a box edge.
+   shared.js sets dir from RTL_LANGS, which is empty today, so none of this is
+   reachable yet; it exists so adding a language is a one-line change. */
+
+/* The paliers lean the way you read. Mirrored rather than re-angled so the
+   chunk keeps exactly the same silhouette and the same ±3px of spill. */
+[dir="rtl"] .palier-seg::before{transform:translateY(-50%) skewX(15deg)}
+
+/* ▸ is not one of the characters bidi mirrors on its own, so a caret pointing
+   at what comes next would still point right in a page read leftwards. Mirror
+   the glyph, never its container: .palier-to holds the label too, and flipping
+   that would reverse the text with it.
+   The open state is deliberately not mirrored — rotating the original ▸ by 90°
+   points it down, which is the same "expanded" meaning in either direction. */
+[dir="rtl"] .palier-to .caret,
+[dir="rtl"] .intro-chevron:not(.open),
+[dir="rtl"] .group-chevron:not(.open){display:inline-block;transform:scaleX(-1)}
+
+/* The two nav fades stay on their physical edges and keep their gradients —
+   a fade at the right edge fades to the right whichever way you read. Which
+   one is visible is the part that inverts, and that's decided in initNavFade. */

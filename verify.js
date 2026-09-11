@@ -394,6 +394,25 @@ SHARED_ASSETS.forEach((asset) => {
 if (assetIssues.length) assetIssues.forEach((m) => fail(m));
 else pass(`all 5 routes request each shared asset at the same ?v= version`);
 
+// Layout has to follow the reading direction on its own, so the stylesheet
+// uses logical properties (margin-inline-*, border-inline-*, text-align:start,
+// inset-inline-*) wherever a rule means "the side the text starts on". A
+// physical left/right slipped back in would look identical in French and
+// English and silently sit on the wrong side in Arabic — the exact kind of
+// thing nobody here can spot by reading the page. Deliberate physical
+// placement (the two nav fades sit on fixed edges) uses `left:`/`right:`,
+// which this doesn't touch.
+const PHYSICAL_SIDE = /(^|[;{\s])(margin|padding|border)-(left|right)\b|text-align:\s*(left|right)\b/;
+const sideIssues = [];
+["shared.css", "theme-tactical.css"].forEach((file) => {
+  fs.readFileSync(path.join(DIR, file), "utf8").split("\n").forEach((line, i) => {
+    if (line.trim().startsWith("/*") || line.trim().startsWith("*")) return;
+    if (PHYSICAL_SIDE.test(line)) sideIssues.push(`${file}:${i + 1} uses a physical left/right — use the logical property so it flips with dir: ${line.trim().slice(0, 70)}`);
+  });
+});
+if (sideIssues.length) sideIssues.forEach((m) => fail(m));
+else pass("no physical left/right in the stylesheets (RTL-ready)");
+
 // The nav's "unfinished target" dot needs shared.js to know every route's
 // storage key. Nothing at runtime would complain if one drifted — the dot
 // would just silently never light up for that page — so pin it here.

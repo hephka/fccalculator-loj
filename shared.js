@@ -186,6 +186,19 @@ function footerLinksHtml(){
 const LANG_KEY = "resource-calc-lang";
 let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
 
+// Languages written right-to-left. Empty of any language the app actually
+// ships today, so isRtl() is false everywhere and nothing below changes what
+// a visitor sees — it's here so that adding "ar" to I18N_CHROME is the only
+// step that flips the layout, rather than a hunt through the CSS afterwards.
+// Layout follows from this, not from the language list: a language is RTL
+// because it's named here, and `dir` is what the stylesheet keys off.
+const RTL_LANGS = new Set([]);
+function isRtl(){ return RTL_LANGS.has(lang); }
+function applyDocumentLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = isRtl() ? "rtl" : "ltr";
+}
+
 // Bump this by hand whenever any route's game data (costs, requires) changes
 // — shown in the footer so visitors can tell how fresh the numbers are.
 const DATA_UPDATED = "2026-08-20";
@@ -545,7 +558,7 @@ function renderChrome(){
 function setLang(l){
   lang = l;
   localStorage.setItem(LANG_KEY, l);
-  document.documentElement.lang = l;
+  applyDocumentLang();
   renderChrome();
   render();
 }
@@ -1041,7 +1054,7 @@ function paliersBarHtml(tr){
   }
   return `<div class="palier-bar">
     <span class="palier-segs">${segments.join("")}</span>
-    <span class="palier-to">▸ ${tr.levels[next].barLabel || levelLabel(tr, tr.levels[next])}</span>
+    <span class="palier-to"><span class="caret">▸</span> ${tr.levels[next].barLabel || levelLabel(tr, tr.levels[next])}</span>
   </div>`;
 }
 
@@ -1106,9 +1119,18 @@ function initNavFade(){
   const fadeLeft = document.createElement("div");
   fadeLeft.className = "nav-fade-left";
   wrap.appendChild(fadeLeft);
+  // The two fades are physically placed (one on each edge), but which edge has
+  // more content behind it depends on the reading direction. Expressed as
+  // distance from the start of the row rather than from the left: in RTL the
+  // row starts at the right, and scrollLeft counts down from 0 into negatives
+  // there, so its absolute value is the distance travelled either way.
   const update = () => {
-    fadeRight.classList.toggle("visible", navBar.scrollWidth - navBar.clientWidth - navBar.scrollLeft > 4);
-    fadeLeft.classList.toggle("visible", navBar.scrollLeft > 4);
+    const max = navBar.scrollWidth - navBar.clientWidth;
+    const fromStart = Math.abs(navBar.scrollLeft);
+    const fromEnd = max - fromStart;
+    const rtl = isRtl();
+    fadeRight.classList.toggle("visible", (rtl ? fromStart : fromEnd) > 4);
+    fadeLeft.classList.toggle("visible", (rtl ? fromEnd : fromStart) > 4);
   };
   navBar.addEventListener("scroll", update);
   window.addEventListener("resize", update);
@@ -1185,7 +1207,7 @@ function initApp(){
   // opened. block:"nearest" keeps this from also scrolling the page itself.
   const activeLink = document.querySelector(".nav-link.active");
   if(activeLink) activeLink.scrollIntoView({inline:"center", block:"nearest"});
-  document.documentElement.lang = lang;
+  applyDocumentLang();
   // Repairs saved state from before propagateImpliedCurrent existed (or
   // from any direct state edit): a track's current level may imply a higher
   // current level on another track than what's actually stored.
