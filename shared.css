@@ -395,7 +395,12 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:36px}
    in --muted rather than the accent: an ask for money that shouts would sit
    badly in a tool whose whole promise is being free. 44px of tap height, like
    every other control, without looking like a button. */
-.footer-links{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:0 10px;margin-top:2px}
+/* align-items:center is load-bearing: the " · " between the two links is an
+   anonymous flex item, and without it that text sits at the top of the 44px
+   band the links occupy while their own labels are centred in it — the dot
+   then floats half a line above them and reads as a stray mark on its own
+   row rather than a separator. */
+.footer-links{display:inline-flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 10px;margin-top:2px}
 .footer-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);
   text-decoration:underline;text-underline-offset:3px}
 .footer-links a:hover,.footer-links a:focus-visible{color:var(--text)}
