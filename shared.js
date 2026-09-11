@@ -156,12 +156,23 @@ const I18N_CHROME = {
 // never an embedded widget — an embed would drop a third-party script into an
 // app that currently carries none, and drag a cookie banner along with it for
 // the French and German visitors.
-const REPORT_URL = "";
+//
+// One form per site language, since Tally can't translate a form or offer the
+// visitor a language switch: whichever language they're reading the app in is
+// the one the form is written in. A language with no entry here falls back to
+// English rather than sending someone to a form they can't read, so adding a
+// translation later is one more line. Neither form asks for an email, which is
+// what keeps this a plain link with no consent banner behind it.
+const REPORT_URLS = {
+  en: "https://tally.so/r/yPBMdx",
+  fr: "https://tally.so/r/44MQRb",
+};
 const DONATE_URL = "";
 
 function footerLinksHtml(){
   const links = [];
-  if(REPORT_URL) links.push(`<a href="${REPORT_URL}" target="_blank" rel="noopener noreferrer">${t("reportError")}</a>`);
+  const reportUrl = REPORT_URLS[lang] || REPORT_URLS.en || "";
+  if(reportUrl) links.push(`<a href="${reportUrl}" target="_blank" rel="noopener noreferrer">${t("reportError")}</a>`);
   if(DONATE_URL) links.push(`<a href="${DONATE_URL}" target="_blank" rel="noopener noreferrer">${t("donate")}</a>`);
   return links.length ? `<br><span class="footer-links">${links.join(" · ")}</span>` : "";
 }
