@@ -167,7 +167,7 @@ const REPORT_URLS = {
   en: "https://tally.so/r/yPBMdx",
   fr: "https://tally.so/r/44MQRb",
 };
-const DONATE_URL = "";
+const DONATE_URL = "https://ko-fi.com/hephka";
 
 function footerLinksHtml(){
   const links = [];
