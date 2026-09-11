@@ -34,7 +34,9 @@ Every route works the same way: set a current level and a target level for each 
 
 ## Verifying
 
-`node verify.js` checks every route in one pass: syntax, EN/FR translation parity (keys and `{placeholder}` variables), that every resource has a color and a label in both languages, that every `requires` reference resolves to a real track/level, nav consistency across pages, unique `STORAGE_KEY`s, and known-good total costs for the routes with a confirmed source (regression protection — a silently wrong number in `defaultData()` fails the run instead of shipping). No dependencies; run it before pushing whenever route data changes.
+`node verify.js` checks every route in one pass: syntax, translation parity (keys and `{placeholder}` variables), that every resource has a color and a label, that every `requires` reference resolves to a real track/level, nav consistency across pages, unique `STORAGE_KEY`s, and known-good total costs for the routes with a confirmed source (regression protection — a silently wrong number in `defaultData()` fails the run instead of shipping). No dependencies; run it before pushing whenever route data changes.
+
+The translation checks are language-agnostic: the set of languages is read from `I18N_CHROME` in `shared.js`, so declaring a new one there is what brings it into existence and every page is then required to have a block for it, a `res_<Resource>` label for each resource, the nav keys, and a `<button data-lang>` in its static HTML. English is the reference the others are compared against. This matters more than it looks: `t()` has no fallback chain, so a key missing in the active language puts the bare identifier (`savedHint`) in front of the visitor rather than the English string — and for a language nobody here can proofread by eye, this script is the only thing that catches it.
 
 ## Running locally
 

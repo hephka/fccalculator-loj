@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Verifies every route page in one pass: syntax, EN/FR translation parity,
-// resource config completeness, requires-chain integrity, nav consistency,
-// and known-good total costs (regression protection — this is exactly the
-// kind of check that would have caught the Hero Equipment tier-shift bug
-// before it shipped). Run with: node verify.js
+// Verifies every route page in one pass: syntax, translation parity across
+// every language the site defines, resource config completeness,
+// requires-chain integrity, nav consistency, and known-good total costs
+// (regression protection — this is exactly the kind of check that would have
+// caught the Hero Equipment tier-shift bug before it shipped).
+// Run with: node verify.js
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -55,6 +56,66 @@ function sumTrack(RESOURCES, track) {
   const total = zeroLike(RESOURCES);
   track.levels.forEach((l) => RESOURCES.forEach((r) => (total[r] += l.cost[r] || 0)));
   return total;
+}
+
+// ---------------------------------------------------------------------------
+// Translation checks, for however many languages the site has.
+//
+// The language set is whatever I18N_CHROME in shared.js declares: adding a
+// language there is what brings it into existence, so everything below derives
+// its list from that rather than from a copy kept in step by hand. A page that
+// never gained a block for a newly added language then fails here instead of
+// shipping half-translated.
+//
+// English is the reference the others are compared against — it's the language
+// the app is authored in, and what `lang` falls back to for any browser that
+// isn't French.
+const REF_LANG = "en";
+
+function languagesOf(sb) {
+  return Object.keys((sb && sb.I18N_CHROME) || {}).sort();
+}
+
+function preview(list, n = 6) {
+  return list.slice(0, n).join(", ") + (list.length > n ? ", …" : "");
+}
+
+// t() has no fallback chain: `key in dict ? dict[key] : (key in chrome ? ... :
+// key)` ends at the key itself, so a missing translation puts the bare
+// identifier ("savedHint") in front of the visitor rather than the English
+// string. Parity is the only thing standing between a forgotten key and that,
+// which matters most for a language nobody here can proofread by eye.
+function dictParity(dict, langs) {
+  const refKeys = Object.keys((dict && dict[REF_LANG]) || {}).sort();
+  const issues = [];
+  langs.forEach((lang) => {
+    if (!dict || !dict[lang]) { issues.push(`${lang}: no block at all`); return; }
+    if (lang === REF_LANG) return;
+    const keys = Object.keys(dict[lang]);
+    const missing = refKeys.filter((k) => !keys.includes(k));
+    const extra = keys.filter((k) => !refKeys.includes(k)).sort();
+    if (missing.length) issues.push(`${lang} is missing ${missing.length} key(s): ${preview(missing)}`);
+    if (extra.length) issues.push(`${lang} has ${extra.length} key(s) ${REF_LANG} doesn't: ${preview(extra)}`);
+  });
+  return { refKeys, issues };
+}
+
+// {n}-style variables have to survive translation intact: a string that drops
+// one renders a literal "{n}" where a number belongs, and one that invents a
+// name nothing supplies leaves it on screen unreplaced.
+function placeholderParity(dict, langs) {
+  const vars = (s) => (typeof s === "string" ? (s.match(/\{\w+\}/g) || []).sort().join(",") : null);
+  const issues = [];
+  Object.keys((dict && dict[REF_LANG]) || {}).forEach((k) => {
+    const ref = vars(dict[REF_LANG][k]);
+    if (ref === null) return;
+    langs.forEach((lang) => {
+      if (lang === REF_LANG || !dict[lang]) return;
+      const other = vars(dict[lang][k]);
+      if (other !== null && other !== ref) issues.push(`${lang}.${k}`);
+    });
+  });
+  return issues;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,43 +182,36 @@ for (const file of ROUTE_FILES) {
   const { RESOURCES, RES_ACCENT, I18N, CATEGORIES, defaultData } = sb;
   const PARTS = sb.PARTS; // optional
 
-  // --- EN/FR key parity ---
-  const enKeys = Object.keys(I18N.en).sort();
-  const frKeys = Object.keys(I18N.fr).sort();
-  const onlyEn = enKeys.filter((k) => !frKeys.includes(k));
-  const onlyFr = frKeys.filter((k) => !enKeys.includes(k));
-  if (onlyEn.length || onlyFr.length) {
-    fail(`I18N key mismatch — only in EN: ${JSON.stringify(onlyEn)}, only in FR: ${JSON.stringify(onlyFr)}`);
+  // --- translation key parity, every language against the reference ---
+  const langs = languagesOf(sb);
+  const { refKeys, issues: parityIssues } = dictParity(I18N, langs);
+  if (parityIssues.length) {
+    parityIssues.forEach((m) => fail(`I18N ${m}`));
   } else {
-    pass(`I18N EN/FR parity (${enKeys.length} keys each)`);
+    pass(`I18N parity across ${langs.join("/")} (${refKeys.length} keys each)`);
   }
 
-  // --- placeholder ({n} etc) parity between EN and FR for shared keys ---
-  let placeholderMismatch = [];
-  enKeys.forEach((k) => {
-    if (!I18N.fr[k] || typeof I18N.en[k] !== "string") return;
-    const varsEn = (I18N.en[k].match(/\{\w+\}/g) || []).sort().join(",");
-    const varsFr = (I18N.fr[k].match(/\{\w+\}/g) || []).sort().join(",");
-    if (varsEn !== varsFr) placeholderMismatch.push(k);
-  });
+  // --- placeholder ({n} etc) parity for keys shared with the reference ---
+  const placeholderMismatch = placeholderParity(I18N, langs);
   if (placeholderMismatch.length) {
-    fail(`{placeholder} mismatch between EN/FR: ${placeholderMismatch.join(", ")}`);
+    fail(`{placeholder} mismatch vs ${REF_LANG}: ${placeholderMismatch.join(", ")}`);
   } else {
-    pass("EN/FR placeholder consistency");
+    pass("placeholder consistency across languages");
   }
 
-  // --- every resource has a color and a label in both languages ---
+  // --- every resource has a color and a label in every language ---
   const hexRe = /^#[0-9a-f]{6}$/i;
   let resourceIssues = [];
   RESOURCES.forEach((r) => {
     if (!RES_ACCENT || !hexRe.test(RES_ACCENT[r] || "")) resourceIssues.push(`${r}: missing/invalid RES_ACCENT`);
-    if (!I18N.en[`res_${r}`]) resourceIssues.push(`${r}: missing EN res_${r}`);
-    if (!I18N.fr[`res_${r}`]) resourceIssues.push(`${r}: missing FR res_${r}`);
+    langs.forEach((lang) => {
+      if (!(I18N[lang] && I18N[lang][`res_${r}`])) resourceIssues.push(`${r}: missing ${lang.toUpperCase()} res_${r}`);
+    });
   });
   if (resourceIssues.length) {
     resourceIssues.forEach((m) => fail(m));
   } else {
-    pass(`all ${RESOURCES.length} resources have a color + EN/FR label`);
+    pass(`all ${RESOURCES.length} resources have a color + a label in ${langs.length} language(s)`);
   }
 
   // --- CATEGORIES.part references a real PARTS entry ---
@@ -222,30 +276,24 @@ for (const file of ROUTE_FILES) {
 // rendering the bare key name.
 console.log("\x1b[1mCross-page consistency\x1b[0m");
 
-// --- I18N_CHROME itself: EN/FR key + {placeholder} parity ---
+const FIRST_SB = Object.values(sandboxes)[0];
+const ALL_LANGS = languagesOf(FIRST_SB);
+
+// --- I18N_CHROME itself: key + {placeholder} parity across every language ---
 {
-  const sb = Object.values(sandboxes)[0];
-  const chrome = sb && sb.I18N_CHROME;
+  const chrome = FIRST_SB && FIRST_SB.I18N_CHROME;
   if (chrome) {
-    const enKeys = Object.keys(chrome.en).sort();
-    const frKeys = Object.keys(chrome.fr).sort();
-    const onlyEn = enKeys.filter((k) => !frKeys.includes(k));
-    const onlyFr = frKeys.filter((k) => !enKeys.includes(k));
-    if (onlyEn.length || onlyFr.length) {
-      fail(`I18N_CHROME key mismatch — only in EN: ${JSON.stringify(onlyEn)}, only in FR: ${JSON.stringify(onlyFr)}`);
+    const { refKeys, issues } = dictParity(chrome, ALL_LANGS);
+    if (issues.length) {
+      issues.forEach((m) => fail(`I18N_CHROME ${m}`));
     } else {
-      pass(`I18N_CHROME EN/FR parity (${enKeys.length} keys each)`);
+      pass(`I18N_CHROME parity across ${ALL_LANGS.join("/")} (${refKeys.length} keys each)`);
     }
-    const placeholderMismatch = enKeys.filter((k) => {
-      if (!chrome.fr[k] || typeof chrome.en[k] !== "string") return false;
-      const varsEn = (chrome.en[k].match(/\{\w+\}/g) || []).sort().join(",");
-      const varsFr = (chrome.fr[k].match(/\{\w+\}/g) || []).sort().join(",");
-      return varsEn !== varsFr;
-    });
+    const placeholderMismatch = placeholderParity(chrome, ALL_LANGS);
     if (placeholderMismatch.length) {
-      fail(`I18N_CHROME {placeholder} mismatch between EN/FR: ${placeholderMismatch.join(", ")}`);
+      fail(`I18N_CHROME {placeholder} mismatch vs ${REF_LANG}: ${placeholderMismatch.join(", ")}`);
     } else {
-      pass("I18N_CHROME EN/FR placeholder consistency");
+      pass("I18N_CHROME placeholder consistency across languages");
     }
   }
 }
@@ -253,15 +301,14 @@ console.log("\x1b[1mCross-page consistency\x1b[0m");
 const NAV_KEYS = ["navBuildings", "navTomes", "navRobots", "navHeroEquipment", "navHeroStars"];
 let chromeMissing = [];
 NAV_KEYS.forEach((k) => {
-  ["en", "fr"].forEach((lang) => {
-    const sb = Object.values(sandboxes)[0];
-    if (sb && sb.I18N_CHROME && !(k in sb.I18N_CHROME[lang])) chromeMissing.push(`${lang}.${k}`);
+  ALL_LANGS.forEach((lang) => {
+    if (FIRST_SB && FIRST_SB.I18N_CHROME && !(k in (FIRST_SB.I18N_CHROME[lang] || {}))) chromeMissing.push(`${lang}.${k}`);
   });
 });
 if (chromeMissing.length) {
   fail(`I18N_CHROME missing nav keys: ${chromeMissing.join(", ")}`);
 } else {
-  pass("I18N_CHROME defines all 5 nav keys in both languages");
+  pass(`I18N_CHROME defines all ${NAV_KEYS.length} nav keys in ${ALL_LANGS.length} language(s)`);
 }
 
 let navResolveIssues = [];
@@ -269,7 +316,7 @@ ROUTE_FILES.forEach((f) => {
   const sb = sandboxes[f];
   if (!sb) return;
   NAV_KEYS.forEach((k) => {
-    ["en", "fr"].forEach((lang) => {
+    ALL_LANGS.forEach((lang) => {
       const resolved = (sb.I18N[lang] && sb.I18N[lang][k]) || (sb.I18N_CHROME[lang] && sb.I18N_CHROME[lang][k]);
       if (!resolved) navResolveIssues.push(`${f}: ${lang}.${k} does not resolve to any value`);
     });
@@ -278,8 +325,25 @@ ROUTE_FILES.forEach((f) => {
 if (navResolveIssues.length) {
   navResolveIssues.forEach((m) => fail(m));
 } else {
-  pass("every page resolves all 5 nav keys in both languages");
+  pass(`every page resolves all ${NAV_KEYS.length} nav keys in every language`);
 }
+
+// A language exists in I18N_CHROME, but the only way a visitor can *reach* it
+// is the EN/FR pair of <button data-lang> in each page's static HTML. Those
+// buttons are the one part of the language set that isn't derived from
+// shared.js, so adding a translation without adding its button would ship a
+// language nobody can select — invisible, and nothing at runtime would say so.
+const langBtnIssues = [];
+ROUTE_FILES.forEach((f) => {
+  const html = fs.readFileSync(path.join(DIR, f), "utf8");
+  const offered = [...html.matchAll(/data-lang="([a-z-]+)"/g)].map((m) => m[1]).sort();
+  const missing = ALL_LANGS.filter((l) => !offered.includes(l));
+  const unknown = offered.filter((l) => !ALL_LANGS.includes(l));
+  if (missing.length) langBtnIssues.push(`${f} has no language button for: ${missing.join(", ")}`);
+  if (unknown.length) langBtnIssues.push(`${f} offers a button for "${unknown.join(", ")}", which I18N_CHROME doesn't define`);
+});
+if (langBtnIssues.length) langBtnIssues.forEach((m) => fail(m));
+else pass(`every route offers a language button for all ${ALL_LANGS.length} language(s)`);
 
 const storageKeys = ROUTE_FILES.map((f) => sandboxes[f] && sandboxes[f].STORAGE_KEY).filter(Boolean);
 const uniqueStorageKeys = new Set(storageKeys);
