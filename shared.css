@@ -354,16 +354,27 @@ input[type=number]{-moz-appearance:textfield}
 .palier-segs{display:flex;gap:3px;flex:1;min-width:0}
 .palier-seg{flex:1;min-width:0;height:44px;padding:0;border:0;background:none;position:relative;
   border-radius:0}
-/* No border and a translucent track when empty: bordered dark boxes read as
-   input fields here, sitting right under two selects styled exactly that way,
-   and the whole point is that this looks like progress rather than something
-   left to fill in. */
-.palier-seg::before{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
-  height:10px;background:rgba(234,234,234,.16)}
-.palier-seg.filled::before{background:var(--accent)}
+/* Detached slanted chunks rather than one continuous band. A continuous bar
+   reads as a percentage filling up, and these aren't percentages — they're
+   discrete steps you cross one at a time, which is what the game draws and
+   what a tap actually does. The shape says so before any label does.
+   The skew is ±3px of horizontal spill at this height, well inside the inset,
+   so nothing bleeds into the neighbouring segment.
+   An earlier note here argued against any outline, since bordered dark boxes
+   sitting right under two identically-styled selects read as input fields.
+   That held for full-width rectangles; a small slanted parallelogram can't be
+   mistaken for a field, so the empty state can afford the hairline it needs to
+   stay visible on a dim phone screen. */
+.palier-seg::before{content:"";position:absolute;left:18%;right:18%;top:50%;
+  transform:translateY(-50%) skewX(-15deg);height:22px;
+  background:rgba(234,234,234,.08);box-shadow:inset 0 0 0 1px rgba(234,234,234,.22)}
+.palier-seg.filled::before{background:var(--accent);box-shadow:none}
 /* Hover is a desktop bonus only: the filled/empty contrast has to carry the
-   state on its own, since most visitors have no cursor at all. */
-.palier-seg:hover::before{border-color:var(--accent)}
+   state on its own, since most visitors have no cursor at all. It lights the
+   hairline, which is why it only applies to empty segments — a filled one has
+   no hairline to light. (It used to set border-color on an element that has no
+   border, so it had never shown anything.) */
+.palier-seg:not(.filled):hover::before{box-shadow:inset 0 0 0 1px var(--accent)}
 .palier-seg:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
 .palier-to{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
 /* Amber like every other "the app did this, not you" marker in the app (the
