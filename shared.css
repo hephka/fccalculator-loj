@@ -365,9 +365,16 @@ input[type=number]{-moz-appearance:textfield}
    That held for full-width rectangles; a small slanted parallelogram can't be
    mistaken for a field, so the empty state can afford the hairline it needs to
    stay visible on a dim phone screen. */
+/* The empty chunk's outline is --border, not a hand-picked translucent grey:
+   that variable is already the project's answer to this exact question (it was
+   raised from #333333 for being under the WCAG 3:1 non-text minimum), and the
+   first value tried here measured 1.89:1 against the card — below the floor,
+   for the one mark that says an empty palier is there at all. --border lands
+   at 3.05:1. The fill stays faint on purpose: it's decoration, the outline is
+   what carries the information. */
 .palier-seg::before{content:"";position:absolute;left:18%;right:18%;top:50%;
   transform:translateY(-50%) skewX(-15deg);height:22px;
-  background:rgba(234,234,234,.08);box-shadow:inset 0 0 0 1px rgba(234,234,234,.22)}
+  background:rgba(234,234,234,.08);box-shadow:inset 0 0 0 1px var(--border)}
 .palier-seg.filled::before{background:var(--accent);box-shadow:none}
 /* Hover is a desktop bonus only: the filled/empty contrast has to carry the
    state on its own, since most visitors have no cursor at all. It lights the

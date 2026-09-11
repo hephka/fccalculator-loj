@@ -56,7 +56,7 @@ body::after{
 
 /* Structural type: uppercase + tracking on headers, ASCII bracket framing
    on the two main card headings. */
-h1, h2, .cat-title, .part-header, .brand-eyebrow, .intro-title{
+h1, h2, .cat-title, .part-header, .brand-eyebrow{
   text-transform:uppercase;
   letter-spacing:.04em;
 }
