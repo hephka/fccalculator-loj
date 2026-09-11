@@ -69,7 +69,7 @@
 <script>
 const RESOURCES = ["HeroFragment","ExclusiveEquipPart"];
 const STORAGE_KEY = "resource-calc-herostars-state-v1";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const RES_ACCENT = {
   HeroFragment:"#ffd60a", ExclusiveEquipPart:"#ffd60a",
 };
@@ -156,7 +156,7 @@ function makeHeroStarTrack(idx){
   const recruitCost = zeroResources();
   recruitCost.HeroFragment = 10;
   levels.push({ id:"recruited", cost:recruitCost, requires:[] });
-  HERO_STAR_TIERS.forEach(tier=>{
+  HERO_STAR_TIERS.forEach((tier,tierIdx)=>{
     tier.paliers.forEach((fragments,i)=>{
       const cost = zeroResources();
       cost.HeroFragment = fragments;
@@ -164,7 +164,13 @@ function makeHeroStarTrack(idx){
     });
     const finalCost = zeroResources();
     finalCost.HeroFragment = tier.final;
-    levels.push({ id:tier.key, cost:finalCost, requires:[] });
+    // "2★" instead of "2 étoiles" at the end of the paliers bar. The full label
+    // is 76px against "▸ FC1"'s 35, and every pixel it takes comes straight out
+    // of six tap targets: 34.7px each with the long form, 42.7px with this one,
+    // measured at 375px. It stays out of I18N on purpose — a digit and a star
+    // read the same in every language, and the segments' aria-labels still
+    // carry the full wording for anyone not reading the shape.
+    levels.push({ id:tier.key, cost:finalCost, requires:[], barLabel:`${tierIdx+1}★` });
   });
   return {
     id:`herostar_${idx}`, category:"HeroStar", qtyIndex:idx,
@@ -212,8 +218,34 @@ function defaultData(){
   };
 }
 
+// Schema 2 -> 3 clears the phantom target the old "Non recruté isn't a
+// checkpoint" bug left behind: adoptProgress snapped a saved target of 0 up to
+// `recruited` and wrote it back, so a returning visitor was quoted 10 Hero
+// Fragments per hero for a goal they never set — and couldn't clear it, since
+// "Non recruté" wasn't in the "Cible" list to pick.
+//
+// Deliberately narrow: only a hero still at "Non recruté" whose target is
+// exactly `recruited`, which is the signature the bug produced. A hero sitting
+// at "Non recruté" with a target of, say, 3 stars is someone's real plan for a
+// hero they haven't started, and wiping that would be the data loss this is
+// supposed to undo. Level indices are unchanged between 2 and 3, so everything
+// else — stock, hero counts, the other tracks — passes through untouched and
+// adoptProgress rebuilds from defaultData() as usual.
+function migrateState(old){
+  if(old.schemaVersion !== 2 || !Array.isArray(old.tracks)) return null;
+  return Object.assign({}, old, {
+    schemaVersion: SCHEMA_VERSION,
+    tracks: old.tracks.map(tr=>{
+      if(!tr || typeof tr.id !== "string") return tr;
+      const phantom = tr.id.indexOf("herostar_") === 0
+        && Number(tr.currentLevelIndex) === 0
+        && Number(tr.targetLevelIndex) === 1;
+      return phantom ? Object.assign({}, tr, { targetLevelIndex: 0 }) : tr;
+    }),
+  });
+}
 </script>
-<script src="shared.js?v=26"></script>
+<script src="shared.js?v=27"></script>
 <script>initApp();</script>
 </body>
 </html>

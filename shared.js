@@ -57,6 +57,12 @@
 //                                "· palier N" suffix with t(key), for chains
 //                                where the sub-level isn't one of several
 //                                numbered stages (see Hero Equipment).
+//   level.barLabel: "2★"       - short form used only as the paliers bar's
+//                                "▸" destination, where the full label would
+//                                eat the width of six tap targets. A literal
+//                                string, not an I18N key: it's for glyphs that
+//                                read the same in every language. The segments'
+//                                aria-labels keep the full wording.
 //   accent: "#hexcolor" or "var(--token)" - colors this track's card left
 //                                border + name, to flag one specific track
 //                                among many in the same category (e.g. the
@@ -1035,7 +1041,7 @@ function paliersBarHtml(tr){
   }
   return `<div class="palier-bar">
     <span class="palier-segs">${segments.join("")}</span>
-    <span class="palier-to">▸ ${levelLabel(tr, tr.levels[next])}</span>
+    <span class="palier-to">▸ ${tr.levels[next].barLabel || levelLabel(tr, tr.levels[next])}</span>
   </div>`;
 }
 
