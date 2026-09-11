@@ -1004,6 +1004,11 @@ function checkpointIndexes(track){
 // nearest level "Cible" is able to display.
 function tierStartFor(track, index){
   const cps = checkpointIndexes(track);
+  // Below the first checkpoint there is no tier to be inside of, so the answer
+  // is the track's own beginning. Returning cps[0] instead would claim a level
+  // the track hasn't reached: callers snap targets to this value, so it turned
+  // "no goal" into a real goal one level up.
+  if(!cps.length || index < cps[0]) return 0;
   let start = cps[0];
   cps.forEach(c=>{ if(c <= index) start = c; });
   return start;
@@ -1015,6 +1020,11 @@ function paliersBarHtml(tr){
   const tierStart = tierStartIndex(tr);
   const next = cps[cps.indexOf(tierStart) + 1];
   if(next == null) return "";
+  // A single step to the next checkpoint isn't progress worth drawing: one
+  // full-width chunk says nothing the tier select doesn't already say, and a
+  // lone segment stretched across the row reads as a broken bar rather than as
+  // "one step left". Hero Star's "Non recruté → Recruté" is the case.
+  if(next - tierStart < 2) return "";
   const done = tr.currentLevelIndex - tierStart;
   const segments = [];
   for(let k=1; k<=next-tierStart; k++){

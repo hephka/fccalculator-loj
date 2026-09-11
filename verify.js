@@ -246,6 +246,21 @@ for (const file of ROUTE_FILES) {
     pass(`requires chains resolve correctly (${data.tracks.length} default tracks)`);
   }
 
+  // --- level 0 must be a target checkpoint ---
+  // Every track starts with targetLevelIndex 0 and holds it while no goal is
+  // set. "Cible" only lists levels where targetCheckpoint isn't false, so if
+  // level 0 is excluded the select can't display the state it's in — and
+  // adoptProgress, which snaps a non-checkpoint target to tierStartFor(), then
+  // rewrites that 0 into a real goal one level up and persists it. Hero Star
+  // shipped exactly that: every returning visitor was quoted 10 Hero Fragments
+  // per hero for a target they never chose.
+  const badZero = data.tracks.filter((t) => t.levels[0] && t.levels[0].targetCheckpoint === false);
+  if (badZero.length) {
+    badZero.forEach((t) => fail(`${t.id}: level 0 ("${t.levels[0].id}") is targetCheckpoint:false, so an unset target can't be displayed or cleared`));
+  } else {
+    pass(`every track's level 0 is selectable as a target`);
+  }
+
   // --- known-good totals (regression check) ---
   const expected = EXPECTED_TOTALS[file];
   if (expected) {

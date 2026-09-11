@@ -146,7 +146,13 @@ const HERO_STAR_TIERS = [
 ];
 
 function makeHeroStarTrack(idx){
-  const levels = [{ id:"start", cost:zeroResources(), requires:[], targetCheckpoint:false }];
+  // "Non recruté" is a checkpoint, not a palier. It's where every track starts
+  // and what targetLevelIndex holds while no goal is set, so it has to be
+  // selectable as a target like every other track's level 0 — marking it
+  // targetCheckpoint:false took it out of the "Cible" list, and adoptProgress
+  // then snapped a saved target of 0 up to `recruited` on load, inventing a
+  // 10-fragment goal per hero that nobody asked for and writing it back.
+  const levels = [{ id:"start", cost:zeroResources(), requires:[] }];
   const recruitCost = zeroResources();
   recruitCost.HeroFragment = 10;
   levels.push({ id:"recruited", cost:recruitCost, requires:[] });
@@ -164,6 +170,12 @@ function makeHeroStarTrack(idx){
     id:`herostar_${idx}`, category:"HeroStar", qtyIndex:idx,
     nameParts:[{key:"heroLabel", vars:{n:idx}}],
     levelStyle:"keyed", levelKeyPrefix:"herostartier_",
+    // Same case as a building's FC tiers: the 5 paliers between two stars are
+    // fractional progress toward the next one, not goals of their own, so
+    // "Actuel" becomes a 7-entry tier select plus a bar instead of a 32-entry
+    // list. Six segments here rather than the buildings' five, since the star
+    // itself is the sixth step.
+    paliersBar: true,
     currentLevelIndex:0, targetLevelIndex:0, levels
   };
 }
@@ -201,7 +213,7 @@ function defaultData(){
 }
 
 </script>
-<script src="shared.js?v=25"></script>
+<script src="shared.js?v=26"></script>
 <script>initApp();</script>
 </body>
 </html>
