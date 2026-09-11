@@ -4,15 +4,53 @@ A multi-page tool to calculate how many resources you're missing to reach a targ
 
 🔗 **Live:** https://www.lojcalc.com
 
-## Routes
+Every route works the same way: set a current level and a target level for each item, prerequisites resolve automatically, and the app totals up exactly what you're missing per resource.
+
+| Route | What it covers | Resources |
+| --- | --- | --- |
+| `index.html` | Warden's Office, its 6 support buildings and the FC Lab, plus each troop's T11 research tree | FC, AFC, Hyperalloy |
+| `tomes-collections.html` | 6 tomes per troop type, and the Trove Collection sequence | Seal of Wisdom/Knowledge, 4 Trove Coins |
+| `robots-satellites.html` | Prisoner Armor for up to 12 robots, and 9 named satellites | Prisoner Armor Data, Power Modules, Data Disk, Planet Coin |
+| `hero-equipment.html` | 4 equipment pieces for each of the 3 troop types, each with a Rarity and a Mastery track | Equipment EXP, Magnet, Potential Coil, Precision Equipment |
+| `hero-stars-exclusive-equipment.html` | Up to 6 heroes, star progress and exclusive equipment | Hero Fragment, Exclusive Equipment Piece |
+
+## Running locally
+
+No install needed — these are static files. Either open `index.html` directly, or serve them (recommended, avoids some browser `file://` quirks):
+
+```bash
+python3 -m http.server 8834
+```
+
+then open `http://localhost:8834`.
+
+## Verifying
+
+`node verify.js` checks every route in one pass: syntax, translation parity (keys and `{placeholder}` variables), that every resource has a color and a label, that every `requires` reference resolves to a real track/level, nav consistency across pages, unique `STORAGE_KEY`s, and known-good total costs for the routes with a confirmed source (regression protection — a silently wrong number in `defaultData()` fails the run instead of shipping). No dependencies; run it before pushing whenever route data changes.
+
+The translation checks are language-agnostic: the set of languages is read from `I18N_CHROME` in `shared.js`, so declaring a new one there is what brings it into existence and every page is then required to have a block for it, a `res_<Resource>` label for each resource, the nav keys, and a `<button data-lang>` in its static HTML. English is the reference the others are compared against. This matters more than it looks: `t()` has no fallback chain, so a key missing in the active language puts the bare identifier (`savedHint`) in front of the visitor rather than the English string, and a key is easy to add to one block and forget in the other.
+
+## Deployment
+
+Connected to Vercel. Work happens on the `dev` branch and deploys to a private preview (`resource-calculator-dev.vercel.app`, gated behind Vercel login) — only pushes to `main` go to the public production URL that clients use.
+
+## Known gaps
+
+- FC Lab is modeled through Level 6 (confirmed source data); Levels 7-8 aren't modeled yet.
+- The R Satellite's Level 40 → 50 Data Disk cost is an estimate (~11,230), not confirmed data — see the in-app note on that route.
+- Part of Hero Equipment's "Common · levels maxed" step cost (~970 of its 2,620 total Equipment EXP, inherited from the untracked Common Level 0→10 range) is an estimate, not confirmed data — see the in-app note on that route.
+
+---
+
+Everything below is reference material for working on the code. The sections above are enough to run it, verify it and ship it.
+
+## Routes in detail
 
 - **`index.html`** — Buildings & Research: Warden's Office and 5 of its 6 support buildings (Level 30 → FC10 — Medical Station stops at FC8, not confirmed past that), the FC Lab building itself (not built → FC1 → FC6, each tier gated by Warden's Office reaching the same FC tier), plus each troop's T11 research tree (Shooter/Bomber/Shieldbearer) — gated by a mix of internal prerequisites and FC Lab's own tier. Warden's Office and FC Lab sit flat and always visible; the 6 support buildings fold into one collapsible "Support buildings" group, since the prerequisite cascade already works out how far each has to climb. Paliers are offered as a current level only — a target is always a whole FC tier. Buildings carry `paliersBar`, which splits their "Actuel" into an 11-entry tier select plus a 5-segment bar for the position inside that tier, mirroring the bar the game draws between two FC levels: the last segment lands on the next tier, and tapping the segment already reached steps back one. Tracks whose sub-levels are goals in their own right (a Collection's stars) keep the plain select. Resources: FC, AFC, Hyperalloy.
 - **`tomes-collections.html`** — Tomes & Collections: all 6 tomes per troop type (Level 0 → 12), and the Trove Collection sequence (Uncommon → Exotic T3). Resources: Seal of Wisdom, Seal of Knowledge, Common/Rare/Precious/Legendary Trove Coin.
 - **`robots-satellites.html`** — Robots & Satellites: Prisoner Armor upgrades (Level 1 → 100, in steps of 10) for up to 12 robots (Prisoner Armor Data, Power Module, Advanced Power Module), plus each named Satellite's own progress, also in steps of 10 — R: Laser/Observer/Radiance (Level 1 → 50), SR: Arbiter/Sentinel (Level 1 → 70), SSR: Omniscient Domain/Celestial Nexus/Argus/Polaris (Level 1 → 90) — using Data Disk and Planet Coin. Level 1 is the baseline (Level 0 is reserved for a future robot-discovery/unlock mechanic, not yet modeled).
 - **`hero-equipment.html`** — Hero Equipment: Gloves/Helm/Outerwear/Boots for each of the 3 troop types (12 pieces total). Each piece has two linked progressions shown on the same card — Rarity (Equipment EXP, Common through Exotic T3 — Common itself is free, each tier's cost is what it takes to reach the next one) and Mastery (Precision Equipment, Level 0 → 20). Rarity and Mastery are independent through Legendary; beyond that, each promotion (Legendary T1 through Exotic T3) requires Mastery at an increasing threshold (10 through 15), resolved automatically. Each rarity is split into two levels, so a piece can sit between them: a "· levels maxed" step carrying the Equipment EXP spent levelling inside that rarity, then the promotion itself carrying only Magnet/Potential Coil. That way a piece whose levels are already maxed is quoted the promotion alone instead of EXP it has already spent. Only whole rarities are offered as targets. Resources: Equipment EXP, Magnet, Potential Coil, Precision Equipment.
 - **`hero-stars-exclusive-equipment.html`** — Hero Stars & Exclusive Equipment: up to 6 heroes independently on each side — a Star-progress track (recruit for 10 Hero Fragments at 0 stars, then 5 stars costing 10/40/115/300/600 Fragments — 1,075 total to max) and an Exclusive Equipment track (Level 0 → 10, 550 Exclusive Equipment Pieces total). "Actuel" breaks each star down palier by palier; "Cible" only offers whole completed stars.
-
-Every route works the same way: set a current level and a target level for each item, prerequisites resolve automatically, and the app totals up exactly what you're missing per resource.
 
 ## How it works
 
@@ -31,29 +69,3 @@ Every route works the same way: set a current level and a target level for each 
 - `shared.js`, `shared.css`, and `theme-tactical.css` are loaded with a `?v=1` query string on all 5 pages. Bump that number (on every page, for the file(s) you touched) whenever you change one of them — some browsers cache these past what Vercel's headers intend, and a version bump forces every visitor's next load to fetch the new file instead of an old cached copy.
 - Visual identity: a dark "Tactical Telemetry" terminal theme (`theme-tactical.css`, loaded after `shared.css` on every route) — IBM Plex Mono, a single hazard-red accent, hard 90° corners, ASCII-bracket card headers, CRT scanline and blueprint-grid textures. Color/radius variables live in `shared.css`'s `:root`; `theme-tactical.css` holds everything that isn't a plain variable swap.
 - Each resource has its own hand-drawn SVG icon, defined once in `shared.css` as a `mask-image` and applied via `data-res="<resourceKey>"` attributes set in `shared.js` — icons render in `currentColor`, so they automatically pick up that resource's existing accent color.
-
-## Verifying
-
-`node verify.js` checks every route in one pass: syntax, translation parity (keys and `{placeholder}` variables), that every resource has a color and a label, that every `requires` reference resolves to a real track/level, nav consistency across pages, unique `STORAGE_KEY`s, and known-good total costs for the routes with a confirmed source (regression protection — a silently wrong number in `defaultData()` fails the run instead of shipping). No dependencies; run it before pushing whenever route data changes.
-
-The translation checks are language-agnostic: the set of languages is read from `I18N_CHROME` in `shared.js`, so declaring a new one there is what brings it into existence and every page is then required to have a block for it, a `res_<Resource>` label for each resource, the nav keys, and a `<button data-lang>` in its static HTML. English is the reference the others are compared against. This matters more than it looks: `t()` has no fallback chain, so a key missing in the active language puts the bare identifier (`savedHint`) in front of the visitor rather than the English string, and a key is easy to add to one block and forget in the other.
-
-## Running locally
-
-No install needed — these are static files. Either open `index.html` directly, or serve them (recommended, avoids some browser `file://` quirks):
-
-```bash
-python3 -m http.server 8834
-```
-
-then open `http://localhost:8834`.
-
-## Deployment
-
-Connected to Vercel. Work happens on the `dev` branch and deploys to a private preview (`resource-calculator-dev.vercel.app`, gated behind Vercel login) — only pushes to `main` go to the public production URL that clients use.
-
-## Known gaps
-
-- FC Lab is modeled through Level 6 (confirmed source data); Levels 7-8 aren't modeled yet.
-- The R Satellite's Level 40 → 50 Data Disk cost is an estimate (~11,230), not confirmed data — see the in-app note on that route.
-- Part of Hero Equipment's "Common · levels maxed" step cost (~970 of its 2,620 total Equipment EXP, inherited from the untracked Common Level 0→10 range) is an estimate, not confirmed data — see the in-app note on that route.
