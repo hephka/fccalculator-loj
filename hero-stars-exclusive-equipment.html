@@ -157,10 +157,17 @@ function makeHeroStarTrack(idx){
   recruitCost.HeroFragment = 10;
   levels.push({ id:"recruited", cost:recruitCost, requires:[] });
   HERO_STAR_TIERS.forEach((tier,tierIdx)=>{
+    // A palier is named after the star you already hold, never the one you're
+    // climbing toward — same rule as a building's "FC3 · palier 2", which means
+    // FC3 plus two steps. These five sit between the previous checkpoint and
+    // this tier's own star, so they carry the previous checkpoint's name: a
+    // player three paliers past their first star reads "1 étoile · palier 3",
+    // not "2 étoiles · palier 3", which invited them to think they had two.
+    const heldKey = tierIdx === 0 ? "recruited" : HERO_STAR_TIERS[tierIdx-1].key;
     tier.paliers.forEach((fragments,i)=>{
       const cost = zeroResources();
       cost.HeroFragment = fragments;
-      levels.push({ id:`${tier.key}_s${i+1}`, cost, requires:[], targetCheckpoint:false });
+      levels.push({ id:`${heldKey}_s${i+1}`, cost, requires:[], targetCheckpoint:false });
     });
     const finalCost = zeroResources();
     finalCost.HeroFragment = tier.final;
