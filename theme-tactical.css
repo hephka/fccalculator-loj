@@ -28,23 +28,6 @@ body{
   font-family:'IBM Plex Mono','Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 
-/* Arabic, and only when the page is actually in it.
-   Plex Sans Arabic sits behind Plex Mono, never in front: the browser takes
-   the first family that has the glyph, so digits, FC4 and every Latin word
-   still come from Mono and the terminal texture survives intact. That matters
-   more than it sounds — there is no monospaced Arabic in Plex, and there
-   shouldn't be: Arabic is cursive, its letters join and change shape by
-   position, so a fixed advance width would break the joins. The fixed-width
-   look simply isn't reproducible in Arabic prose, which is why keeping the
-   numbers in Mono matters. They're what this app is made of.
-   Scoped to [dir="rtl"] rather than added to the base stack, because a stack
-   is walked for every glyph Plex Mono lacks — ▸, ⚠, the emoji — and the
-   browser fetched 46KB of Plex Sans Arabic on a French page with no Arabic
-   character anywhere on it. Measured, after assuming otherwise. */
-[dir="rtl"] body{
-  font-family:'IBM Plex Mono','IBM Plex Sans Arabic','Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-
 /* CRT scanline texture — fixed overlay, no layout impact, no new markup */
 body::after{
   content:"";
