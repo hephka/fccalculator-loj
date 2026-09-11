@@ -19,10 +19,14 @@ Every route works the same way: set a current level and a target level for each 
 No install needed — these are static files. Either open `index.html` directly, or serve them (recommended, avoids some browser `file://` quirks):
 
 ```bash
+node serve.js
+```
+
+```bash
 python3 -m http.server 8834
 ```
 
-then open `http://localhost:8834`.
+then open `http://localhost:8834`. Either works; `serve.js` is Node core only, no install, and is there because `python3` isn't universal — on a Mac where it's the Xcode stub and the licence was never accepted, it refuses to start and says nothing about serving files. Node is already needed for `verify.js` anyway. Pass a port to change it: `node serve.js 3000`.
 
 ## Verifying
 
