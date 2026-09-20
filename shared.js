@@ -724,7 +724,11 @@ function renderSavedHint(hasResults){
   });
 }
 
-const uiOpen = { groups:new Set() };
+// `groups` holds the collapsible research groups the user opened; `tracks`
+// holds individual cards they opened by hand (see trackCollapsible). Both are
+// deliberately in-memory only: a reload folds everything back to the default,
+// which is the whole point of having a default.
+const uiOpen = { groups:new Set(), tracks:new Set() };
 
 // Ids of tracks the cascade is pulling up past whatever target their owner set
 // (or didn't set) — filled from the breakdown on every render, so a badge can
@@ -744,6 +748,21 @@ function trackHasOwnTarget(tr){
   const paired = tr.pairedTrackId ? trackById(tr.pairedTrackId) : null;
   const set = x => x.targetLevelIndex > x.currentLevelIndex;
   return set(tr) || !!(paired && set(paired));
+}
+
+// Cards in a "dynamic" category (heroes, tomes, collections, robots) fold down
+// to their name and badge while nothing is being asked of them. Those pages
+// hand you every slot you could ever fill — six heroes, eighteen tomes — but
+// the game is played two or three at a time, so the untouched majority used to
+// push the one card you actually care about several screens down.
+//
+// Fixed categories are left alone: their cards are the page, and index.html /
+// hero-equipment.html already fold their long tails into research groups.
+// A track the cascade is pulling up counts as needing work, so a prerequisite
+// can't quietly fold away while it's still costing you resources.
+function trackCollapsible(tr){
+  const cat = CATEGORIES.find(c=>c.key===tr.category);
+  return !!(cat && cat.dynamic) && !trackNeedsWork(tr);
 }
 
 // Tracks carrying a `groupKey` are folded into one collapsible group, named by
@@ -850,6 +869,17 @@ function renderCategories(){
       if(nowOpen) uiOpen.groups.add(g); else uiOpen.groups.delete(g);
     });
   });
+  cont.querySelectorAll("button[data-track-toggle]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const body = b.nextElementSibling;
+      const chevron = b.querySelector(".track-chevron");
+      const nowOpen = !body.classList.contains("open");
+      body.classList.toggle("open", nowOpen);
+      chevron.classList.toggle("open", nowOpen);
+      b.setAttribute("aria-expanded", String(nowOpen));
+      if(nowOpen) uiOpen.tracks.add(b.dataset.trackToggle); else uiOpen.tracks.delete(b.dataset.trackToggle);
+    });
+  });
   cont.querySelectorAll("button[data-add-item]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const key = btn.dataset.addItem;
@@ -860,20 +890,42 @@ function renderCategories(){
       state.counts[countKey] = max ? Math.min(nextCount, max) : nextCount;
       // Sync every category sharing this counter, not just the one clicked —
       // keeps a "one instance per hero" pair of categories in lockstep.
-      CATEGORIES.filter(c=>c.dynamic && (c.dynamic.countKey||c.key)===countKey).forEach(c=> syncDynamicCategory(state, c));
+      CATEGORIES.filter(c=>c.dynamic && (c.dynamic.countKey||c.key)===countKey).forEach(c=>{
+        syncDynamicCategory(state, c);
+        // The slot that just appeared has no target yet, so it would render
+        // folded — which looks like the button did nothing at all.
+        const added = state.tracks.filter(tr=>tr.category===c.key).sort((a,b)=>a.qtyIndex-b.qtyIndex).pop();
+        if(added) uiOpen.tracks.add(added.id);
+      });
       save();
     });
   });
   cont.querySelectorAll("select[data-cur]").forEach(s=> s.addEventListener("change", e=>{
+    keepCardOpen(s);
     setCurrentLevel(trackById(s.dataset.cur), Number(e.target.value));
   }));
   cont.querySelectorAll("button[data-palier]").forEach(b=> b.addEventListener("click", ()=>{
+    keepCardOpen(b);
     const idx = Number(b.dataset.level);
     setCurrentLevel(trackById(b.dataset.palier), b.dataset.back === "1" ? idx - 1 : idx);
   }));
   cont.querySelectorAll("select[data-tgt]").forEach(s=> s.addEventListener("change", e=>{
+    keepCardOpen(s);
     trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
   }));
+}
+
+// Marks the card a control sits in as explicitly open. Keyed on the card's own
+// track, not the control's: a paired control carries the *other* track's id,
+// which would leave the card it lives in free to fold.
+//
+// It reads the id off the card rather than off its toggle button, because the
+// case that needs it most is the one where there is no button yet: clearing a
+// target turns a card foldable for the first time, and keying on the button
+// would record nothing and let the card fold under the hand that just cleared it.
+function keepCardOpen(el){
+  const card = el.closest(".track");
+  if(card && card.dataset.trackId) uiOpen.tracks.add(card.dataset.trackId);
 }
 
 // A track can optionally carry `pairedTrackId` + `pairedLabelKey` to show a
@@ -889,12 +941,15 @@ function trackHtml(tr){
   const needsWork = trackNeedsWork(tr);
   const ownTarget = trackHasOwnTarget(tr);
   const badgeText = ownTarget ? t("targetSet") : needsWork ? t("autoRequired") : t("noTarget");
-  return `<div class="track${tr.accent?' track-accent':''}" ${tr.accent?`style="--accent-color:${tr.accent}"`:''}>
-    <div class="track-head">
-      <span class="track-name">${trackShortName(tr)}</span>
+  const identity = `<span class="track-name">${trackShortName(tr)}</span>
       ${tr.newBadge ? `<span class="new-badge">${t("newBadge")}</span>` : ''}
-      <span class="track-badge ${needsWork?(ownTarget?'active':'auto'):''}">${badgeText}</span>
-      <div class="track-controls">
+      <span class="track-badge ${needsWork?(ownTarget?'active':'auto'):''}">${badgeText}</span>`;
+  // A card the user just changed always stays open, even if that change was
+  // "no target after all" — folding it away under the cursor that did it would
+  // read as the app having eaten the click.
+  const collapsible = trackCollapsible(tr);
+  const open = !collapsible || uiOpen.tracks.has(tr.id) || !!(lastLowered && lastLowered.by === tr.id);
+  const body = `<div class="track-controls">
         <span class="field">${t("current")}: <select data-cur="${tr.id}" aria-label="${t("current")} — ${trackShortName(tr)}">${
           // With a bar alongside, the select carries the tier alone and shows
           // the one this track currently sits in, paliers included.
@@ -912,7 +967,16 @@ function trackHtml(tr){
         <span class="paired-label">${t(tr.pairedLabelKey)}</span>
         <span class="field">${t("current")}: <select data-cur="${paired.id}" aria-label="${t("current")} — ${trackShortName(tr)} (${t(tr.pairedLabelKey)})">${optionsWithSelected(paired,paired.currentLevelIndex)}</select></span>
         <span class="field">${t("target")}: <select data-tgt="${paired.id}" aria-label="${t("target")} — ${trackShortName(tr)} (${t(tr.pairedLabelKey)})">${optionsWithSelected(paired,paired.targetLevelIndex)}</select></span>
-      </div>` : ""}
+      </div>` : ""}`;
+  return `<div class="track${tr.accent?' track-accent':''}" data-track-id="${tr.id}" ${tr.accent?`style="--accent-color:${tr.accent}"`:''}>
+    <div class="track-head">
+      ${collapsible
+        ? `<button type="button" class="track-toggle" data-track-toggle="${tr.id}" aria-expanded="${open}">
+      ${identity}
+      <span class="track-chevron ${open?'open':''}">▸</span>
+    </button>`
+        : identity}
+      ${collapsible ? `<div class="track-body${open?' open':''}">${body}</div>` : body}
     </div>
   </div>`;
 }
