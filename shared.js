@@ -170,8 +170,8 @@ const I18N_CHROME = {
 // translation later is one more line. Neither form asks for an email, which is
 // what keeps this a plain link with no consent banner behind it.
 const REPORT_URLS = {
-  en: "https://tally.so/r/yPBMdx",
-  fr: "https://tally.so/r/44MQRb",
+  en: "https://tally.so/r/EkpA6r",
+  fr: "https://tally.so/r/GxMkbZ",
 };
 const DONATE_URL = "https://ko-fi.com/hephka";
 
