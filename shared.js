@@ -85,7 +85,7 @@
 //   resetButton, resetConfirm, currentStock, whatMissing, needed, missing,
 //   okSurplus, noTargetHint, colTarget, colFrom, colTo, autoAdded,
 //   targetSet, noTarget, autoRequired, groupNoTargets, groupTargetsSet,
-//   groupAutoRequired, savedHint, savedHintDismiss, loweredNote,
+//   groupAutoRequired, savedHint, savedHintDismiss, installHint, loweredNote,
 //   reportError, donate, current, target,
 //   stageWord, levelWord, footer, navHome ... (nav labels as needed),
 //   plus a res_<KEY> entry for every entry in RESOURCES.
@@ -116,6 +116,7 @@ const I18N_CHROME = {
     autoRequired: "required", groupAutoRequired: "{n} required",
     savedHint: "Your levels and targets stay saved on this device — close the page and come back to them as you left them. They don't follow you to another device or browser.",
     savedHintDismiss: "Got it, hide this",
+    installHint: "On iPhone and iPad, Safari erases a site's saved data after 7 days without a visit. To keep your levels, install the tool: open this page in Safari, tap Share, then “Add to Home Screen”. The installed app starts empty, so enter your levels there once.",
     loweredNote: "↓ Brought down with it, they can't sit above it: {names}",
     reportError: "Report a wrong number", donate: "Buy me a coffee",
     current: "Current", target: "Target",
@@ -140,6 +141,7 @@ const I18N_CHROME = {
     autoRequired: "requis", groupAutoRequired: "{n} requis",
     savedHint: "Tes niveaux et tes objectifs restent enregistrés sur cet appareil — tu peux fermer la page et les retrouver tels quels. Ils ne te suivent pas sur un autre appareil ou un autre navigateur.",
     savedHintDismiss: "Compris, masquer",
+    installHint: "Sur iPhone et iPad, Safari efface les données d'un site après 7 jours sans visite. Pour garder tes niveaux, installe l'outil : ouvre cette page dans Safari, touche Partager, puis « Sur l'écran d'accueil ». L'app installée démarre vide : saisis-y tes niveaux une fois.",
     loweredNote: "↓ Redescendus avec lui, ils ne peuvent pas être plus hauts : {names}",
     reportError: "Signaler un chiffre erroné", donate: "Offrir un café",
     current: "Actuel", target: "Cible",
@@ -713,19 +715,38 @@ function renderBreakdown(breakdown){
 // everywhere, so dismissing it once has to silence it everywhere.
 const SAVED_HINT_KEY = "resource-calc-saved-hint-seen";
 
+// On an iPhone or iPad, outside an app added to the home screen, "saved on this
+// device" isn't quite true: Safari erases everything a site stored after seven
+// days of use without a visit to it, and 44% of visitors are on iOS. A home
+// screen app keeps its own count, so there the same slot tells them how to
+// install instead, and says the installed app starts empty: it has its own
+// storage, and opening it to a blank page would read as everything being lost.
+// Its own dismissal key, so hiding the old sentence doesn't hide this one.
+const INSTALL_HINT_KEY = "resource-calc-install-hint-seen";
+function installHintApplies(){
+  const ua = navigator.userAgent || "";
+  // iPadOS reports itself as a Mac; the touch points give it away.
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const installed = navigator.standalone === true
+    || (typeof matchMedia === "function" && matchMedia("(display-mode: standalone)").matches);
+  return ios && !installed;
+}
+
 function renderSavedHint(hasResults){
   const el = document.getElementById("savedHint");
   if(!el) return;
+  const install = installHintApplies();
+  const key = install ? INSTALL_HINT_KEY : SAVED_HINT_KEY;
   let dismissed = false;
-  try{ dismissed = localStorage.getItem(SAVED_HINT_KEY) === "1"; }catch(e){}
+  try{ dismissed = localStorage.getItem(key) === "1"; }catch(e){}
   if(!hasResults || dismissed){ el.hidden = true; el.innerHTML = ""; return; }
   // Rebuilt on every pass rather than only when first shown, so switching
   // language redraws it in the new one like everything else on the page.
   el.hidden = false;
-  el.innerHTML = `<span>💾 ${t("savedHint")}</span>
+  el.innerHTML = `<span>${install ? "📲 " + t("installHint") : "💾 " + t("savedHint")}</span>
     <button type="button" class="saved-hint-dismiss">${t("savedHintDismiss")}</button>`;
   el.querySelector(".saved-hint-dismiss").addEventListener("click", ()=>{
-    try{ localStorage.setItem(SAVED_HINT_KEY, "1"); }catch(e){}
+    try{ localStorage.setItem(key, "1"); }catch(e){}
     el.hidden = true;
     el.innerHTML = "";
   });
