@@ -28,6 +28,7 @@ const TYPES = {
   ".webp": "image/webp",
   ".ico": "image/x-icon",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json",
   ".md": "text/markdown; charset=utf-8",
 };
 
