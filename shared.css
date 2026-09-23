@@ -27,11 +27,7 @@
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:
-    radial-gradient(circle at 15% -10%, #1c2438 0%, transparent 55%),
-    radial-gradient(circle at 100% 0%, #221733 0%, transparent 50%),
-    var(--bg);
-  background-repeat:no-repeat;
+  background:var(--bg);
   color:var(--text);
   font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
@@ -102,7 +98,7 @@ button.confirming{background:var(--bad);border-color:var(--bad);color:#fff;anima
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
 input[type=number],input[type=text],select{
-  background:#0e1119;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 11px;font-size:16px;font-family:inherit;
+  background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 11px;font-size:16px;font-family:inherit;
   transition:border-color .15s;
 }
 input[type=number]:focus,select:focus{outline:none;border-color:var(--accent)}
@@ -297,8 +293,8 @@ input[type=number]{-moz-appearance:textfield}
 .rarity-badge{display:inline-flex;align-items:center;font-size:.78rem;font-weight:800;letter-spacing:.04em;padding:4px 14px;border-radius:20px;margin:22px 0 10px;color:var(--badge-color);border:1px solid var(--badge-color);background:var(--panel-2)}
 .part-header+.rarity-badge{margin-top:0}
 .qty-control{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.add-item{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.08)}
-.add-item:hover{background:rgba(91,140,255,.16)}
+.add-item{border-color:var(--accent);color:var(--accent);background:none}
+.add-item:hover{background:rgba(234,234,234,.06)}
 .add-item:disabled{cursor:not-allowed;opacity:.45}
 .research-group{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;background:var(--panel);overflow:hidden}
 /* A real <button> now (was a <div>, keyboard-inaccessible) — reset the
@@ -312,7 +308,7 @@ input[type=number]{-moz-appearance:textfield}
 .group-icon{font-size:1.15rem}
 .group-name{font-weight:700;flex:1}
 .group-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
-.group-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
+.group-badge.active{border-color:var(--accent);color:var(--accent)}
 .group-chevron{color:var(--muted);transition:transform .18s;font-size:.8rem}
 .group-chevron.open{transform:rotate(90deg)}
 .group-body{display:none;padding:0 12px 12px}
@@ -331,7 +327,9 @@ input[type=number]{-moz-appearance:textfield}
 .track-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:13px 16px}
 .track-name{font-weight:600;flex:1;min-width:160px}
 .track-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-weight:600}
-.track-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(91,140,255,.1)}
+/* No tint behind it: the blue one left over from the old palette pulled this
+   red text down to 4.17:1 on a card, under the 4.5:1 AA minimum. Bare, 4.75:1. */
+.track-badge.active{border-color:var(--accent);color:var(--accent)}
 /* Amber for a climb the cascade pulled in rather than one you asked for —
    the same colour .auto-tag already uses on those rows in the breakdown. */
 .track-badge.auto,

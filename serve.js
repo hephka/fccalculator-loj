@@ -25,6 +25,7 @@ const TYPES = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
+  ".webp": "image/webp",
   ".ico": "image/x-icon",
   ".json": "application/json; charset=utf-8",
   ".md": "text/markdown; charset=utf-8",
@@ -33,7 +34,11 @@ const TYPES = {
 http.createServer((req, res) => {
   // Strip the query string before touching the filesystem: every page requests
   // shared.js?v=28, and that ?v= is a cache-busting marker, not part of the name.
-  let rel = decodeURIComponent(req.url.split("?")[0]);
+  // A malformed escape (/%E0%A4%A) makes decodeURIComponent throw, and an
+  // uncaught throw here took the whole server down on a single bad request.
+  let rel;
+  try { rel = decodeURIComponent(req.url.split("?")[0]); }
+  catch (e) { res.writeHead(400).end("Bad request"); return; }
   if (rel.endsWith("/")) rel += "index.html";
 
   // Resolve first, then check the result is still inside ROOT — a request for

@@ -184,7 +184,14 @@ function footerLinksHtml(){
 }
 
 const LANG_KEY = "resource-calc-lang";
-let lang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
+// Reading localStorage throws outright when the visitor blocks site data
+// (a privacy setting in Chrome, Safari and Firefox). This line runs before
+// anything is drawn, so an unguarded read here took the whole page down with
+// it. Every access is guarded instead: without storage the calculator still
+// works, it just can't remember anything between visits.
+function storageGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+function storageSet(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+let lang = storageGet(LANG_KEY) || (navigator.language && navigator.language.startsWith("fr") ? "fr" : "en");
 
 // Bump this by hand whenever any route's game data (costs, requires) changes
 // — shown in the footer so visitors can tell how fresh the numbers are.
@@ -359,7 +366,7 @@ function load(){
 // away anyway — 79 KB of stale duplicate on index.html. Older, fatter states
 // still load: the extra keys are simply ignored, so this needs no version bump.
 function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  storageSet(STORAGE_KEY, JSON.stringify({
     schemaVersion: state.schemaVersion,
     stock: state.stock,
     counts: state.counts,
@@ -531,7 +538,7 @@ function renderChrome(){
   document.getElementById("introNote").innerHTML = `<span class="warn-icon">⚠</span>${t("introNote")}`;
   document.getElementById("stockHeading").textContent = t("currentStock");
   document.getElementById("missingHeading").textContent = t("whatMissing");
-  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}${footerLinksHtml()}<img src="images/logo-loj.png" alt="S241 [AoW]" width="600" height="337" class="footer-logo">`;
+  document.getElementById("footerText").innerHTML = `${t("unofficialNote")}<br>${t("footer")}<br>${t("dataUpdated",{date:formattedDataUpdated()})}${footerLinksHtml()}<img src="images/logo-loj.webp" alt="S241 [AoW]" width="600" height="337" class="footer-logo" loading="lazy" decoding="async">`;
   const resetBtn = document.getElementById("btnReset");
   if(resetBtn.dataset.armed !== "1") resetBtn.textContent = t("resetButton");
   document.querySelectorAll(".lang-btn").forEach(b=>{
@@ -544,7 +551,7 @@ function renderChrome(){
 
 function setLang(l){
   lang = l;
-  localStorage.setItem(LANG_KEY, l);
+  storageSet(LANG_KEY, l);
   document.documentElement.lang = l;
   renderChrome();
   render();
@@ -848,8 +855,23 @@ function categoryHtml(catDef){
 // each part gets one header, and its categories render as normal underneath
 // (or as compact badges, via categoryHtml above). Pages without PARTS render
 // categories flat, exactly as before.
+// Every change rebuilds the cards from scratch, which destroys the control
+// that made it and dropped keyboard and screen-reader users back at the top
+// of the page after each setting. The data attributes that wire a control up
+// also name it uniquely, so the same control can be found again in the new
+// markup and handed its focus back.
+const FOCUS_KEYS = ["data-cur","data-tgt","data-track-toggle","data-add-item","data-group"];
+function focusedControlSelector(cont){
+  const el = document.activeElement;
+  if(!el || !cont.contains(el)) return null;
+  if(el.dataset.palier) return `[data-palier="${CSS.escape(el.dataset.palier)}"][data-level="${CSS.escape(el.dataset.level)}"]`;
+  const attr = FOCUS_KEYS.find(a=> el.hasAttribute(a));
+  return attr ? `[${attr}="${CSS.escape(el.getAttribute(attr))}"]` : null;
+}
+
 function renderCategories(){
   const cont = document.getElementById("categories");
+  const refocus = focusedControlSelector(cont);
   cont.innerHTML = (typeof PARTS !== "undefined" && PARTS)
     ? PARTS.map(part=>{
         const body = CATEGORIES.filter(c=>c.part===part.key).map(categoryHtml).join("");
@@ -913,6 +935,10 @@ function renderCategories(){
     keepCardOpen(s);
     trackById(s.dataset.tgt).targetLevelIndex = Number(e.target.value); save();
   }));
+  // A control can legitimately be gone (a card that just stopped being
+  // foldable loses its toggle); focus then stays wherever the browser put it.
+  const again = refocus && cont.querySelector(refocus);
+  if(again) again.focus({ preventScroll:true });
 }
 
 // Marks the card a control sits in as explicitly open. Keyed on the card's own

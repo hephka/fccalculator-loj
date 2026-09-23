@@ -4,5 +4,15 @@
     { "source": "/robots.html", "destination": "/robots-satellites.html", "permanent": true },
     { "source": "/heroequipment.html", "destination": "/hero-equipment.html", "permanent": true },
     { "source": "/herostars.html", "destination": "/hero-stars-exclusive-equipment.html", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
   ]
 }
