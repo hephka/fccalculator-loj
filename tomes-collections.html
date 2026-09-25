@@ -22,7 +22,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-title" content="LoJ Calc">
-<link rel="stylesheet" href="shared.css?v=19">
+<link rel="stylesheet" href="shared.css?v=20">
 <link rel="stylesheet" href="theme-tactical.css?v=3">
 </head>
 <body>
@@ -82,11 +82,11 @@
 
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-const RESOURCES = ["SealOfWisdom","SealOfKnowledge","CommonCoin","RareCoin","PreciousCoin","LegendaryCoin"];
+const RESOURCES = ["SealOfWisdom","SealOfKnowledge","SealOfMysteryTome","CommonCoin","RareCoin","PreciousCoin","LegendaryCoin"];
 const STORAGE_KEY = "resource-calc-tomes-state-v1";
 const SCHEMA_VERSION = 4;
 const RES_ACCENT = {
-  SealOfWisdom:"#ffd60a", SealOfKnowledge:"#ffd60a",
+  SealOfWisdom:"#ffd60a", SealOfKnowledge:"#ffd60a", SealOfMysteryTome:"#ff4d4d",
   CommonCoin:"#8ec7ff", RareCoin:"#ff8ecf", PreciousCoin:"#ffb648", LegendaryCoin:"#ff5c72",
 };
 const PARTS = [
@@ -111,7 +111,7 @@ const I18N = {
     partTomes: "Tomes", partCollection: "Collection",
     catTome: "Tomes", catCollection: "Collection",
     starWord: "star",
-    res_SealOfWisdom: "Seal of Wisdom", res_SealOfKnowledge: "Seal of Knowledge",
+    res_SealOfWisdom: "Seal of Wisdom", res_SealOfKnowledge: "Seal of Knowledge", res_SealOfMysteryTome: "Seal of Mystery Tome",
     res_CommonCoin: "Common Trove Coin", res_RareCoin: "Rare Trove Coin",
     res_PreciousCoin: "Precious Trove Coin", res_LegendaryCoin: "Legendary Trove Coin",
     addTome: "+ Add Tome",
@@ -136,7 +136,7 @@ const I18N = {
     partTomes: "Tomes", partCollection: "Collection",
     catTome: "Tomes", catCollection: "Collection",
     starWord: "étoile",
-    res_SealOfWisdom: "Sceau de Sagesse", res_SealOfKnowledge: "Sceau de Connaissance",
+    res_SealOfWisdom: "Sceau de Sagesse", res_SealOfKnowledge: "Sceau de Connaissance", res_SealOfMysteryTome: "Sceau de Tome Mystère",
     res_CommonCoin: "Pièce de Coffre Commune", res_RareCoin: "Pièce de Coffre Rare",
     res_PreciousCoin: "Pièce de Coffre Précieuse", res_LegendaryCoin: "Pièce de Coffre Légendaire",
     addTome: "+ Ajouter un Tome",
@@ -151,12 +151,18 @@ const I18N = {
   },
 };
 
-// Levels 0->12: cost jump for that single step, in {SealOfWisdom, SealOfKnowledge}.
-// Identical for every tome (confirmed against source table).
+// Levels 0->18: cost jump for that single step, in {SealOfWisdom,
+// SealOfKnowledge, SealOfMysteryTome}. Identical for every tome (confirmed
+// against source table). Levels 13-18 arrived with the September 2026 update,
+// and with them the red-rarity Seal of Mystery Tome (m), needed from 12->13 on.
+// Appended after level 12, so saved level indices keep pointing at the same
+// levels and no SCHEMA_VERSION bump is needed.
 const TOME_COSTS = [
   {w:10,k:10},{w:50,k:60},{w:90,k:110},{w:160,k:200},{w:270,k:330},
   {w:380,k:460},{w:480,k:600},{w:540,k:660},{w:620,k:780},{w:760,k:920},
   {w:920,k:1040},{w:1040,k:1240},
+  {w:1040,k:1240,m:8},{w:1080,k:1300,m:15},{w:1080,k:1300,m:22},
+  {w:1120,k:1400,m:35},{w:1120,k:1400,m:50},{w:1180,k:1540,m:66},
 ];
 
 function makeTomeTrack(idx){
@@ -165,6 +171,7 @@ function makeTomeTrack(idx){
     const cost = zeroResources();
     cost.SealOfWisdom = c.w;
     cost.SealOfKnowledge = c.k;
+    cost.SealOfMysteryTome = c.m || 0;
     levels.push({ id:String(i+1), cost, requires:[] });
   });
   return {
@@ -241,7 +248,7 @@ function defaultData(){
 }
 
 </script>
-<script src="shared.js?v=31"></script>
+<script src="shared.js?v=32"></script>
 <script>initApp();</script>
 </body>
 </html>

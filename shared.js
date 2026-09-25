@@ -197,7 +197,7 @@ let lang = storageGet(LANG_KEY) || (navigator.language && navigator.language.sta
 
 // Bump this by hand whenever any route's game data (costs, requires) changes
 // — shown in the footer so visitors can tell how fresh the numbers are.
-const DATA_UPDATED = "2026-08-20";
+const DATA_UPDATED = "2026-09-25";
 function formattedDataUpdated(){
   return new Date(DATA_UPDATED+"T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { year:"numeric", month:"long", day:"numeric" });
 }

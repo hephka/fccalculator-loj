@@ -129,6 +129,7 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="Hyperalloy"],
 .res-dot[data-res="SealOfWisdom"],
 .res-dot[data-res="SealOfKnowledge"],
+.res-dot[data-res="SealOfMysteryTome"],
 .res-dot[data-res="CommonCoin"],
 .res-dot[data-res="RareCoin"],
 .res-dot[data-res="PreciousCoin"],
@@ -170,6 +171,14 @@ input[type=number]{-moz-appearance:textfield}
 .res-dot[data-res="SealOfKnowledge"]{
   mask-image:url("icons/seal-knowledge.svg");
   -webkit-mask-image:url("icons/seal-knowledge.svg");
+}
+/* SealOfMysteryTome — same stamp family as the two seals above (handle, flat
+   stamping base), crowned with a four-point star instead of a knob: the
+   "mystery" of the tier, and the one silhouette of the three that still reads
+   apart at 18px. Red rarity, above the other seals' yellow. */
+.res-dot[data-res="SealOfMysteryTome"]{
+  mask-image:url("icons/seal-mystery-tome.svg");
+  -webkit-mask-image:url("icons/seal-mystery-tome.svg");
 }
 /* Trove Coins (Common/Rare/Precious/Legendary) — one shared icon (an open
    chest with a coin inside), since the 4 tiers are the same image in the

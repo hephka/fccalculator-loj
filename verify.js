@@ -128,6 +128,10 @@ const EXPECTED_TOTALS = {
     fc_lab: { FC: 7050, AFC: 50 },
     warden_office: { FC: 23700, AFC: 1740 },
   },
+  // Straight from the in-game cost table (Lv.0 -> Lv.18, September 2026 update).
+  "tomes-collections.html": {
+    tome_1: { SealOfWisdom: 11940, SealOfKnowledge: 14590, SealOfMysteryTome: 196 },
+  },
   "robots-satellites.html": {
     equip_robot_1: { PrisonerArmorData: 141050, PowerModule: 1040, AdvancedPowerModule: 425 },
     equip_satR_1: { DataDisk: 27845, PlanetCoin: 210 },
